@@ -1,0 +1,16 @@
+[project]
+name = "caegraph"
+
+version = "0.1.0"
+
+description = "Graph neural network framework for CAE"
+
+requires-python = ">=3.11"
+
+dependencies = ["torch>=2.5", "torch-geometric", "numpy"]
+
+[build-system]
+
+requires = ["setuptools", "wheel"]
+
+build-backend = "setuptools.build_meta"
