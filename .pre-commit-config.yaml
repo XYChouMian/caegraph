@@ -1,0 +1,42 @@
+# CAEGraph pre-commit hooks: every commit is auto-checked.
+# Install once:  pre-commit install
+# Run manually:  pre-commit run --all-files
+repos:
+  # --- Formatting -----------------------------------------------------------
+  - repo: https://github.com/psf/black
+    rev: 24.8.0
+    hooks:
+      - id: black
+        files: ^(src|tests)/
+
+  # --- Linting --------------------------------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix]
+        files: ^(src|tests)/
+
+  # --- Basic hygiene --------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: end-of-file-fixer
+        exclude: \.puml$
+      - id: trailing-whitespace
+        exclude: \.puml$
+      - id: check-yaml
+        files: ^(docs|\.github)/
+      - id: check-toml
+        files: pyproject.toml
+
+  # --- Tests ----------------------------------------------------------------
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-push]
