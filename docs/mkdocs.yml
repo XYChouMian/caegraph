@@ -1,0 +1,100 @@
+# 1. Site
+site_name: CAEGraph
+site_author: xychoumian
+site_description: >-
+  A PyG-style graph computation framework for CAE data.
+# site_url: http://expfluid.bond/ # 以后绑定域名用
+
+# 2. Theme: Material for MkDocs（原生支持 i18n 语言切换器）
+theme:
+  name: material
+  language: zh
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  palette:
+    # 日间模式
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: 切换到暗黑模式
+    # 暗黑模式
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: 切换到日间模式
+
+# 3. Nav（中英文页面路由由 i18n 插件自动映射）
+nav:
+  - 首页: index.md
+  - 架构:
+      - 架构总览: architecture/overview.md
+  - API 参考:
+      - 概览: api/index.md
+  - 教程: tutorials/index.md
+  - 示例: examples/index.md
+
+# 4. Plugins
+plugins:
+  - search
+  # 双语支持：*.md 为中文（默认），*.en.md 为英文
+  - i18n:
+      docs_structure: suffix
+      languages:
+        - locale: zh
+          name: 中文
+          default: true
+          build: true
+        - locale: en
+          name: English
+          build: true
+          nav_translations:
+            首页: Home
+            架构: Architecture
+            架构总览: Overview
+            API 参考: API Reference
+            概览: Overview
+            教程: Tutorials
+            示例: Examples
+  # API 文档自动生成（caegraph 需可导入：安装包或将 src 加入 PYTHONPATH）
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [..]
+          options:
+            docstring_style: google
+            show_source: true
+
+# 5. Markdown extensions
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+  - toc:
+      permalink: true
+
+# 6. KaTeX 数学公式
+extra_javascript:
+  - javascripts/katex.js
+  - https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js
+  - https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js
+
+extra_css:
+  - https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css
