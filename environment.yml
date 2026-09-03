@@ -1,0 +1,30 @@
+# Reproducible description of the CAEGraph development environment.
+# Recreate with:  conda env create -f environment.yml
+name: caegraph-dev
+
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      # Core scientific stack (mirrors pyproject.toml dependencies)
+      - numpy
+      - torch
+      - torch-geometric
+      # Documentation
+      - mkdocs
+      - mkdocs-material
+      - mkdocstrings[python]
+      - mkdocs-static-i18n
+      # Testing
+      - pytest
+      - pytest-cov
+      # Code quality
+      - black
+      - ruff
+      - mypy
+      - pre-commit
