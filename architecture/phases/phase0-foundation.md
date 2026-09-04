@@ -13,8 +13,8 @@ code by design.
 | src-layout package + `pyproject.toml` | done | ADR-001 |
 | Architecture spec (`ARCHITECTURE.md`) | done | binding rules |
 | Dual UML system + `UML_GUIDE.md` | done | ADR-002 |
-| ADR mechanism (`decisions/`) | done | ADR-000..003 |
-| Agent governance (`.agent/` workflow + 9 skills) | done | incl. Validation Agent, emergency path |
+| ADR mechanism (`decisions/`) | done | ADR-000..004 |
+| Agent governance (`.agent/` workflow + 10 skills) | done | incl. Git governance, Validation Agent, emergency path |
 | Bilingual MkDocs site (Material + i18n + mkdocstrings) | done | `.md` / `.en.md` convention |
 | pytest framework (`tests/test_import.py`) | done | import smoke tests |
 | pre-commit (black/ruff/pytest) + GitHub CI | done | `.pre-commit-config.yaml`, `test.yml` |

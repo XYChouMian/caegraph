@@ -213,6 +213,10 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
 
 Violations of any rule in this file are blocking review findings.
 
+- Git is a shared engineering capability across all Agent roles. Branches,
+  commits, reviews, merges, tags, and release operations follow
+  `.agent/skills/git/SKILL.md`; Git permissions never override role boundaries.
+
 ---
 
 ## 6. Phase roadmap

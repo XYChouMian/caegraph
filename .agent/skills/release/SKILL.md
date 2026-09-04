@@ -33,7 +33,8 @@ CAEGraph 以专业 Python 科学库的标准对外发布。
 
 1. 按 Reviewer Agent 的结论确认所有 blocking 问题已清零。
 2. 执行检查清单，逐项记录结果。
-3. 打版本标签（Git tag，格式 `v<version>`，由用户或既有仓库流程完成）。
+3. 用户明确批准后，由 Release Agent 或既有仓库流程打版本标签
+   （Git tag，格式 `v<version>`）。
 4. 发布产物（PyPI / GitHub Release）遵循用户指示；未经明确指示不得对外发布。
 
 ## 禁止事项

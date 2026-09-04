@@ -32,7 +32,8 @@ which python          # 应指向 .../envs/caegraph-dev/bin/python
 
 - 操作系统：WSL Linux
 - IDE：VSCode
-- Git：使用既有仓库（VSCode GUI Git）
+- Git：用户可使用 VSCode GUI；Agent 可在既有仓库中按
+  `.agent/skills/git/SKILL.md` 使用 Git CLI
   - 禁止 `git init`
   - 禁止修改 remote 配置
   - 未经要求禁止修改 `.gitignore`
@@ -74,6 +75,8 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
   Agent 分类路由，再进入架构 → 编码 → 测试 → 文档 → 审查链路
 - 各 Agent 角色规则见 `.agent/skills/*/SKILL.md`（汇总：
   `.agent/ALL_SKILLS.md`，由 `aggregate_skills.py` 生成）
+- Git 是所有 Agent 共享的基础工程能力，所有 Git 操作必须遵守
+  `.agent/skills/git/SKILL.md`
 - 工作流：读架构 → 查 UML → 改设计 → 再编码 → 同步文档与测试
 - 禁止在无设计依据时创建新抽象、新文件、新依赖
 - 所有源码位于 `src/caegraph/`，禁止根目录 Python 文件
