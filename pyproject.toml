@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "A graph-based framework for CAE data representation, mesh processing, simulation learning, and physics-informed machine learning."
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 authors = [{ name = "CAEGraph Team", email = "xychoumian@gmail.com" }]
 keywords = [
     "CAE",
@@ -26,6 +26,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering",
 ]
@@ -68,11 +69,11 @@ minversion = "7.0"
 
 [tool.black]
 line-length = 88
-target-version = ["py311"]
+target-version = ["py310"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py311"
+target-version = "py310"
 src = ["src", "tests"]
 
 [tool.ruff.lint]

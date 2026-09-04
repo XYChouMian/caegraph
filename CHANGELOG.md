@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Python 3.10 compatibility testing alongside the canonical Python 3.11
+  development environment.
 - `.agent/skills/aggregate_skills.py`: script aggregating all
   `SKILL.md` files into `.agent/ALL_SKILLS.md`.
 
