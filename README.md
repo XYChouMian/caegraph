@@ -21,6 +21,9 @@ visualization** in a single, well-architected Python framework.
 
 ## Installation
 
+CAEGraph requires Python 3.10 or later. The canonical development environment
+uses Python 3.11, while CI also verifies Python 3.10 compatibility.
+
 ```bash
 pip install -e .
 ```
