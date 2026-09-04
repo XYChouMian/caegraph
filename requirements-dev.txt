@@ -9,6 +9,7 @@ pytest-cov
 black
 ruff
 mypy
+pylint
 pre-commit
 mkdocs-material
 mkdocstrings
