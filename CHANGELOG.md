@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Switched the project license from MIT to the Apache License 2.0
+  (`LICENSE`, package classifiers, and README updated).
 - Standard development environment `caegraph-dev` downgraded from Python 3.11
   to Python 3.10 (ADR-003); CI keeps testing both 3.10 and 3.11, and the docs
   build job now runs on 3.10.
