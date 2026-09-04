@@ -67,6 +67,26 @@ Git 是所有 CAEGraph Agent 共享的基础工程能力，不是独立交付角
 
 名称使用小写英文与连字符。一个任务分支只承载同一派单范围内的变化。
 
+### Worktree 协议（多 Agent 并发强制）
+
+多个 Agent 共享同一仓库时，必须用 `git worktree` 隔离各自工作区，防止并发
+修改互相覆盖：
+
+- **主工作区**（仓库本体）只停留在 `main`，仅执行 merge、push 等集成操作，
+  **禁止在主工作区直接开发或提交任务变更**。
+- 每个 Agent 拥有一个专属持久 worktree，位于主仓库同级目录，并常驻一个
+  `<agent>/workspace` 占位分支：
+  - opencode Agent：`../caegraph-opencode`（分支 `opencode/workspace`）
+  - codex Agent：`../caegraph-codex`（分支 `codex/workspace`）
+- 新增 Agent 时按同样约定扩展（`../caegraph-<agent>` +
+  `<agent>/workspace`）；临时性 worktree 放 `/tmp` 并在任务结束后删除。
+- 任务流程：在**本 Agent 的 worktree 内**从 `main` 创建任务分支
+  （`git checkout -b <type>/<name> main`）→ 开发、验证、提交 → 经用户批准后
+  在主工作区合入 `main` → worktree 收回占位分支并删除任务分支。
+- 并发纪律：禁止触碰其他 Agent 的 worktree、占位分支及其未提交修改；任何
+  Git 写操作前必须用 `git worktree list` + `git branch --show-current` 确认
+  所在位置。
+
 ## 提交规范
 
 提交格式为 `type(scope): description`，description 使用简短的英文祈使语气：
