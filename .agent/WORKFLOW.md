@@ -13,6 +13,8 @@ Requirement（用户请求）
     ↓
 Project Management Agent   分类、拆解、定义验收标准、路由
     ↓
+Task Branch                按 Git Skill 创建具名任务分支
+    ↓
 Architecture Agent         结构/依赖相关时必须先行（改 ARCHITECTURE.md + Design UML）
     ↓
 Coding Agent               按已批准设计实现（src/caegraph/）
@@ -33,6 +35,25 @@ Release Agent              仅发布任务执行（版本、构建、发布清�
   → 退回 Architecture Agent，而不是默认一个设计继续写）。
 - 不需要经过的环节可跳过（如纯文档更新不经过 Coding/Testing），但跳过决定
   由 Project Management Agent 做出并记录。
+- Git 是所有 Agent 共享的基础工程能力；任何 Git 操作都必须遵守
+  `.agent/skills/git/SKILL.md`，且不得突破当前角色的职责边界。
+
+### 1b. 紧急修复链路
+
+```
+崩溃 / 错误结果 / CI 全红
+    ↓
+Project Management Agent   确认紧急级别与验收标准
+    ↓
+bugfix/<name>              从 main 创建，禁止直接提交 main
+    ↓
+Coding → Testing → Reviewer
+    ↓
+用户批准后 merge / push
+```
+
+涉及公共 API、包结构或依赖的紧急修复必须恢复完整的 Architecture / Environment
+路由；紧急状态不授权强推、跳过测试或绕过用户批准。
 
 ## 2. 职责边界一览
 

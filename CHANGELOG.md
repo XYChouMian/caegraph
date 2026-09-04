@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Shared Git governance for all Agent roles, including permission boundaries,
+  branch and commit conventions, review gates, and release authorization.
 - `.agent/skills/aggregate_skills.py`: script aggregating all
   `SKILL.md` files into `.agent/ALL_SKILLS.md`.
 
