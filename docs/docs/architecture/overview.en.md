@@ -1,7 +1,7 @@
 # Architecture Overview
 
 This page summarizes the architecture; the binding specification lives in
-[`architecture/ARCHITECTURE.md`](https://github.com/caegraph/caegraph/blob/main/architecture/ARCHITECTURE.md).
+[`architecture/ARCHITECTURE.md`](https://github.com/XYChouMian/caegraph/blob/main/architecture/ARCHITECTURE.md).
 
 ## Design philosophy
 
@@ -27,4 +27,4 @@ This page summarizes the architecture; the binding specification lives in
 - **Design UML** (`architecture/design/`) — the planned design.
 - **Generated UML** (`diagrams/generated/`) — the real state of the code.
 
-See the [UML guide](https://github.com/caegraph/caegraph/blob/main/architecture/UML_GUIDE.md).
+See the [UML guide](https://github.com/XYChouMian/caegraph/blob/main/architecture/UML_GUIDE.md).
