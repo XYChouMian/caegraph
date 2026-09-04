@@ -43,7 +43,8 @@ which python          # 应指向 .../envs/caegraph-dev/bin/python
 
 - 项目：CAEGraph —— 连接 CAE 数据、网格、图结构与 GNN / Physics-informed
   learning 的 Python framework（PyG 风格）
-- 当前阶段以 `architecture/ARCHITECTURE.md` 声明的 Phase 为准；
+- 当前阶段以 `architecture/phases/CURRENT.md` 指针为准（绑定表格：
+  `architecture/ARCHITECTURE.md` §6；战略总览：根目录 `ROADMAP.md`）；
   禁止实现当前 Phase 之外的功能
 - 阶段红线（Phase 0）：不实现 CAE 算法、GNN 模型、数据处理功能，
   不创建临时工具脚本
@@ -52,24 +53,32 @@ which python          # 应指向 .../envs/caegraph-dev/bin/python
 
 ## 4. 架构约束（UML-first）
 
-五者必须始终一致：
+七者必须始终一致：
 
 ```
-Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing
+Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ Release
 ```
 
-- 结构变更前必须先更新 Design UML（`architecture/design/`）
-- 合并前比对 Design UML 与 Generated UML（`diagrams/generated/`）
-- 依赖方向遵守 ARCHITECTURE.md 包地图，禁止反向/循环依赖
+- 结构变更前必须先更新 Design UML（`architecture/design/`）并记录 ADR
+  （`architecture/decisions/`）
+- 合并前比对 Design UML 与 Generated UML（`diagrams/generated/`，
+  仅工具生成，禁止手改）
+- 依赖分层：utils ← core ← data ← physics ← models ← visualization，
+  下层禁止依赖上层，同层禁止互依；physics 专供 models 消费，方向不可逆
 
 ---
 
 ## 5. Agent 约束（不自由编码）
 
-- 所有代码 Agent 按 `.agent/skills/*/SKILL.md` 的角色工作
+- 全局协作流程见 `.agent/WORKFLOW.md`：任何请求先经 Project Management
+  Agent 分类路由，再进入架构 → 编码 → 测试 → 文档 → 审查链路
+- 各 Agent 角色规则见 `.agent/skills/*/SKILL.md`（汇总：
+  `.agent/ALL_SKILLS.md`，由 `aggregate_skills.py` 生成）
 - 工作流：读架构 → 查 UML → 改设计 → 再编码 → 同步文档与测试
 - 禁止在无设计依据时创建新抽象、新文件、新依赖
 - 所有源码位于 `src/caegraph/`，禁止根目录 Python 文件
+- 依赖分层：utils ← core ← data ← physics ← models ← visualization，
+  下层禁止依赖上层，同层禁止互依
 
 ---
 
@@ -77,6 +86,7 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing
 
 - 安装项目：`pip install -e .`
 - 运行测试：`pytest`
+- 开发工具：`pip install -r requirements-dev.txt`（与 pyproject `[dev]` extras 同步）
 - 格式化 / 检查：`black`、`ruff`、`mypy`
 - 提交前钩子：`pre-commit install` 后自动执行 black / ruff / pytest
 - 文档：`mkdocs`（Material + mkdocstrings），提交前 `mkdocs build --strict`
