@@ -1,6 +1,6 @@
 # Phase 0 — Foundation
 
-Status: **In progress** (current phase)
+Status: **Done** (2026-09-04; superseded by Phase 1)
 
 Goal: make everything that follows architecture-gated. No CAE algorithms,
 no GNN models, no data processing — this phase produces zero functional
@@ -13,13 +13,13 @@ code by design.
 | src-layout package + `pyproject.toml` | done | ADR-001 |
 | Architecture spec (`ARCHITECTURE.md`) | done | binding rules |
 | Dual UML system + `UML_GUIDE.md` | done | ADR-002 |
-| ADR mechanism (`decisions/`) | done | ADR-000..004 |
+| ADR mechanism (`decisions/`) | done | ADR-000..004; ADR-003 absorbed retired ADR-005/006, next number is ADR-007 |
 | Agent governance (`.agent/` workflow + 10 skills) | done | incl. Git governance, Validation Agent, emergency path |
 | Bilingual MkDocs site (Material + i18n + mkdocstrings) | done | `.md` / `.en.md` convention |
 | pytest framework (`tests/test_import.py`) | done | import smoke tests |
 | pre-commit (black/ruff/pytest) + GitHub CI | done | `.pre-commit-config.yaml`, `test.yml` |
 | Environment: `caegraph-dev` + `environment.yml` + `requirements-dev.txt` | done | ADR-003 |
-| Clean end-to-end verification | pending | install → pytest → `mkdocs build --strict`, all green in `caegraph-dev` |
+| Clean end-to-end verification | done | green in `caegraph-dev` (Python 3.10.21): `pip install -e .`, `pytest`, `mkdocs build --strict`, plus black/ruff/mypy gates |
 
 ## Exit criteria
 

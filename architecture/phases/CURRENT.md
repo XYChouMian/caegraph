@@ -6,6 +6,8 @@
 > `architecture/ARCHITECTURE.md` §6; the full phase design is in
 > `phase0-foundation.md` alongside this file.
 
-- Current: **Phase 0 — Foundation**
-- Design doc: [phase0-foundation.md](phase0-foundation.md)
+- Current: **Phase 1 — Core Data Structures**
+- Design doc: [phase1-core.md](phase1-core.md)
 - Strategy overview: [../../ROADMAP.md](../../ROADMAP.md)
+- Previous: Phase 0 — Foundation (done 2026-09-04,
+  [phase0-foundation.md](phase0-foundation.md))
