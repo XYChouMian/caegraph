@@ -7,7 +7,7 @@
 
 ## 1. 环境约束
 
-- Conda environment：**caegraph-dev**（Python **3.11**）
+- Conda environment：**caegraph-dev**（Python **3.10**）
 - 包管理：conda 建环境，**pip** 装包
 - 所有 Python 命令默认运行在 `caegraph-dev` 中
 - 禁止：
@@ -20,7 +20,7 @@
 
 ```bash
 conda info --envs
-python --version      # 应为 3.11.x
+python --version      # 应为 3.10.x
 which python          # 应指向 .../envs/caegraph-dev/bin/python
 ```
 

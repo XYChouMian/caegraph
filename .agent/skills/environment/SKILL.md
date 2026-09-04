@@ -8,7 +8,7 @@
 ## 当前开发环境（唯一合法环境）
 
 - Conda environment：`caegraph-dev`
-- Python：`3.11`
+- Python：`3.10`
 - Python 解释器必须属于该环境：`which python` 应指向
   `*/envs/caegraph-dev/bin/python`（不绑定具体用户目录）
 - 包安装：`pip`（conda 只负责创建环境与 Python 本体）
@@ -18,7 +18,7 @@
 
 ```bash
 conda info --envs
-python --version      # 3.11.x
+python --version      # 3.10.x
 which python          # .../envs/caegraph-dev/bin/python
 ```
 

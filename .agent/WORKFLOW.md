@@ -96,7 +96,7 @@ python .agent/skills/aggregate_skills.py
 ## 5. 接入新的 Agent 实现（换框架 checklist）
 
 1. 读 `AGENTS.md`（全局约束）→ 本文件 → 对应 `SKILL.md`。
-2. 确认 conda 环境 `caegraph-dev`（Python 3.11）——环境不符立即停止。
+2. 确认 conda 环境 `caegraph-dev`（Python 3.10）——环境不符立即停止。
 3. 读 `architecture/phases/CURRENT.md` 确认当前 Phase 与红线。
 4. 按 Project Management Agent 的分类流程处理第一个请求。
 5. 输出格式遵循各 SKILL.md 的"输出要求"。

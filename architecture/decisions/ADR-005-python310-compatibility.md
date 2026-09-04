@@ -3,7 +3,7 @@
 - 编号：ADR-005
 - 标题：最低支持版本降至 Python 3.10，标准开发环境继续使用 Python 3.11
 - 日期：2026-09-04
-- 状态：accepted
+- 状态：superseded（被 ADR-006 取代）
 - 关联：Phase 0；ADR-003；`.github/workflows/test.yml`
 
 ## 背景

@@ -23,7 +23,7 @@ code by design.
 
 ## Exit criteria
 
-1. In `caegraph-dev` (Python 3.11): `pip install -e .`, `pytest`,
+1. In `caegraph-dev` (Python 3.10): `pip install -e .`, `pytest`,
    `mkdocs build --strict` all pass with zero errors.
 2. Reviewer Agent confirms: no functional code leaked into Phase 0.
 3. PM Agent updates `CURRENT.md` → Phase 1 (only after a Review pass).

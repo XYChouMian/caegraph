@@ -7,12 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Standard development environment `caegraph-dev` downgraded from Python 3.11
+  to Python 3.10 (ADR-006 supersedes ADR-005); CI keeps testing both 3.10
+  and 3.11, and the docs build job now runs on 3.10.
+
 ### Added
 
 - Shared Git governance for all Agent roles, including permission boundaries,
   branch and commit conventions, review gates, and release authorization.
-- Python 3.10 compatibility testing alongside the canonical Python 3.11
-  development environment.
+- Python 3.10 compatibility testing (CI test matrix covers both 3.10 and
+  3.11).
 - `.agent/skills/aggregate_skills.py`: script aggregating all
   `SKILL.md` files into `.agent/ALL_SKILLS.md`.
 

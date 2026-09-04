@@ -144,7 +144,8 @@ divergence is treated as technical debt.
 ### 4.1 Language & style
 
 - Python ≥ 3.10, type hints on all public APIs. The canonical development
-  environment remains Python 3.11; CI verifies every supported minor version.
+  environment is Python 3.10 (ADR-006); CI verifies every supported minor
+  version including 3.11.
 - Formatting via **black**; linting via **ruff** (config in `pyproject.toml`).
 - Line length 88.
 

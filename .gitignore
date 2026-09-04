@@ -30,6 +30,9 @@ site/
 # 临时 docs 构建依赖（沙箱绕过用，正式依赖应装入 caegraph-dev）
 .docs-tools/
 
+# Local reference repositories
+/temp/
+
 # Editors / IDE
 .idea/
 .vscode/
