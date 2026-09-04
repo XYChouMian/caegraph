@@ -27,4 +27,5 @@ dependencies:
       - black
       - ruff
       - mypy
+      - pylint
       - pre-commit
