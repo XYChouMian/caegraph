@@ -1,16 +1,84 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "caegraph"
-
 version = "0.1.0"
-
-description = "Graph neural network framework for CAE"
-
+description = "A graph-based framework for CAE data representation, mesh processing, simulation learning, and physics-informed machine learning."
+readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.11"
+authors = [{ name = "CAEGraph Team", email = "xychoumian@gmail.com" }]
+keywords = [
+    "CAE",
+    "mesh",
+    "simulation",
+    "pytorch",
+    "graph-neural-networks",
+    "computational-fluid-dynamics",
+    "scientific-machine-learning",
+    "surrogate-modeling",
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "numpy>=1.24",
+    "torch>=2.5",
+    "torch-geometric>=2.5,<3.0",
+]
 
-dependencies = ["torch>=2.5", "torch-geometric", "numpy"]
+[project.optional-dependencies]
+docs = [
+    "mkdocs>=1.5",
+    "mkdocs-material>=9.4",
+    "mkdocstrings[python]>=0.24",
+    "mkdocs-static-i18n>=1.2",
+]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "black>=24.0",
+    "ruff>=0.4",
+    "pre-commit>=3.5",
+]
 
-[build-system]
+[project.urls]
+Documentation = "https://github.com/XYChouMian/caegraph#documentation"
+Repository = "https://github.com/XYChouMian/caegraph"
+Changelog = "https://github.com/XYChouMian/caegraph/blob/main/CHANGELOG.md"
 
-requires = ["setuptools", "wheel"]
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["caegraph*"]
 
-build-backend = "setuptools.build_meta"
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath=["src"]
+addopts = "-ra"
+minversion = "7.0"
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.caegraph]
+architecture = "architecture/ARCHITECTURE.md"
+uml = "architecture/design"
+docs = "docs/docs"
