@@ -1,0 +1,15 @@
+# Development toolchain for CAEGraph.
+# Role division:
+#   environment.yml      -> conda environment creation (full reproducible description)
+#   pyproject.toml       -> package runtime dependencies + optional extras ([dev]/[docs])
+#   requirements-dev.txt -> development tools for CI/contributors (unpinned)
+# Keep this file in sync with pyproject.toml [dev] extras.
+pytest
+pytest-cov
+black
+ruff
+mypy
+pre-commit
+mkdocs-material
+mkdocstrings
+mkdocs-static-i18n
