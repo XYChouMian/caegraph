@@ -46,13 +46,13 @@ Agent 绝对禁止：
 | --- | --- | --- |
 | `environment.yml` | conda 环境创建与完整可复现描述（含 docs/dev 工具） | 新增任何依赖时 |
 | `pyproject.toml` | 包的运行时依赖（`dependencies`）与可选组（`dev`/`docs` extras）；发布到 PyPI 的唯一真相 | 运行时依赖变化时 |
-| `requirements-dev.txt` | 开发工具链清单（不锁版本），供 CI 与贡献者快速安装：`pip install -r requirements-dev.txt` | 开发工具增减时，必须与 `pyproject.toml` 的 `[dev]` extras 保持同步 |
+| `requirements-dev.txt` | 完整开发工具链（不锁版本），供 CI 与贡献者快速安装：`pip install -r requirements-dev.txt` | 开发或文档工具增减时，必须覆盖 `pyproject.toml` 的 `[dev] + [docs]` extras |
 
 三者分工：environment.yml 管"环境怎么建"，pyproject.toml 管"包依赖什么"，
-requirements-dev.txt 管"开发装哪些工具"。
+requirements-dev.txt 管"贡献者一次安装哪些开发与文档工具"。
 
 原则：**声明文件与实际安装状态必须一致**。装了没声明，或声明了没装，都算环境事故；
-`requirements-dev.txt` 与 `[dev]` extras 出现差异同样算事故。
+`requirements-dev.txt` 未覆盖 `[dev] + [docs]` extras 同样算事故。
 
 ## 依赖变更工作流
 

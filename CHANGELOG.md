@@ -10,8 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Standard development environment `caegraph-dev` downgraded from Python 3.11
-  to Python 3.10 (ADR-006 supersedes ADR-005); CI keeps testing both 3.10
-  and 3.11, and the docs build job now runs on 3.10.
+  to Python 3.10 (ADR-003); CI keeps testing both 3.10 and 3.11, and the docs
+  build job now runs on 3.10.
+- Consolidated the temporary Python compatibility decisions from ADR-005 and
+  ADR-006 into the canonical environment strategy in ADR-003.
 
 ### Added
 
