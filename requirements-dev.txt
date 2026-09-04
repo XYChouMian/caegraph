@@ -3,7 +3,7 @@
 #   environment.yml      -> conda environment creation (full reproducible description)
 #   pyproject.toml       -> package runtime dependencies + optional extras ([dev]/[docs])
 #   requirements-dev.txt -> development tools for CI/contributors (unpinned)
-# Keep this file in sync with pyproject.toml [dev] extras.
+# Keep this file aligned with pyproject.toml [dev] + [docs] extras.
 pytest
 pytest-cov
 black
@@ -11,6 +11,7 @@ ruff
 mypy
 pylint
 pre-commit
+mkdocs
 mkdocs-material
-mkdocstrings
+mkdocstrings[python]
 mkdocs-static-i18n

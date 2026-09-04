@@ -89,7 +89,8 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
 
 - 安装项目：`pip install -e .`
 - 运行测试：`pytest`
-- 开发工具：`pip install -r requirements-dev.txt`（与 pyproject `[dev]` extras 同步）
+- 开发工具：`pip install -r requirements-dev.txt`（覆盖 pyproject
+  `[dev] + [docs]` extras）
 - 格式化 / 检查：`black`、`ruff`、`mypy`
 - 提交前钩子：`pre-commit install` 后自动执行 black / ruff / pytest
 - 文档：`mkdocs`（Material + mkdocstrings），提交前 `mkdocs build --strict`
