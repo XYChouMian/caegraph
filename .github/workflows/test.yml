@@ -1,15 +1,68 @@
-name: Test
+name: Tests
+
 on:
   push:
+    branches: [main]
   pull_request:
+
 jobs:
   test:
+    name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.11"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
+
+      - name: Install CPU-only torch (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install caegraph
+        run: |
+          pip install -e ".[dev]"
+
+      - name: Lint (ruff)
+        run: ruff check src tests
+
+      - name: Run pytest
+        run: pytest --cov=caegraph --cov-report=term-missing
+
+  docs:
+    name: Build MkDocs
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install
-        run: pip install .
-      - name: Test
-        run: pytest
-      - name: Documentation
-        run: mkdocs build
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install caegraph with docs extras
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -e ".[docs]"
+
+      - name: Build documentation
+        working-directory: docs
+        run: mkdocs build --strict
