@@ -52,8 +52,8 @@ BaseObject <|-- Graph
 BaseObject <|-- Dataset
 
 Mesh "1" --> "1" Graph : mesh_to_graph conversion
-Graph "*" --> "1" Dataset : contains
-Dataset "1" --> "*" Model : trains / evaluates
+Graph "*" --> "1" Dataset : belongs to
+Dataset "1" --> "*" Model : provides data for
 Model "1" --> "1" Trainer : orchestrated by
 
 note right of Mesh
