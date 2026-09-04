@@ -228,8 +228,8 @@ the current phase; phase transitions require a Review pass.
 
 | Phase | Scope | Exit criteria |
 | --- | --- | --- |
-| **Phase 0 — Foundation** (current) | packaging, architecture spec, UML dual system, docs, CI, agent governance | `pip install -e .` + pytest + `mkdocs build --strict` all pass; no CAE/GNN code |
-| **Phase 1 — Core data structures** | `BaseObject`, registries, shared types in `caegraph.core` | core API tested + docstringed; first Generated UML produced |
+| **Phase 0 — Foundation** (done) | packaging, architecture spec, UML dual system, docs, CI, agent governance | `pip install -e .` + pytest + `mkdocs build --strict` all pass; no CAE/GNN code |
+| **Phase 1 — Core data structures** (current) | `BaseObject`, registries, shared types in `caegraph.core` | core API tested + docstringed; first Generated UML produced |
 | **Phase 2 — CAE data pipeline** | CAE loading, `Mesh`, Mesh→Graph conversion, datasets in `caegraph.data` | conversion invariants validated (topology/conservation/BC mapping) |
 | **Phase 3 — ML models** | GNN components, physics-informed losses, Trainer in `caegraph.models`/`caegraph.physics` | end-to-end train/inference on synthetic benchmark |
 | **Phase 4 — Release & applications** | API freeze, packaging polish, v1.0; CFD surrogate / ROM / multiphysics examples | Release Agent checklist fully green |

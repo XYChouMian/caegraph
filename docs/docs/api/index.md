@@ -1,6 +1,7 @@
 # API 参考
 
-CAEGraph 处于 Phase 0（基础建设）：公共类尚未实现。
+CAEGraph 处于 Phase 1（核心数据结构）：`BaseObject`、注册机制与共享类型正在
+实现，核心公共 API 尚未发布。
 
 模块落地后，将由此处的
 [mkdocstrings](https://mkdocstrings.github.io/)

@@ -6,9 +6,9 @@ CAEGraph connects **CAE data structures → mesh representations → graph
 representations → datasets → GNN / physics-informed learning models →
 visualization** in a single, well-architected Python framework.
 
-> **Status: Pre-Alpha (Phase 0 — Foundation).** The package skeleton,
-> architecture specification, UML system, documentation and testing
-> infrastructure are in place. No CAE/GNN algorithms are implemented yet.
+> **Status: Pre-Alpha (Phase 1 — Core Data Structures, in progress).** The
+> Phase 0 foundation is complete. Work has begun on the shared core
+> abstractions; CAE/GNN algorithms remain planned and are not implemented.
 
 ## Features (planned)
 

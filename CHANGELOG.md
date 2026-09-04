@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Marked Phase 0 as complete and Phase 1 (Core Data Structures) as in progress
+  across the phase pointer, architecture specification, README, and MkDocs site.
 - Switched the project license from MIT to the Apache License 2.0
   (`LICENSE`, package classifiers, and README updated).
 - Standard development environment `caegraph-dev` downgraded from Python 3.11

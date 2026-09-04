@@ -1,6 +1,6 @@
 # Phase 1 — Core Data Structures
 
-Status: Planned
+Status: In progress
 
 Goal: the minimal shared vocabulary everything else builds on —
 `caegraph.core` and `caegraph.utils` become real code.

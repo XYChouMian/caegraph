@@ -46,6 +46,6 @@ mandatory for every contributor and agent.
 
 ## 5. Current status
 
-- Phase 0: design UML defines the six core abstractions
+- Phase 1 is in progress. The design UML defines the six core abstractions
   (`BaseObject`, `Mesh`, `Graph`, `Dataset`, `Model`, `Trainer`).
-- Generated UML: empty — no concrete classes exist yet.
+- Generated UML: empty — no concrete classes have been implemented yet.

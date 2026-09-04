@@ -1,6 +1,7 @@
 # API Reference
 
-CAEGraph is in Phase 0 (Foundation): public classes are not implemented yet.
+CAEGraph is in Phase 1 (Core Data Structures): `BaseObject`, registries, and
+shared types are being implemented; the core public API is not yet available.
 
 Once modules land, they will be documented here automatically via
 [mkdocstrings](https://mkdocstrings.github.io/), e.g.:

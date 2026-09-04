@@ -1,6 +1,6 @@
 # Tutorials
 
-No tutorials yet — CAEGraph is in Phase 0 (Foundation).
+No tutorials yet — CAEGraph is in Phase 1 (Core Data Structures).
 
 Planned tutorial series (will follow implementation phases):
 
