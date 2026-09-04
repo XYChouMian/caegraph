@@ -31,7 +31,7 @@ learning worlds (PyTorch, PyTorch Geometric).
 
 ---
 
-## Phase 0 — Foundation · `In progress`
+## Phase 0 — Foundation · `Done`
 
 Establish the project skeleton so that everything later is architecture-gated.
 
@@ -40,11 +40,11 @@ Establish the project skeleton so that everything later is architecture-gated.
 - [x] Agent governance (`.agent/`: workflow, skills, validation)
 - [x] Bilingual MkDocs site (Material + i18n + mkdocstrings)
 - [x] pytest framework + pre-commit + GitHub CI
-- [ ] First clean end-to-end run in `caegraph-dev` (install → pytest → docs build)
+- [x] First clean end-to-end run in `caegraph-dev` (install → pytest → docs build)
 
 Details: [`architecture/phases/phase0-foundation.md`](architecture/phases/phase0-foundation.md)
 
-## Phase 1 — Core Data Structures · `Planned`
+## Phase 1 — Core Data Structures · `In progress`
 
 Fundamental abstractions in `caegraph.core`: `BaseObject`, registries,
 shared types. First Generated UML produced by tooling.
