@@ -67,25 +67,81 @@ Git 是所有 CAEGraph Agent 共享的基础工程能力，不是独立交付角
 
 名称使用小写英文与连字符。一个任务分支只承载同一派单范围内的变化。
 
-### Worktree 协议（多 Agent 并发强制）
+### Task Branch Lifecycle（任务分支生命周期）
 
-多个 Agent 共享同一仓库时，必须用 `git worktree` 隔离各自工作区，防止并发
-修改互相覆盖：
+Agent 身份绑定 worktree，任务绑定分支，二者不得混同。以下规则适用于所有
+Agent 实现（Codex、OpenCode、Claude Code 及未来任何实现），措辞与具体
+框架无关。
 
-- **主工作区**（仓库本体）只停留在 `main`，仅执行 merge、push 等集成操作，
-  **禁止在主工作区直接开发或提交任务变更**。
-- 每个 Agent 拥有一个专属持久 worktree，位于主仓库同级目录，并常驻一个
-  `<agent>/workspace` 占位分支：
-  - opencode Agent：`../caegraph-opencode`（分支 `opencode/workspace`）
-  - codex Agent：`../caegraph-codex`（分支 `codex/workspace`）
-- 新增 Agent 时按同样约定扩展（`../caegraph-<agent>` +
-  `<agent>/workspace`）；临时性 worktree 放 `/tmp` 并在任务结束后删除。
-- 任务流程：在**本 Agent 的 worktree 内**从 `main` 创建任务分支
-  （`git checkout -b <type>/<name> main`）→ 开发、验证、提交 → 经用户批准后
-  在主工作区合入 `main` → worktree 收回占位分支并删除任务分支。
-- 并发纪律：禁止触碰其他 Agent 的 worktree、占位分支及其未提交修改；任何
-  Git 写操作前必须用 `git worktree list` + `git branch --show-current` 确认
-  所在位置。
+#### 1. One Task = One Branch = One Worktree
+
+- 一个 Agent 同一时刻只认领一个任务；任务在 Agent 专属 worktree 内的具名
+  任务分支上进行。
+- 禁止：多个 Agent 共用同一 worktree；一个 worktree 混装多个无关任务；
+  用 `<agent>/workspace` 之类的长期占位分支承载任何任务修改。
+- 排队规则：上一任务的分支尚未关闭（未合入 `main`）前，同一 Agent 不得
+  开启新任务。
+
+#### 2. Branch Creation
+
+- 新任务开始时，在**本 Agent 的 worktree 内**从最新本地 `main` 创建任务
+  分支：`git checkout -b <type>/<scope-desc> main`；类型前缀见上文
+  "分支策略"，名称必须描述任务。
+- `codex/workspace`、`opencode/workspace`、`agent/workspace` 等占位分支
+  不得作为开发分支，也不得作为任务结束后的驻留点。
+
+#### 3. Task Completion Rule（核心）
+
+- 任务完成（修改完成 + 验证通过 + commit 创建）后，Agent **必须保持当前
+  任务分支检出**：`HEAD` 停在任务分支上，例如
+  `HEAD -> chore/license-apache-2.0`。
+- 禁止自动切回任何占位或默认分支，包括但不限于
+  `git checkout <agent>/workspace`、`git switch <placeholder>`、
+  `git checkout main`。任务分支未经合并前，worktree 的检出分支不得改变。
+
+#### 4. Human Review State（待审状态）
+
+任务完成后的标准状态，必须满足并保持到审查结束：
+
+- worktree：本 Agent 专属目录（如 `../caegraph-opencode`）
+- branch：本任务分支（如 `chore/license-apache-2.0`）
+- status：`git status` clean（无未提交修改）
+
+随后等待 human review、Reviewer Agent 审查与 merge 批准。Agent 的任务
+报告必须列出以上三元组，使人工可以直接打开 worktree 看到任务成果。
+
+#### 5. Branch Cleanup（清理时机）
+
+任务分支与 worktree 的清理只允许发生在以下全部条件满足之后：
+
+1. 用户批准 merge；
+2. merge 已完成（任务分支成为 `main` 的祖先）；
+3. 任务正式关闭。
+
+届时才允许删除任务分支，并按"Multi-Agent Worktree Rules"的空闲态规则
+安置 worktree。禁止 Agent 在任务完成后自动删除分支、删除 worktree 或
+切回默认分支。
+
+### Multi-Agent Worktree Rules（多 Agent worktree 规则）
+
+多个 Agent 共享同一仓库时，必须用 `git worktree` 隔离各自工作区：
+
+- One Agent / One Worktree / One Active Task Branch：Agent 身份只对应
+  worktree，不对应分支。布局示例：
+
+  - `caegraph/`（主工作区）——常驻 `main`，仅执行 merge、push 等集成
+    操作，**禁止在主工作区直接开发或提交任务变更**
+  - `caegraph-codex/`——codex 的 worktree，持有其当前任务分支
+  - `caegraph-opencode/`——opencode 的 worktree，持有其当前任务分支
+  - 新增 Agent 按同样约定扩展 `../caegraph-<agent>`
+
+- 空闲态：任务已关闭且无新任务时，worktree 执行
+  `git checkout --detach main` 停靠最新主干；禁止驻留在占位分支上。
+- 临时 worktree（如实验用途，放 `/tmp`）同样受 Branch Cleanup 约束：
+  仅在关联任务关闭后删除。
+- 并发纪律：禁止触碰其他 Agent 的 worktree、分支及其未提交修改（其他
+  Agent 的迁移与清理由其自行执行）；任何 Git 写操作前必须用
+  `git worktree list` + `git branch --show-current` 确认所在位置。
 
 ## 提交规范
 
