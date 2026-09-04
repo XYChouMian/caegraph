@@ -1,7 +1,7 @@
 # 架构总览
 
 本页是架构摘要；具有约束力的规范见
-[`architecture/ARCHITECTURE.md`](https://github.com/caegraph/caegraph/blob/main/architecture/ARCHITECTURE.md)。
+[`architecture/ARCHITECTURE.md`](https://github.com/XYChouMian/caegraph/blob/main/architecture/ARCHITECTURE.md)。
 
 ## 设计哲学
 
@@ -27,4 +27,4 @@
 - **Design UML**（`architecture/design/`）——计划中的设计。
 - **Generated UML**（`diagrams/generated/`）——代码的真实状态。
 
-详见 [UML 指南](https://github.com/caegraph/caegraph/blob/main/architecture/UML_GUIDE.md)。
+详见 [UML 指南](https://github.com/XYChouMian/caegraph/blob/main/architecture/UML_GUIDE.md)。
