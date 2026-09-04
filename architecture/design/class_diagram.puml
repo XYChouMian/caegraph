@@ -1,0 +1,69 @@
+@startuml class_diagram
+' =============================================================================
+' CAEGraph - Design UML (Class Diagram)
+' =============================================================================
+' PURPOSE : "Planned design" - the core abstractions of CAEGraph.
+' OWNER   : Architecture Agent
+' RULES   :
+'   - Update this diagram BEFORE implementing code.
+'   - Show abstractions, responsibilities and relationships.
+'   - Do NOT enumerate concrete method signatures; that is Generated UML's job.
+' GUIDE   : see architecture/UML_GUIDE.md
+' =============================================================================
+
+title CAEGraph Core Abstractions (Design)
+
+package "caegraph.core" {
+  abstract class BaseObject {
+    Base abstraction: identity, metadata, validation contract
+  }
+}
+
+package "caegraph.data" {
+  class Mesh {
+    Geometric/topological representation of a CAE mesh:
+    nodes, elements, boundary regions, fields on mesh
+  }
+  class Graph {
+    Graph representation derived from a Mesh,
+    aligned with PyTorch Geometric Data/HeteroData
+  }
+  class Dataset {
+    Collection of Graph samples with transforms,
+    splits and loading semantics
+  }
+}
+
+package "caegraph.models" {
+  abstract class Model {
+    GNN / physics-informed model abstraction:
+    encode - process - decode contract
+  }
+  class Trainer {
+    Training / evaluation / checkpoint orchestration
+    for Model + Dataset
+  }
+}
+
+' --- Relationships -----------------------------------------------------------
+
+BaseObject <|-- Mesh
+BaseObject <|-- Graph
+BaseObject <|-- Dataset
+
+Mesh "1" --> "1" Graph : mesh_to_graph conversion
+Graph "*" --> "1" Dataset : contains
+Dataset "1" --> "*" Model : trains / evaluates
+Model "1" --> "1" Trainer : orchestrated by
+
+note right of Mesh
+  Planned home: caegraph.data
+  Future: loaders feed Mesh from CAE files
+end note
+
+note bottom of Graph
+  Graph must remain PyG-compatible
+  (node/edge attr tensors)
+end note
+
+@enduml
