@@ -1,4 +1,4 @@
-"""Shared vocabulary enums for boundary conditions and node roles (ADR-007)."""
+"""Shared vocabulary enums for boundary conditions and node roles (ADR-007/010)."""
 
 from __future__ import annotations
 
@@ -9,16 +9,34 @@ __all__ = ["BoundaryType", "NodeCategory"]
 
 @unique
 class BoundaryType(str, Enum):
-    """Physical boundary-condition types (design vocabulary, ADR-007).
+    """Mathematical boundary-condition categories (ADR-010).
+
+    The enum is deliberately cross-software: it records the
+    *mathematical* kind of a constraint, never CAE-application names
+    such as wall/inlet/outlet — the same "inlet" may be a Dirichlet
+    velocity, a Neumann mass flux, or a pressure constraint, so
+    application names belong to BoundaryRegion metadata instead.
+
+    Members:
+        DIRICHLET: prescribed value, ``u = g``.
+        NEUMANN: prescribed gradient/flux, ``du/dn = g``.
+        ROBIN: mixed condition, ``a*u + b*du/dn = g``.
+        PERIODIC: paired-region constraint.
+        SYMMETRY: symmetry-plane constraint.
+        INTERFACE: coupling/interface constraint (FSI, CHT, multi-domain).
+        NONE: tracked region without an active constraint.
 
     Phase 2 binds these to boundary regions discovered from CAE
-    physical groups; ``FREE`` marks regions that are tracked but carry
-    no essential or natural constraint.
+    physical groups.
     """
 
     DIRICHLET = "dirichlet"
     NEUMANN = "neumann"
-    FREE = "free"
+    ROBIN = "robin"
+    PERIODIC = "periodic"
+    SYMMETRY = "symmetry"
+    INTERFACE = "interface"
+    NONE = "none"
 
 
 @unique
