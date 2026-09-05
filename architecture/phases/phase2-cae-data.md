@@ -1,16 +1,15 @@
-# Phase 2 — CAE Data Pipeline (bridge band)
+# Phase 2 — CAE Data Pipeline
 
 Status: Planned
 
-Goal: implement the CAE → GNN bridge (ADR-007): the domain-core objects
-plus the geometry / io / graph / integrations / dataset service band.
+Goal: implement **R1** — the CAE → GNN data band (ADR-007/008): the
+domain-core objects plus geometry / io / graph / transforms / dataset.
 
 ## New modules (planned)
 
 ```
 src/caegraph/core/          # domain objects join the Phase 1 vocabulary
 ├── mesh.py                 # Mesh + composition (geometry/topology/boundary/fields)
-├── graph.py                # Graph: domain-level abstraction, tensor storage
 ├── field.py                # Field: named field data (unit, timestep, association)
 └── boundary/               # mesh-internal boundary vocabulary
     ├── spec.py             # BoundarySpec
@@ -26,24 +25,29 @@ src/caegraph/io/
 ├── gmsh.py                 # first loader: physical groups -> boundary regions
 └── vtk_writer.py           # write-back into the ParaView ecosystem
 
-src/caegraph/graph/
-├── builder.py              # node graph / cell graph construction
-└── transform.py            # graph-space transforms
+src/caegraph/graph/         # PyG-native neural-representation layer
+├── graph.py                # Graph(torch_geometric.data.Data): CAE fields
+│                           #   + validate(), never operations (ADR-007 D1)
+└── builder.py              # node graph / cell graph construction
 
-src/caegraph/integrations/pyg/
-└── adapter.py              # to_pyg() + PyG datasets; the ONLY PyG import site
+src/caegraph/transforms/    # BC application lives HERE, not on Graph
+├── geometry.py             # coordinate / feature normalization
+├── feature.py              # CAE feature engineering
+└── physics.py              # boundary-condition encoding:
+                            #   data.x[data.inlet_mask] = value pattern
 
 src/caegraph/dataset/
-└── dataset.py              # collections, transforms, splits
+└── dataset.py              # CAEDataset (PyG Dataset): collections, splits
 ```
 
 ## Planned public APIs
 
-- `Mesh` / `Graph` / `Field` — domain core (ADR-007 D1/D3/D6)
-- `mesh.to_graph()` with configurable edge construction (node / cell graph)
+- `Mesh` / `Field` — domain truth (ADR-007 D3/D6)
+- `mesh.to_graph()` with configurable edge construction (node / cell
+  graph) → `Graph(torch_geometric.data.Data)`
 - `BoundarySpec` / `BoundaryManager` / `FieldFunction`
-- `to_pyg()` adapter and PyG datasets (integrations)
-- gmsh loader; VTK writer
+- Geometry / feature / physics transforms (PyG transform protocol)
+- `CAEDataset`; gmsh loader; VTK writer
 
 ## Validation focus (Validation Agent, mandatory)
 
@@ -51,9 +55,8 @@ src/caegraph/dataset/
 - boundary-condition mapping: gmsh physical groups → regions /
   NodeCategory semantics (interior / boundary / corner;
   corner = multi-region membership)
-- Graph schema conformance: tensor-only attributes, collate-safe
-- PyG confinement: no `torch_geometric` import outside
-  `integrations.pyg` (ADR-007 D2)
+- Graph schema conformance: CAE fields present, `validate()` enforced
+- PyG boundary: `core`/`geometry`/`io` never import `torch_geometric`
 - VTK round-trip: mesh → graph → VTK → re-read
 
 ## Rules
@@ -62,7 +65,6 @@ src/caegraph/dataset/
 - Synthetic meshes only in tests (Testing Skill CAE rules).
 - Real solver formats (Fluent, Abaqus, OpenFOAM…) enter here — each new
   format is a feature request routed through PM (Architecture review first).
-- Never call backend (PyG) APIs from core / geometry / io / graph / dataset.
 
 ## Depends on
 

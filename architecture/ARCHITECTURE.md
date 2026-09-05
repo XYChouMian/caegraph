@@ -8,32 +8,38 @@
 
 ## 1. Project Vision
 
-CAEGraph is a Python framework providing the **data infrastructure
-between CAE software ecosystems and graph machine learning**: it
-converts computational-engineering data — meshes, fields, boundary
-conditions, physics metadata — into unified, ML-ready graph
-representations, and offers standard data interfaces for GNNs, Neural
-Operators, and physics-informed AI (with
-[PyTorch Geometric (PyG)](https://pyg.org) as the first backend).
+CAEGraph is a Python framework that bridges CAE simulation and physics AI
+through a **CAE → GNN → AI workflow**: it converts CAE simulation data —
+meshes, fields, boundary conditions, physics metadata — into graph
+representations, enables GNN training on engineering problems, runs
+neural simulation on new meshes with pretrained models, and corrects
+predictions with experimental observations. It **extends**
+[PyTorch Geometric (PyG)](https://pyg.org) for computational engineering.
 
-It bridges two worlds that today require glue code:
+Four core requirements (frozen, ADR-008):
 
-| World | Examples | Existing tooling |
-| --- | --- | --- |
-| CAE / simulation | meshes, fields, boundary conditions, solver results | solver-specific formats, ad-hoc scripts |
-| Graph machine learning | graphs, datasets, GNN models, training loops | PyTorch, PyG |
+- **R1** — CAE data → GNN training data (parsing, topology, features,
+  fields, boundary encoding).
+- **R2** — GNN training workflows adapted to CAE data (not a training
+  framework).
+- **R3** — any mesh + a pretrained GNN → neural simulation (the AI
+  counterpart of the CAE workflow).
+- **R4** — experimental-data assimilation (e.g. PIV sparse measurements
+  correcting dense predictions).
 
 ```
 CAE software (Fluent, Abaqus, OpenFOAM, gmsh, VTK/ParaView)
    ↓  io (loaders, registry)
 Mesh Representation        nodes, elements, boundary regions, fields
-   ↓  geometry (metrics, edge features) · graph (builder, transforms)
-Graph Representation       domain-level abstraction (ADR-007)
-   ↓  integrations (pyg adapter)      ↘ future backends (dgl, jax)
-Dataset                    collections, transforms, splits
-   ↓
-any user model (GNN / GNO / PINN / Transformer)
-   ↓  results
+   ↓  geometry (metrics, edge features) · graph (Graph(Data) + builder)
+Graph Representation       PyG-native neural representation (ADR-007)
+   ↓  transforms (feature / physics / boundary-condition encoding)
+Dataset                    CAEDataset (PyG), transforms, splits
+   ↓  physics · models (interface + utilities) · workflow (loss assembly)
+Training                   user loop or Lightning — caegraph never replaces it
+   ↓  pretrained model + new mesh
+Inference (neural simulation)   rollout harness → field reconstruction
+   ↓                              ↘ assimilation (observation correction)
 io (writers: VTK)  →  Visualization (ParaView ecosystem)
 ```
 
@@ -41,19 +47,23 @@ Long-term goals:
 
 - A stable, public, PyPI-installable scientific library — **not** a script collection.
 - First-class support for mesh-to-graph conversion (node graphs, cell graphs, heterogeneous graphs).
-- Composable GNN / physics-informed reference components on top of the
-  backend adapters; the library never locks users into one training
-  paradigm (ADR-007).
+- CAE-aware model utilities on top of the PyG-native graph layer; the
+  library never locks users into one training paradigm and never becomes
+  a GNN zoo (ADR-008).
 - Reproducible, tested, documented — everything an open-source scientific project requires.
 
 Non-goals (explicitly out of scope):
 
 - CAEGraph is **not** a mesh generator and **not** a CFD/FEA solver.
-- CAEGraph does not include solver-side orchestration (time integrators,
-  rollout systems, training monitors) — that is user application land
-  (ADR-007).
-- CAEGraph does not reimplement PyG; it owns its graph abstraction and
-  reaches GNN frameworks through backend integrations (ADR-007).
+- CAEGraph is **not** a training framework: no Trainer/optimizer/
+  distributed engines (ADR-008); training loops belong to users
+  (PyTorch / Lightning).
+- CAEGraph does not implement solver numerics (time-integration
+  schemes); the inference layer provides workflow harnesses only
+  (ADR-007 D5).
+- CAEGraph does not reimplement PyG; it extends the PyG ecosystem for
+  computational engineering (ADR-008) while keeping its engineering
+  truth (Mesh/Field/Boundary) framework-free.
 
 ---
 
@@ -85,21 +95,24 @@ CAD / CFD / FEM software   raw solver/cad data
    ↓
 io                         loaders (gmsh first), writers (VTK)
    ↓
-Mesh                       domain core: nodes, elements, regions, fields
+Mesh                       domain truth: nodes, elements, regions, fields
    ↓
 geometry                   metrics, edge features, interpolation
    ↓
-Graph                      domain-level abstraction, tensor storage
+Graph                      PyG-native neural representation, tensor storage
    ↓
-integrations               backend adapters (PyG first; dgl/jax later)
+transforms                 feature / physics / boundary-condition encoding
    ↓
-Dataset                    collections + transforms + splits
+Dataset                    CAEDataset (PyG) + transforms + splits
    ↓
-Model                      user models: GNN / physics-informed networks
+Training                   physics losses · Model interface · workflow
+   (user loop / Lightning) utilities — caegraph adapts, never replaces
    ↓
-Training/Inference         Trainer, evaluators, checkpoints, logging
+Inference                  neural simulation harness (rollout, reconstruction)
    ↓
-Visualization              mesh, field, graph plotting + VTK write-back
+Assimilation               observation correction of predictions (R4)
+   ↓
+Visualization              plotting + VTK write-back (ParaView ecosystem)
 ```
 
 ### 3.2 Package map
@@ -107,15 +120,18 @@ Visualization              mesh, field, graph plotting + VTK write-back
 | Package | Responsibility | Depends on |
 | --- | --- | --- |
 | `caegraph.utils` | logging, IO, reproducibility helpers | (nothing internal) |
-| `caegraph.core` | domain abstractions: BaseObject, Mesh, Graph, Field; registries; shared enums | utils (torch allowed, PyG forbidden) |
+| `caegraph.core` | domain truth: BaseObject, Mesh, Field; boundary vocabulary; registries; shared enums | utils (torch allowed, PyG forbidden) |
 | `caegraph.geometry` | geometric services: metrics, edge features, interpolation | core |
 | `caegraph.io` | loaders (gmsh first) and writers (VTK); format registry | core |
-| `caegraph.graph` | graph construction (node/cell graphs) and transforms | core, geometry |
-| `caegraph.integrations` | backend adapters: PyG `to_pyg()`, PyG datasets — the only PyG import site | core, graph |
-| `caegraph.dataset` | collections, transforms, splits | core, graph, integrations |
-| `caegraph.physics` | PDE residuals, physics losses, constraints | core |
-| `caegraph.models` | composable GNN components, physics-informed models, Trainer | core, dataset, integrations, physics |
-| `caegraph.visualization` | mesh/field/graph plotting | core, io, models |
+| `caegraph.graph` | `Graph(torch_geometric.data.Data)` neural representation + builders | core, geometry |
+| `caegraph.transforms` | geometry / feature / physics transforms (BC encoding) on Graph | graph |
+| `caegraph.dataset` | CAEDataset (PyG): collections, splits | graph, transforms |
+| `caegraph.physics` | PDE residuals, physics losses, constraints | core, graph |
+| `caegraph.models` | Model interface + CAE-aware utilities (no GNN zoo) | core, graph, physics |
+| `caegraph.assimilation` | observation / correction operators (R4) | core, graph, physics |
+| `caegraph.workflow` | training utilities: loss assembly, CAE batch adaptation (no fit loop) | physics, models, assimilation, dataset |
+| `caegraph.inference` | neural-simulation harness: simulator, rollout loop (numerics model-side) | models, assimilation, io |
+| `caegraph.visualization` | mesh/field/graph plotting | core, io |
 
 Dependency layers (lower layers must never import higher layers;
 same-layer imports are forbidden):
@@ -123,19 +139,21 @@ same-layer imports are forbidden):
 ```
 utils        (bottom)
   ↑
-core         (domain abstractions; torch-only, never PyG)
+core         (domain truth; torch-only, never PyG)
   ↑
 geometry / io   (sibling services; must not import each other)
   ↑
-graph        (builder & transforms)
+graph        (Graph(Data): PyG-native neural representation)
   ↑
-integrations (backend adapters; PyG lives ONLY here — ADR-007)
+transforms
   ↑
 dataset
   ↑
 physics
   ↑
-models
+models / assimilation   (Model interface + utilities; observation/correction)
+  ↑
+workflow / inference    (training utilities; neural-simulation harness)
   ↑
 visualization (top)
 ```
@@ -145,10 +163,13 @@ Notes on `physics` placement:
 - `physics` sits **below** `models` deliberately: physics-informed models
   (e.g. a PINN model in `models`) consume PDE residuals and physics losses
   from `physics` (e.g. a `PhysicsLoss`), never the reverse.
-- `physics` depends only on `core`/`utils`; it must never import `models`.
-- PyG confinement: `torch_geometric` may be imported only inside
-  `caegraph.integrations.pyg` (ADR-007); the domain core stays
-  torch-only.
+- `physics` depends only on `core`/`utils` (plus `graph` for
+  graph-structured inputs); it must never import `models`.
+- PyG boundary: `torch_geometric` may be imported from `caegraph.graph`
+  upward; `core`/`geometry`/`io` never import it (ADR-007 D2).
+- `assimilation` is consumed in two modes: by `workflow`
+  (training-constraint mode — observation loss terms) and by `inference`
+  (post-prediction correction).
 - If future physics-informed learning needs force a richer structure, the
   preferred evolution is splitting `physics` into submodules
   (`equations`, `constraints`, ...) inside the same layer — recorded via an
@@ -264,9 +285,9 @@ the current phase; phase transitions require a Review pass.
 | --- | --- | --- |
 | **Phase 0 — Foundation** (done) | packaging, architecture spec, UML dual system, docs, CI, agent governance | `pip install -e .` + pytest + `mkdocs build --strict` all pass; no CAE/GNN code |
 | **Phase 1 — Core data structures** (current) | `BaseObject`, registries, shared types in `caegraph.core` | core API tested + docstringed; first Generated UML produced |
-| **Phase 2 — CAE data pipeline** | domain-core objects (`Mesh`/`Graph`/`Field`) + geometry/io/graph/integrations/dataset bridge band (gmsh first, VTK write-back) | conversion invariants validated (topology/conservation/BC mapping); PyG confinement enforced |
-| **Phase 3 — ML models** | GNN components, physics-informed losses, Trainer in `caegraph.models`/`caegraph.physics` | end-to-end train/inference on synthetic benchmark |
-| **Phase 4 — Release & applications** | API freeze, packaging polish, v1.0; CFD surrogate / ROM / multiphysics examples | Release Agent checklist fully green |
+| **Phase 2 — CAE data pipeline** | domain-truth objects (`Mesh`/`Field`) + geometry/io/graph/transforms/dataset data band, `Graph(torch_geometric.data.Data)`, gmsh first, VTK write-back (R1) | conversion invariants validated (topology/conservation/BC mapping); PyG boundary enforced |
+| **Phase 3 — ML models** | physics losses, Model interface + CAE utilities, assimilation operators, workflow training utilities in `caegraph.physics`/`models`/`assimilation`/`workflow` | end-to-end training on synthetic benchmark incl. observation-constraint mode (R2+R4) |
+| **Phase 4 — Neural simulation & release** | inference harness (simulator, rollout), VTK write-back, examples, API freeze, v1.0 | rollout on unseen mesh validated (R3); Release Agent checklist fully green |
 
 References to "Phase" anywhere in the agent governance system
 (`.agent/`) mean this table.
@@ -281,6 +302,8 @@ agents must check): `architecture/phases/CURRENT.md`.
 - Architecture changes: edit this file + design UML in the same PR, and
   record an Architecture Decision Record in `architecture/decisions/`
   (see `ADR-000-template.md`).
+- **Positioning freeze (ADR-008)**: no solver abstraction, no trainer
+  abstraction, no alternative graph backend layer — without a new ADR.
 - Every user-visible change: update `CHANGELOG.md`.
 - Versioning: [Semantic Versioning](https://semver.org). While `0.x`, minor
   releases may break APIs; from `1.0` the public API is frozen per policy.

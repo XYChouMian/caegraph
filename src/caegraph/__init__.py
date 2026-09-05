@@ -1,9 +1,10 @@
-"""CAEGraph: data infrastructure between CAE software and graph ML.
+"""CAEGraph: bridging CAE simulation and physics AI.
 
-CAEGraph converts computational-engineering data (meshes, fields,
-boundary conditions, physics metadata) into unified graph
-representations and provides standard data interfaces for GNN /
-physics-informed AI backends (ADR-007).
+CAEGraph provides a CAE -> GNN -> AI workflow: converting CAE data
+(meshes, fields, boundary conditions, physics metadata) into graph
+representations, enabling GNN training on engineering problems, running
+neural simulation on new meshes with pretrained models, and correcting
+predictions with experimental observations (ADR-008).
 
 This is the package entry point. Subpackages are exposed lazily as they
 are implemented.

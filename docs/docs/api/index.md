@@ -18,9 +18,12 @@ CAEGraph 处于 Phase 1（核心数据结构）：`BaseObject`、注册机制与
 - `caegraph.geometry`
 - `caegraph.io`
 - `caegraph.graph`
-- `caegraph.integrations`
+- `caegraph.transforms`
 - `caegraph.dataset`
-- `caegraph.models`
 - `caegraph.physics`
+- `caegraph.models`
+- `caegraph.assimilation`
+- `caegraph.workflow`
+- `caegraph.inference`
 - `caegraph.visualization`
 - `caegraph.utils`

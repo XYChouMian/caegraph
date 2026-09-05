@@ -5,9 +5,10 @@ Status: In progress
 Goal: the framework-independent foundation of the domain core —
 `caegraph.core` and `caegraph.utils` become real code.
 
-Per ADR-007 the full domain core later also holds `Mesh`, `Graph`, and
-`Field` (tensor storage); those land in Phase 2 together with the bridge
-band. Phase 1 delivers the vocabulary they build on.
+Per ADR-007 the full domain core later also holds `Mesh` and `Field`
+(tensor storage); `Graph` lands in `caegraph.graph`, the PyG-native
+neural-representation layer. All of those arrive in Phase 2 together
+with the data band. Phase 1 delivers the vocabulary they build on.
 
 ## New modules
 
@@ -30,10 +31,11 @@ src/caegraph/utils/
 
 ## UML changes
 
-- Design UML restructured to the ADR-007 package architecture; seven
-  core abstractions (`BaseObject`, `Mesh`, `Graph`, `Field`, `Dataset`,
-  `Model`, `Trainer`) with the bridge band (geometry / io / graph /
-  integrations / dataset) around them.
+- Design UML restructured to the ADR-007/ADR-008 package architecture;
+  six core abstractions (`BaseObject`, `Mesh`, `Graph`, `Field`,
+  `Dataset`, `Model`) with the workflow bands around them (geometry/io/
+  graph/transforms/dataset → physics/models/assimilation → workflow/
+  inference).
 - First Generated UML produced via `pyreverse` into `diagrams/generated/`;
   Architecture Agent runs the first design-vs-generated diff.
 
@@ -41,8 +43,7 @@ src/caegraph/utils/
 
 - Behavior tests with synthetic fixtures only; deterministic.
 - Phase 1 deliverables are torch-free; the core layer is PyG-free
-  forever (PyG imports live only in `caegraph.integrations.pyg`,
-  ADR-007 D2).
+  forever (the PyG boundary starts at `caegraph.graph`, ADR-007 D2).
 
 ## Depends on
 

@@ -11,9 +11,9 @@
 ' GUIDE   : see architecture/UML_GUIDE.md
 ' =============================================================================
 
-title CAEGraph Domain Abstractions (Design) - seven abstractions per ADR-007
+title CAEGraph Domain Abstractions (Design) - six abstractions, ADR-007/008
 
-package "caegraph.core (domain core; torch-only, never PyG)" {
+package "caegraph.core (domain truth; torch-only, never PyG)" {
   abstract class BaseObject {
     Base abstraction: identity, metadata, validation contract
   }
@@ -22,12 +22,6 @@ package "caegraph.core (domain core; torch-only, never PyG)" {
     faces, boundary regions;
     composed of geometry / topology / boundary / fields
     (anti god-object, ADR-007 D3)
-  }
-  class Graph {
-    Domain-level graph abstraction with tensor storage:
-    nodes, edges, node categories, boundary masks;
-    dumb container + schema validation;
-    NOT bound to any GNN framework (ADR-007 D1)
   }
   class Field {
     Named field data: values, unit, timestep,
@@ -72,54 +66,92 @@ package "caegraph.io" {
   }
 }
 
-package "caegraph.graph" {
+package "caegraph.graph (PyG-native layer)" {
+  class Graph {
+    extends torch_geometric.data.Data:
+    neural representation, NOT engineering truth;
+    adds CAE fields + validate(), never operations
+    (ADR-007 D1 / ADR-008)
+  }
   class GraphBuilder {
     Mesh -> Graph construction:
     node graph / cell graph views
   }
-  class GraphTransform {
-    Composable graph-space transformations
-  }
 }
 
-package "caegraph.integrations" {
-  class PyGAdapter {
-    to_pyg() + PyG datasets;
-    the ONLY place torch_geometric is imported
-    (ADR-007 D2); future backends mirror this
+package "caegraph.transforms" {
+  class GeometryTransform {
+    Coordinate / feature normalization
+  }
+  class FeatureTransform {
+    CAE feature engineering on Graph
+  }
+  class PhysicsTransform {
+    Boundary-condition encoding:
+    data.x[data.inlet_mask] = value pattern
+    (BC application lives HERE, not on Graph)
   }
 }
 
 package "caegraph.dataset" {
   class Dataset {
-    Collection of Graph samples with transforms,
-    splits and loading semantics
+    CAEDataset (PyG Dataset): collections,
+    transforms, splits
   }
 }
 
 package "caegraph.physics" {
   class PhysicsLoss {
     PDE residuals / physics-informed loss terms
-    (Phase 3)
   }
 }
 
-package "caegraph.models" {
+package "caegraph.models (interface + utilities, no GNN zoo)" {
   abstract class Model {
-    GNN / physics-informed model abstraction:
-    encode - process - decode contract
+    GNN model abstraction:
+    encode - process - decode contract;
+    concrete architectures (MeshGraphNet/GNO/...)
+    live in examples / external projects (ADR-008)
   }
-  class Trainer {
-    Training / evaluation / checkpoint orchestration
-    for Model + Dataset
+}
+
+package "caegraph.assimilation" {
+  class Observation {
+    Observation operators: sparse measurements
+    (e.g. PIV) on graph fields
+  }
+  class Correction {
+    Correction operators: dense prediction +
+    observation -> improved field
+  }
+}
+
+package "caegraph.workflow (training utilities, no fit loop)" {
+  class LossAssembly {
+    Compose data + physics + observation
+    loss terms (consumes assimilation, physics)
+  }
+  class BatchAdaptation {
+    CAE-aware batching helpers
+  }
+}
+
+package "caegraph.inference (neural simulation harness)" {
+  class Simulator {
+    mesh + pretrained model -> fields:
+    graph -> forward -> field reconstruction
+  }
+  class Rollout {
+    Transient rollout LOOP harness;
+    numerical schemes stay model-side (ADR-007 D5)
   }
 }
 
 ' --- Relationships -----------------------------------------------------------
 
 BaseObject <|-- Mesh
-BaseObject <|-- Graph
 BaseObject <|-- Field
+BaseObject <|-- Graph
 BaseObject <|-- Dataset
 BaseObject <|-- Model
 
@@ -135,17 +167,25 @@ MeshWriter ..> Mesh : consumes
 GraphBuilder ..> Mesh : builds from
 GraphBuilder ..> GeometryProcessor : uses features
 Mesh "1" --> "1" Graph : to_graph() (node/cell views)
-GraphTransform ..> Graph : operates on
-PyGAdapter ..> Graph : converts (one-way view)
+GeometryTransform ..> Graph : operates on
+FeatureTransform ..> Graph : operates on
+PhysicsTransform ..> Graph : operates on
 Dataset "1" o-- "*" Graph
-Dataset ..> PyGAdapter : yields backend samples
-Model "1" --> "1" Trainer : orchestrated by
-Model ..> PhysicsLoss : may consume (Phase 3)
+Model ..> PhysicsLoss : may consume
+Dataset "1" --> "*" Model : provides data for
+
+LossAssembly ..> PhysicsLoss : composes
+LossAssembly ..> Observation : composes (training-constraint mode)
+Rollout ..> Model : calls
+Simulator ..> Rollout : orchestrates
+Simulator ..> MeshWriter : exports results
+Correction ..> Observation : uses (post-inference mode)
 
 note right of Graph
-  Solver-side orchestration (time integrators,
-  rollout systems, monitors) is OUT of the
-  library (ADR-007 D5) - user application land
+  Positioning frozen (ADR-008):
+  no solver abstraction, no trainer abstraction,
+  no alternative graph backend layer
+  without a new ADR.
 end note
 
 @enduml

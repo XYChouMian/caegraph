@@ -21,15 +21,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Repositioned CAEGraph as CAE ↔ GNN bridge data infrastructure and
-  redesigned the architecture accordingly (ADR-007): a domain-level graph
-  abstraction with tensor storage (backends confined to
-  `caegraph.integrations`, PyG first), a domain core
-  (`BaseObject`/`Mesh`/`Graph`/`Field`), the
-  geometry/io/graph/integrations/dataset bridge band, node categories,
-  and mesh-internal boundary vocabulary; solver-side orchestration is
-  excluded from the library. Package layout, phase designs, and the
-  dependency DAG were updated to match.
+- Froze the product positioning (ADR-008): CAEGraph bridges CAE
+  simulation and physics AI through a **CAE → GNN → AI workflow**
+  (CAE data → graph representation → GNN training → neural simulation
+  on new meshes → experimental assimilation). Architecture redesigned
+  accordingly (ADR-007): a PyG-native
+  `Graph(torch_geometric.data.Data)` neural-representation layer, a
+  framework-free domain core (`BaseObject`/`Mesh`/`Field`), transforms
+  and dataset bands, physics losses, a Model interface without a GNN
+  zoo, assimilation operators, workflow training utilities, and an
+  inference (neural simulation) harness with VTK write-back.
+  Positioning is frozen — no solver/trainer/alternative-backend
+  abstractions without a new ADR.
 - Shared Git governance for all Agent roles, including permission boundaries,
   branch and commit conventions, review gates, and release authorization.
 - Python 3.10 compatibility testing (CI test matrix covers both 3.10 and
