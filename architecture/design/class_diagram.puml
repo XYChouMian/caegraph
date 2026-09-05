@@ -17,20 +17,43 @@ package "caegraph.core" {
   abstract class BaseObject {
     Base abstraction: identity, metadata, validation contract
   }
+  enum BoundaryType {
+    Shared vocabulary: DIRICHLET / NEUMANN / FREE
+  }
+  enum NodeCategory {
+    Shared vocabulary: INTERIOR / BOUNDARY / CORNER
+  }
 }
 
 package "caegraph.data" {
   class Mesh {
     Geometric/topological representation of a CAE mesh:
     nodes, elements, boundary regions, fields on mesh
+    (own numpy structures, no graph-library inheritance)
   }
   class Graph {
-    Graph representation derived from a Mesh,
-    aligned with PyTorch Geometric Data/HeteroData
+    Thin subclass of torch_geometric.data.Data:
+    tensor-only node/edge attributes, node categories,
+    boundary masks (ADR-007 guardrails)
   }
   class Dataset {
     Collection of Graph samples with transforms,
     splits and loading semantics
+  }
+  class BoundarySpec {
+    User-facing boundary condition declaration:
+    type, value (scalar / tensor / FieldFunction),
+    weight, space/time dependence flags
+  }
+  class BoundaryManager {
+    Geometry-layer registry: boundary regions from
+    mesh physical groups, spec binding,
+    region and corner vertex queries
+  }
+  abstract class FieldFunction {
+    Callable analytic boundary/initial value:
+    (t, pos) -> (B, N, C) tensors,
+    with shape self-validation
   }
 }
 
@@ -42,6 +65,11 @@ package "caegraph.models" {
   class Trainer {
     Training / evaluation / checkpoint orchestration
     for Model + Dataset
+  }
+  class BoundaryOperator {
+    Compiled boundary condition (nn.Module):
+    device-managed buffers, weighted blending,
+    apply(y, t) during training/inference
   }
 }
 
@@ -56,6 +84,20 @@ Graph "*" --> "1" Dataset : belongs to
 Dataset "1" --> "*" Model : provides data for
 Model "1" --> "1" Trainer : orchestrated by
 
+Mesh "1" *-- "1" BoundaryManager : owns
+BoundaryManager "1" o-- "*" BoundarySpec : binds
+BoundarySpec --> BoundaryType : typed by
+BoundarySpec "*" o--> "0..1" FieldFunction : optional value
+Graph ..> NodeCategory : node attribute
+BoundaryOperator ..> BoundarySpec : compiled from (Phase 3)
+BoundaryOperator ..> Graph : compiled against (Phase 3)
+
+note right of BoundaryManager
+  Two-layer boundary architecture (ADR-007):
+  geometry/intent in caegraph.data,
+  compiled nn.Module operators in caegraph.models
+end note
+
 note right of Mesh
   Planned home: caegraph.data
   Future: loaders feed Mesh from CAE files
@@ -63,7 +105,9 @@ end note
 
 note bottom of Graph
   Graph must remain PyG-compatible
-  (node/edge attr tensors)
+  (node/edge attr tensors);
+  tensor-only discipline, region name
+  tables stay on Mesh (ADR-007)
 end note
 
 @enduml

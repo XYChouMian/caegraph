@@ -21,6 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Phase 2 data-layer architecture design (ADR-007): a PyG-native `Graph`
+  subclass contract, a two-layer boundary-condition architecture
+  (specs/managers in `caegraph.data`, compiled operators in
+  `caegraph.models`), and interior/boundary/corner node categories;
+  shared `BoundaryType`/`NodeCategory` enums planned for `caegraph.core`.
 - Shared Git governance for all Agent roles, including permission boundaries,
   branch and commit conventions, review gates, and release authorization.
 - Python 3.10 compatibility testing (CI test matrix covers both 3.10 and
