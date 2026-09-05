@@ -78,8 +78,7 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
 
 - 全局协作流程见 `.agent/WORKFLOW.md`：任何请求先经 Project Management
   Agent 分类路由，再进入架构 → 编码 → 测试 → 文档 → 审查链路
-- 各 Agent 角色规则见 `.agent/skills/*/SKILL.md`（汇总：
-  `.agent/ALL_SKILLS.md`，由 `aggregate_skills.py` 生成）
+- 各 Agent 角色规则见 `.agent/skills/*/SKILL.md`
 - Git 是所有 Agent 共享的基础工程能力，所有 Git 操作必须遵守
   `.agent/skills/git/SKILL.md`
 - 工作流：读架构 → 查 UML → 改设计 → 再编码 → 同步文档与测试

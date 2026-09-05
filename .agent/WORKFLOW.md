@@ -82,18 +82,7 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
 - 破坏性 API 变更：版本计划 + CHANGELOG 迁移说明缺一不可。
 - 当前 Phase 红线（见 ARCHITECTURE.md）优先于一切任务需求。
 
-## 4. 汇总文档维护
-
-`.agent/skills/aggregate_skills.py` 将所有 SKILL.md 汇总为
-`.agent/ALL_SKILLS.md`。修改任何 SKILL.md 后必须重新运行：
-
-```bash
-python .agent/skills/aggregate_skills.py
-```
-
-`ALL_SKILLS.md` 是生成物，禁止手工编辑。
-
-## 5. 接入新的 Agent 实现（换框架 checklist）
+## 4. 接入新的 Agent 实现（换框架 checklist）
 
 1. 读 `AGENTS.md`（全局约束）→ 本文件 → 对应 `SKILL.md`。
 2. 确认 conda 环境 `caegraph-dev`（Python 3.10）——环境不符立即停止。

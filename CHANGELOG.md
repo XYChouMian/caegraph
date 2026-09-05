@@ -40,9 +40,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   branch and commit conventions, review gates, and release authorization.
 - Python 3.10 compatibility testing (CI test matrix covers both 3.10 and
   3.11).
-- `.agent/skills/aggregate_skills.py`: script aggregating all
-  `SKILL.md` files into `.agent/ALL_SKILLS.md`.
-
 ### Deprecated
 
 - The empty `caegraph.data` umbrella namespace is retained for compatibility
