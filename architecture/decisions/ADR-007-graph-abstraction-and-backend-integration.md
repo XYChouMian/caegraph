@@ -61,6 +61,8 @@ node/cell 归属)` 是工程真源的一等公民，graph 特征装配由此成�
 
 ```mermaid
 flowchart BT
+    classDef nowrap white-space:nowrap
+
     A["<b>utils</b>"]
     B["<b>core</b>"]
     C["<b>geometry / io</b><br>sibling services"]
@@ -73,6 +75,8 @@ flowchart BT
     J["<b>visualization</b>"]
 
     J --> I --> H --> G --> F --> E --> D --> C --> B --> A
+
+    class A,B,C,D,E,F,G,H,I,J nowrap
 ```
 
 - 跳层依赖允许，反向禁止；同层互依禁止（兄弟层互不依赖）；

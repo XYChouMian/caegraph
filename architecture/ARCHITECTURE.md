@@ -29,6 +29,8 @@ Four core requirements (frozen, ADR-008):
 
 ```mermaid
 flowchart TD
+    classDef nowrap white-space:nowrap
+
     A["<b>CAE software</b><br><i>Fluent, Abaqus, OpenFOAM, gmsh</i>"]
     B["<b>Mesh representation</b><br>nodes, elements, boundary regions, fields"]
     C["<b>Graph representation</b><br>PyG-native neural representation (ADR-007)"]
@@ -47,6 +49,8 @@ flowchart TD
     F -->|io: VTK writer| H
     F -->|optional assimilation| G
     G -->|io: VTK writer| H
+
+    class A,B,C,D,E,F,G,H nowrap
 ```
 
 Long-term goals:
@@ -98,6 +102,8 @@ The framework is organized around the canonical data flow:
 
 ```mermaid
 flowchart TD
+    classDef nowrap white-space:nowrap
+
     A["<b>CAD / CFD / FEM software</b><br>raw solver/CAD data"]
     B["<b>io loaders</b><br>gmsh first"]
     C["<b>Mesh</b><br>domain truth: nodes, elements, regions, fields"]
@@ -116,6 +122,8 @@ flowchart TD
     C -.->|new mesh via GraphBuilder + transforms| I
     I --> K --> L
     I -->|optional assimilation| J --> K
+
+    class A,B,C,D,E,F,G,H,I,J,K,L nowrap
 ```
 
 ### 3.2 Package map
@@ -145,6 +153,8 @@ same-layer imports are forbidden):
 
 ```mermaid
 flowchart BT
+    classDef nowrap white-space:nowrap
+
     A["<b>utils</b><br>bottom"]
     B["<b>core</b><br>domain truth; torch-only, never PyG"]
     C["<b>geometry / io</b><br>sibling services; must not import each other"]
@@ -157,6 +167,8 @@ flowchart BT
     J["<b>visualization</b><br>top"]
 
     J --> I --> H --> G --> F --> E --> D --> C --> B --> A
+
+    class A,B,C,D,E,F,G,H,I,J nowrap
 ```
 
 Notes on `physics` placement:

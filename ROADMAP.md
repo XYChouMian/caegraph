@@ -6,6 +6,8 @@ This file is the **strategy layer**. The layering is:
 
 ```mermaid
 flowchart TD
+    classDef nowrap white-space:nowrap
+
     A["<b>ROADMAP.md</b><br>future direction"]
     B["<b>architecture/phases/</b><br>per-phase design"]
     C["<b>GitHub Milestones</b><br>concrete goals"]
@@ -14,6 +16,8 @@ flowchart TD
     F["<b>CHANGELOG</b><br>record"]
 
     A --> B --> C --> D --> E --> F
+
+    class A,B,C,D,E,F nowrap
 ```
 
 Rules of engagement:

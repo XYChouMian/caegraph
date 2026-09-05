@@ -12,6 +12,8 @@ OpenCode 还是其他实现）接入 CAEGraph 开发时，**必须先读本文�
 flowchart TD
     classDef nowrap white-space:nowrap
 
+    classDef nowrap white-space:nowrap
+
     A["<b>Requirement</b><br>用户请求"]
     B["<b>Project Management Agent</b><br>分类、拆解、定义验收标准、路由"]
     C["<b>Task Branch</b><br>按 Git Skill 创建具名任务分支"]
@@ -52,6 +54,8 @@ flowchart TD
     G["用户批准后 merge / push"]
 
     A --> B --> C --> D --> E --> F --> G
+
+    class A,B,C,D,E,F,G nowrap
 ```
 
 涉及公共 API、包结构或依赖的紧急修复必须恢复完整的 Architecture / Environment
