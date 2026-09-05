@@ -6,8 +6,9 @@ CAEGraph converts framework-independent engineering truth into PyG-native graph
 representations, supports GNN training for engineering problems, runs neural
 simulation on new meshes, and assimilates experimental observations.
 
-```
-CAE Data → Graph Representation → GNN Training → Neural Simulation → Assimilation
+```mermaid
+flowchart LR
+    A[CAE Data] --> B[Graph Representation] --> C[GNN Training] --> D[Neural Simulation] --> E[Assimilation]
 ```
 
 !!! note "Project status"

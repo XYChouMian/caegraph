@@ -59,9 +59,20 @@ node/cell 归属)` 是工程真源的一等公民，graph 特征装配由此成�
 
 **D7. 包架构与依赖 DAG（终版）**
 
-```
-utils ← core ← {geometry, io} ← graph ← transforms ← dataset
-       ← physics ← {models, assimilation} ← {workflow, inference} ← visualization
+```mermaid
+flowchart BT
+    A["<b>utils</b>"]
+    B["<b>core</b>"]
+    C["<b>geometry / io</b><br>sibling services"]
+    D["<b>graph</b>"]
+    E["<b>transforms</b>"]
+    F["<b>dataset</b>"]
+    G["<b>physics</b>"]
+    H["<b>models / assimilation</b><br>sibling services"]
+    I["<b>workflow / inference</b><br>sibling services"]
+    J["<b>visualization</b>"]
+
+    J --> I --> H --> G --> F --> E --> D --> C --> B --> A
 ```
 
 - 跳层依赖允许，反向禁止；同层互依禁止（兄弟层互不依赖）；

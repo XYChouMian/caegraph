@@ -27,20 +27,26 @@ Four core requirements (frozen, ADR-008):
 - **R4** — experimental-data assimilation (e.g. PIV sparse measurements
   correcting dense predictions).
 
-```
-CAE software (Fluent, Abaqus, OpenFOAM, gmsh, VTK/ParaView)
-   ↓  io (loaders, registry)
-Mesh Representation        nodes, elements, boundary regions, fields
-   ↓  geometry (metrics, edge features) · graph (Graph(Data) + builder)
-Graph Representation       PyG-native neural representation (ADR-007)
-   ↓  transforms (feature / physics / boundary-condition encoding)
-Dataset                    CAEDataset (PyG), transforms, splits
-   ↓  physics · models (interface + utilities) · workflow (loss assembly)
-Training                   user loop or Lightning — caegraph never replaces it
-   ↓  pretrained model + new mesh
-Inference (neural simulation)   rollout harness → field reconstruction
-   ↓                              ↘ assimilation (observation correction)
-io (writers: VTK)  →  Visualization (ParaView ecosystem)
+```mermaid
+flowchart TD
+    A["<b>CAE software</b><br><i>Fluent, Abaqus, OpenFOAM, gmsh</i>"]
+    B["<b>Mesh representation</b><br>nodes, elements, boundary regions, fields"]
+    C["<b>Graph representation</b><br>PyG-native neural representation (ADR-007)"]
+    D["<b>Dataset</b><br>CAEDataset (PyG), transforms, splits"]
+    E["<b>Training</b><br>user loop or Lightning — CAEGraph never replaces it"]
+    F["<b>Inference</b><br>neural simulation: rollout harness → field reconstruction"]
+    G["<b>Assimilation</b><br>optional observation correction (R4)"]
+    H["<b>Visualization</b><br><i>ParaView ecosystem</i>"]
+
+    A -->|io: loaders, registry| B
+    B -->|geometry: metrics, edge features<br>graph: GraphBuilder.build()| C
+    C -->|transforms: feature / physics / boundary-condition encoding| D
+    D -->|physics · models: interface + utilities<br>workflow: loss assembly| E
+    E -->|pretrained model| F
+    B -.->|new mesh via GraphBuilder + transforms| F
+    F -->|io: VTK writer| H
+    F -->|optional assimilation| G
+    G -->|io: VTK writer| H
 ```
 
 Long-term goals:
@@ -90,29 +96,26 @@ Non-goals (explicitly out of scope):
 
 The framework is organized around the canonical data flow:
 
-```
-CAD / CFD / FEM software   raw solver/cad data
-   ↓
-io                         loaders (gmsh first), writers (VTK)
-   ↓
-Mesh                       domain truth: nodes, elements, regions, fields
-   ↓
-geometry                   metrics, edge features, interpolation
-   ↓
-Graph                      PyG-native neural representation, tensor storage
-   ↓
-transforms                 feature / physics / boundary-condition encoding
-   ↓
-Dataset                    CAEDataset (PyG) + transforms + splits
-   ↓
-Training                   physics losses · Model interface · workflow
-   (user loop / Lightning) utilities — caegraph adapts, never replaces
-   ↓
-Inference                  neural simulation harness (rollout, reconstruction)
-   ↓
-Assimilation               observation correction of predictions (R4)
-   ↓
-Visualization              plotting + VTK write-back (ParaView ecosystem)
+```mermaid
+flowchart TD
+    A["<b>CAD / CFD / FEM software</b><br>raw solver/CAD data"]
+    B["<b>io loaders</b><br>gmsh first"]
+    C["<b>Mesh</b><br>domain truth: nodes, elements, regions, fields"]
+    D["<b>geometry</b><br>metrics, edge features, interpolation"]
+    E["<b>Graph</b><br>PyG-native neural representation, tensor storage"]
+    F["<b>transforms</b><br>feature / physics / boundary-condition encoding"]
+    G["<b>Dataset</b><br>CAEDataset (PyG), transforms, splits"]
+    H["<b>Training</b><br>physics losses · Model interface · workflow utilities<br><i>user loop / Lightning; CAEGraph adapts, never replaces</i>"]
+    I["<b>Inference</b><br>neural-simulation harness: rollout, reconstruction"]
+    J["<b>Assimilation</b><br>optional observation correction (R4)"]
+    K["<b>io writers</b><br>VTK"]
+    L["<b>Visualization</b><br>plotting; ParaView ecosystem"]
+
+    A --> B --> C --> D --> E --> F --> G --> H
+    H -->|pretrained model| I
+    C -.->|new mesh via GraphBuilder + transforms| I
+    I --> K --> L
+    I -->|optional assimilation| J --> K
 ```
 
 ### 3.2 Package map
@@ -140,26 +143,20 @@ the namespace will not be removed before version 0.3.0.
 Dependency layers (lower layers must never import higher layers;
 same-layer imports are forbidden):
 
-```
-utils        (bottom)
-  ↑
-core         (domain truth; torch-only, never PyG)
-  ↑
-geometry / io   (sibling services; must not import each other)
-  ↑
-graph        (Graph(Data): PyG-native neural representation)
-  ↑
-transforms
-  ↑
-dataset
-  ↑
-physics
-  ↑
-models / assimilation   (Model interface + utilities; observation/correction)
-  ↑
-workflow / inference    (training utilities; neural-simulation harness)
-  ↑
-visualization (top)
+```mermaid
+flowchart BT
+    A["<b>utils</b><br>bottom"]
+    B["<b>core</b><br>domain truth; torch-only, never PyG"]
+    C["<b>geometry / io</b><br>sibling services; must not import each other"]
+    D["<b>graph</b><br>Graph(Data): PyG-native neural representation"]
+    E["<b>transforms</b>"]
+    F["<b>dataset</b>"]
+    G["<b>physics</b>"]
+    H["<b>models / assimilation</b><br>Model interface + utilities; observation/correction"]
+    I["<b>workflow / inference</b><br>training utilities; neural-simulation harness"]
+    J["<b>visualization</b><br>top"]
+
+    J --> I --> H --> G --> F --> E --> D --> C --> B --> A
 ```
 
 Notes on `physics` placement:

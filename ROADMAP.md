@@ -4,12 +4,16 @@ CAEGraph's strategic plan: what we intend to build, in which order.
 
 This file is the **strategy layer**. The layering is:
 
-```
-ROADMAP.md (future direction)
-    ↓
-architecture/phases/ (per-phase design)
-    ↓
-GitHub Milestones (concrete goals) → Issues (tasks) → Code → CHANGELOG (record)
+```mermaid
+flowchart TD
+    A["<b>ROADMAP.md</b><br>future direction"]
+    B["<b>architecture/phases/</b><br>per-phase design"]
+    C["<b>GitHub Milestones</b><br>concrete goals"]
+    D["<b>Issues</b><br>tasks"]
+    E["<b>Code</b>"]
+    F["<b>CHANGELOG</b><br>record"]
+
+    A --> B --> C --> D --> E --> F
 ```
 
 Rules of engagement:
