@@ -23,6 +23,11 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
   abstract class BaseObject {
     Base abstraction: identity, metadata, validation contract
   }
+  class Registry {
+    Name-keyed registry/factory for loaders and
+    transforms (register / get / build);
+    duplicate names rejected (Phase 1)
+  }
   class Mesh {
     CAE discrete geometry object: nodes, elements,
     faces, boundary regions;

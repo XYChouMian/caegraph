@@ -26,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Phase 1 core vocabulary: `caegraph.core.BaseObject` (identity, metadata,
+  fail-fast validation contract), `caegraph.core.Registry` (name-keyed
+  loader/transform factory registry), the shared enums `BoundaryType` and
+  `NodeCategory` (ADR-007), and `caegraph.utils.get_logger`. The core and
+  utils layers stay torch-free and PyG-free (ADR-007 D2).
 - Froze the product positioning (ADR-008): CAEGraph bridges CAE
   simulation and physics AI through a **CAE → GNN → AI workflow**
   (CAE data → graph representation → GNN training → neural simulation

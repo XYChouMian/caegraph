@@ -1,17 +1,19 @@
 # API Reference
 
-CAEGraph is in Phase 1 (Core Data Structures): `BaseObject`, registries, and
-shared types are being implemented; the core public API is not yet available.
+CAEGraph is in Phase 1 (Core Data Structures): `caegraph.core` provides
+`BaseObject`, `Registry`, and the shared enums `BoundaryType` /
+`NodeCategory`; `caegraph.utils` provides `get_logger`. `Mesh`, `Field`, and
+the data band land in Phase 2.
 
-Once modules land, they will be documented here automatically via
-[mkdocstrings](https://mkdocstrings.github.io/), e.g.:
+API documentation is generated automatically from docstrings via
+[mkdocstrings](https://mkdocstrings.github.io/):
 
 ::: caegraph
     options:
       show_source: false
       heading_level: 3
 
-Planned top-level modules (see the architecture specification):
+Top-level modules (see the architecture specification):
 
 - `caegraph.core`
 - `caegraph.geometry`

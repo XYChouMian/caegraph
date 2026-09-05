@@ -1,18 +1,19 @@
 # API 参考
 
-CAEGraph 处于 Phase 1（核心数据结构）：`BaseObject`、注册机制与共享类型正在
-实现，核心公共 API 尚未发布。
+CAEGraph 处于 Phase 1（核心数据结构）：`caegraph.core` 已提供 `BaseObject`、
+`Registry` 与共享枚举 `BoundaryType` / `NodeCategory`，`caegraph.utils` 已提供
+`get_logger`；`Mesh`、`Field` 与数据带随 Phase 2 落地。
 
-模块落地后，将由此处的
+API 文档由此处的
 [mkdocstrings](https://mkdocstrings.github.io/)
-自动生成文档，例如：
+从 docstring 自动生成：
 
 ::: caegraph
     options:
       show_source: false
       heading_level: 3
 
-规划中的顶层模块（见架构规范）：
+顶层模块（见架构规范）：
 
 - `caegraph.core`
 - `caegraph.geometry`
