@@ -2,38 +2,70 @@
 
 Status: Planned
 
-Goal: `caegraph.data` becomes real — from raw CAE-ish data to PyG-ready
-graphs, with scientific validation of every conversion invariant.
+Goal: implement **R1** — the CAE → GNN data band (ADR-007/008): the
+domain-core objects plus geometry / io / graph / transforms / dataset.
 
 ## New modules (planned)
 
 ```
-src/caegraph/data/
-├── mesh.py          # Mesh: nodes, elements, boundary regions, fields
-├── graph.py         # Graph: PyG-compatible conversion of a Mesh
-├── dataset.py       # Dataset: collections, transforms, splits
-└── transforms.py    # composable mesh/graph transformations
+src/caegraph/core/          # domain objects join the Phase 1 vocabulary
+├── mesh.py                 # Mesh + composition (geometry/topology/boundary/fields)
+├── field.py                # Field: named field data (unit, timestep, association)
+└── boundary/               # mesh-internal boundary vocabulary
+    ├── spec.py             # BoundarySpec
+    ├── manager.py          # BoundaryManager
+    └── function.py         # FieldFunction
+
+src/caegraph/geometry/
+├── metrics.py              # edge features: distance/direction/normal/quality
+└── interpolation.py        # field interpolation onto mesh nodes
+
+src/caegraph/io/
+├── registry.py             # format registry on the core registry
+├── gmsh.py                 # first loader: physical groups -> boundary regions
+└── vtk_writer.py           # write-back into the ParaView ecosystem
+
+src/caegraph/graph/         # PyG-native neural-representation layer
+├── graph.py                # Graph(torch_geometric.data.Data): CAE fields
+│                           #   + validate(), never operations (ADR-007 D1)
+└── builder.py              # node graph / cell graph construction
+
+src/caegraph/transforms/    # BC application lives HERE, not on Graph
+├── geometry.py             # coordinate / feature normalization
+├── feature.py              # CAE feature engineering
+└── physics.py              # boundary-condition encoding:
+                            #   data.x[data.inlet_mask] = value pattern
+
+src/caegraph/dataset/
+└── dataset.py              # CAEDataset (PyG Dataset): collections, splits
 ```
 
 ## Planned public APIs
 
-- `Mesh` / `Graph` / `Dataset` (already in Design UML)
-- `mesh_to_graph` conversion with configurable edge construction
-  (node graph / cell graph)
+- `Mesh` / `Field` — domain truth (ADR-007 D3/D6)
+- `mesh.to_graph()` with configurable edge construction (node / cell
+  graph) → `Graph(torch_geometric.data.Data)`
+- `BoundarySpec` / `BoundaryManager` / `FieldFunction`
+- Geometry / feature / physics transforms (PyG transform protocol)
+- `CAEDataset`; gmsh loader; VTK writer
 
 ## Validation focus (Validation Agent, mandatory)
 
 - topology preservation (node/edge counts, connectivity)
-- conservation of interpolated field integrals within tolerance
-- boundary-condition mapping correctness
+- boundary-condition mapping: gmsh physical groups → regions /
+  NodeCategory semantics (interior / boundary / corner;
+  corner = multi-region membership)
+- Graph schema conformance: CAE fields present, `validate()` enforced
+- PyG boundary: `core`/`geometry`/`io` never import `torch_geometric`
+- VTK round-trip: mesh → graph → VTK → re-read
 
 ## Rules
 
-- Loaders register via the Phase 1 registry; no loader hard-imports another.
+- Loaders register via the core registry; no loader hard-imports another.
 - Synthetic meshes only in tests (Testing Skill CAE rules).
-- Real solver formats (Fluent, Abaqus, VTK…) enter here — each new format
-  is a feature request routed through PM (Architecture review first).
+- Real solver formats (Fluent, Abaqus, OpenFOAM…) enter here — each new
+  format is a feature request routed through PM (Architecture review first).
 
 ## Depends on
 
-Phase 1 (`core` registry, `BaseObject`).
+Phase 1 (core vocabulary: BaseObject, registry, enums).

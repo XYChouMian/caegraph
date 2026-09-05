@@ -24,10 +24,11 @@ Rules of engagement:
 
 ## Vision
 
-CAEGraph aims to become a general graph-based computational framework for
-CAE simulation data and scientific machine learning — the missing link
-between solver worlds (meshes, fields, boundary conditions) and graph
-learning worlds (PyTorch, PyTorch Geometric).
+CAEGraph bridges CAE simulation and physics AI through a
+**CAE → GNN → AI workflow** — converting CAE data into graph
+representations, enabling GNN training on engineering problems, running
+neural simulation on new meshes with pretrained models, and correcting
+predictions with experimental observations (ADR-008).
 
 ---
 
@@ -53,24 +54,30 @@ Details: [`architecture/phases/phase1-core.md`](architecture/phases/phase1-core.
 
 ## Phase 2 — CAE Data Pipeline · `Planned`
 
-`caegraph.data`: CAE result loading, `Mesh` representation, Mesh→Graph
-conversion, datasets. Conversion invariants (topology, conservation,
-boundary mapping) scientifically validated.
+**R1** — domain-truth objects (`Mesh`/`Field`) plus the data band:
+`caegraph.geometry`/`caegraph.io`/`caegraph.graph`/
+`caegraph.transforms`/`caegraph.dataset` — CAE loading (gmsh first),
+Mesh→`Graph(torch_geometric.data.Data)` conversion, transforms (BC
+encoding), CAEDataset, VTK write-back. Conversion invariants (topology,
+conservation, boundary mapping) scientifically validated.
 
 Details: [`architecture/phases/phase2-cae-data.md`](architecture/phases/phase2-cae-data.md)
 
 ## Phase 3 — Machine Learning Interface · `Planned`
 
-`caegraph.models` + `caegraph.physics`: GNN building blocks on PyG,
-physics-informed losses, Trainer; end-to-end train/inference on synthetic
-benchmarks.
+**R2 + R4** — `caegraph.physics` (losses/constraints), `caegraph.models`
+(Model interface + utilities, no GNN zoo), `caegraph.assimilation`
+(observation/correction), `caegraph.workflow` (loss assembly, batch
+adaptation — no fit loop); end-to-end training on synthetic benchmarks
+with user-provided loops, incl. observation-constraint mode.
 
 Details: [`architecture/phases/phase3-ml-models.md`](architecture/phases/phase3-ml-models.md)
 
-## Phase 4 — Release & Applications · `Planned`
+## Phase 4 — Neural Simulation & Release · `Planned`
 
-API freeze, packaging polish, v1.0; scientific applications on top
-(CFD surrogates, reduced-order modeling, multiphysics learning) as the
-community grows.
+**R3** — `caegraph.inference` (simulator + rollout harness, numerics
+model-side), VTK write-back closed loop, examples (concrete model
+architectures live outside the library); API freeze, packaging polish,
+v1.0.
 
 Details: [`architecture/phases/phase4-release.md`](architecture/phases/phase4-release.md)

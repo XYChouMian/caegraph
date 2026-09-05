@@ -14,8 +14,15 @@ Once modules land, they will be documented here automatically via
 Planned top-level modules (see the architecture specification):
 
 - `caegraph.core`
-- `caegraph.data`
-- `caegraph.models`
+- `caegraph.geometry`
+- `caegraph.io`
+- `caegraph.graph`
+- `caegraph.transforms`
+- `caegraph.dataset`
 - `caegraph.physics`
+- `caegraph.models`
+- `caegraph.assimilation`
+- `caegraph.workflow`
+- `caegraph.inference`
 - `caegraph.visualization`
 - `caegraph.utils`

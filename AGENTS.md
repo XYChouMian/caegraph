@@ -42,8 +42,10 @@ which python          # 应指向 .../envs/caegraph-dev/bin/python
 
 ## 3. 项目约束
 
-- 项目：CAEGraph —— 连接 CAE 数据、网格、图结构与 GNN / Physics-informed
-  learning 的 Python framework（PyG 风格）
+- 项目：CAEGraph —— 连接 CAE 仿真与 Physics AI 的工作流框架
+  （CAE 数据 → 图表示 → GNN 训练 → 新网格神经仿真 → 实验数据同化）
+- 定位冻结（ADR-008）：未经新 ADR 不得引入 solver 抽象、trainer 抽象、
+  替代图后端层
 - 当前阶段以 `architecture/phases/CURRENT.md` 指针为准（绑定表格：
   `architecture/ARCHITECTURE.md` §6；战略总览：根目录 `ROADMAP.md`）；
   禁止实现当前 Phase 之外的功能
@@ -64,8 +66,11 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
   （`architecture/decisions/`）
 - 合并前比对 Design UML 与 Generated UML（`diagrams/generated/`，
   仅工具生成，禁止手改）
-- 依赖分层：utils ← core ← data ← physics ← models ← visualization，
-  下层禁止依赖上层，同层禁止互依；physics 专供 models 消费，方向不可逆
+- 依赖分层：utils ← core ← {geometry, io} ← graph ← transforms ←
+  dataset ← physics ← {models, assimilation} ← {workflow, inference} ←
+  visualization，下层禁止依赖上层，同层禁止互依（兄弟层互不依赖）；
+  PyG 自 graph 层起可用，core/geometry/io 永不 import PyG（ADR-007）；
+  physics 专供 models 消费，方向不可逆
 
 ---
 
@@ -80,8 +85,10 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
 - 工作流：读架构 → 查 UML → 改设计 → 再编码 → 同步文档与测试
 - 禁止在无设计依据时创建新抽象、新文件、新依赖
 - 所有源码位于 `src/caegraph/`，禁止根目录 Python 文件
-- 依赖分层：utils ← core ← data ← physics ← models ← visualization，
-  下层禁止依赖上层，同层禁止互依
+- 依赖分层：utils ← core ← {geometry, io} ← graph ← transforms ←
+  dataset ← physics ← {models, assimilation} ← {workflow, inference} ←
+  visualization，下层禁止依赖上层，同层禁止互依；PyG 自 graph 层起
+  可用，core/geometry/io 永不 import PyG（ADR-007）
 
 ---
 

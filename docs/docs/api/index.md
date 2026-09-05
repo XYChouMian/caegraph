@@ -15,8 +15,15 @@ CAEGraph 处于 Phase 1（核心数据结构）：`BaseObject`、注册机制与
 规划中的顶层模块（见架构规范）：
 
 - `caegraph.core`
-- `caegraph.data`
-- `caegraph.models`
+- `caegraph.geometry`
+- `caegraph.io`
+- `caegraph.graph`
+- `caegraph.transforms`
+- `caegraph.dataset`
 - `caegraph.physics`
+- `caegraph.models`
+- `caegraph.assimilation`
+- `caegraph.workflow`
+- `caegraph.inference`
 - `caegraph.visualization`
 - `caegraph.utils`

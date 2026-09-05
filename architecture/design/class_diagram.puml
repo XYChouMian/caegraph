@@ -2,7 +2,7 @@
 ' =============================================================================
 ' CAEGraph - Design UML (Class Diagram)
 ' =============================================================================
-' PURPOSE : "Planned design" - the core abstractions of CAEGraph.
+' PURPOSE : "Planned design" - the domain abstractions of CAEGraph.
 ' OWNER   : Architecture Agent
 ' RULES   :
 '   - Update this diagram BEFORE implementing code.
@@ -11,59 +11,181 @@
 ' GUIDE   : see architecture/UML_GUIDE.md
 ' =============================================================================
 
-title CAEGraph Core Abstractions (Design)
+title CAEGraph Domain Abstractions (Design) - six abstractions, ADR-007/008
 
-package "caegraph.core" {
+package "caegraph.core (domain truth; torch-only, never PyG)" {
   abstract class BaseObject {
     Base abstraction: identity, metadata, validation contract
   }
-}
-
-package "caegraph.data" {
   class Mesh {
-    Geometric/topological representation of a CAE mesh:
-    nodes, elements, boundary regions, fields on mesh
+    CAE discrete geometry object: nodes, elements,
+    faces, boundary regions;
+    composed of geometry / topology / boundary / fields
+    (anti god-object, ADR-007 D3)
   }
-  class Graph {
-    Graph representation derived from a Mesh,
-    aligned with PyTorch Geometric Data/HeteroData
+  class Field {
+    Named field data: values, unit, timestep,
+    node-or-cell association (ADR-007 D6)
   }
-  class Dataset {
-    Collection of Graph samples with transforms,
-    splits and loading semantics
+  enum BoundaryType {
+    DIRICHLET / NEUMANN / FREE
+  }
+  enum NodeCategory {
+    INTERIOR / BOUNDARY / CORNER
+  }
+  class BoundaryManager {
+    Mesh-internal registry: boundary regions from
+    physical groups, spec binding, corner queries
+  }
+  class BoundarySpec {
+    User-facing boundary declaration: type, value,
+    weight, space/time dependence
+  }
+  abstract class FieldFunction {
+    Callable analytic boundary/initial value:
+    (t, pos) -> tensors, shape self-validation
   }
 }
 
-package "caegraph.models" {
-  abstract class Model {
-    GNN / physics-informed model abstraction:
-    encode - process - decode contract
+package "caegraph.geometry" {
+  class GeometryProcessor {
+    Geometric services: edge features
+    (distance, direction, normal, quality),
+    field interpolation
   }
-  class Trainer {
-    Training / evaluation / checkpoint orchestration
-    for Model + Dataset
+}
+
+package "caegraph.io" {
+  interface MeshLoader {
+    Format readers on the core registry;
+    gmsh first (physical groups -> regions)
+  }
+  interface MeshWriter {
+    Write-back into the CAE ecosystem;
+    VTK / ParaView first
+  }
+}
+
+package "caegraph.graph (PyG-native layer)" {
+  class Graph {
+    extends torch_geometric.data.Data:
+    neural representation, NOT engineering truth;
+    adds CAE fields + validate(), never operations
+    (ADR-007 D1 / ADR-008)
+  }
+  class GraphBuilder {
+    Mesh -> Graph construction:
+    node graph / cell graph views
+  }
+}
+
+package "caegraph.transforms" {
+  class GeometryTransform {
+    Coordinate / feature normalization
+  }
+  class FeatureTransform {
+    CAE feature engineering on Graph
+  }
+  class PhysicsTransform {
+    Boundary-condition encoding:
+    data.x[data.inlet_mask] = value pattern
+    (BC application lives HERE, not on Graph)
+  }
+}
+
+package "caegraph.dataset" {
+  class Dataset {
+    CAEDataset (PyG Dataset): collections,
+    transforms, splits
+  }
+}
+
+package "caegraph.physics" {
+  class PhysicsLoss {
+    PDE residuals / physics-informed loss terms
+  }
+}
+
+package "caegraph.models (interface + utilities, no GNN zoo)" {
+  abstract class Model {
+    GNN model abstraction:
+    encode - process - decode contract;
+    concrete architectures (MeshGraphNet/GNO/...)
+    live in examples / external projects (ADR-008)
+  }
+}
+
+package "caegraph.assimilation" {
+  class Observation {
+    Observation operators: sparse measurements
+    (e.g. PIV) on graph fields
+  }
+  class Correction {
+    Correction operators: dense prediction +
+    observation -> improved field
+  }
+}
+
+package "caegraph.workflow (training utilities, no fit loop)" {
+  class LossAssembly {
+    Compose data + physics + observation
+    loss terms (consumes assimilation, physics)
+  }
+  class BatchAdaptation {
+    CAE-aware batching helpers
+  }
+}
+
+package "caegraph.inference (neural simulation harness)" {
+  class Simulator {
+    mesh + pretrained model -> fields:
+    graph -> forward -> field reconstruction
+  }
+  class Rollout {
+    Transient rollout LOOP harness;
+    numerical schemes stay model-side (ADR-007 D5)
   }
 }
 
 ' --- Relationships -----------------------------------------------------------
 
 BaseObject <|-- Mesh
+BaseObject <|-- Field
 BaseObject <|-- Graph
 BaseObject <|-- Dataset
+BaseObject <|-- Model
 
-Mesh "1" --> "1" Graph : mesh_to_graph conversion
-Graph "*" --> "1" Dataset : belongs to
+Mesh "1" *-- "1" BoundaryManager : owns
+BoundaryManager "1" o-- "*" BoundarySpec : binds
+BoundarySpec --> BoundaryType : typed by
+BoundarySpec "*" o--> "0..1" FieldFunction : optional value
+Mesh "1" o-- "*" Field : carries
+Graph ..> NodeCategory : node attribute
+
+MeshLoader ..> Mesh : produces
+MeshWriter ..> Mesh : consumes
+GraphBuilder ..> Mesh : builds from
+GraphBuilder ..> GeometryProcessor : uses features
+Mesh "1" --> "1" Graph : to_graph() (node/cell views)
+GeometryTransform ..> Graph : operates on
+FeatureTransform ..> Graph : operates on
+PhysicsTransform ..> Graph : operates on
+Dataset "1" o-- "*" Graph
+Model ..> PhysicsLoss : may consume
 Dataset "1" --> "*" Model : provides data for
-Model "1" --> "1" Trainer : orchestrated by
 
-note right of Mesh
-  Planned home: caegraph.data
-  Future: loaders feed Mesh from CAE files
-end note
+LossAssembly ..> PhysicsLoss : composes
+LossAssembly ..> Observation : composes (training-constraint mode)
+Rollout ..> Model : calls
+Simulator ..> Rollout : orchestrates
+Simulator ..> MeshWriter : exports results
+Correction ..> Observation : uses (post-inference mode)
 
-note bottom of Graph
-  Graph must remain PyG-compatible
-  (node/edge attr tensors)
+note right of Graph
+  Positioning frozen (ADR-008):
+  no solver abstraction, no trainer abstraction,
+  no alternative graph backend layer
+  without a new ADR.
 end note
 
 @enduml

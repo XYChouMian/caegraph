@@ -1,10 +1,13 @@
-"""CAEGraph: A PyG-style graph computation framework for CAE data.
+"""CAEGraph: bridging CAE simulation and physics AI.
 
-CAEGraph connects CAE data structures, mesh representations, graph
-representations, and downstream GNN / physics-informed learning models.
+CAEGraph provides a CAE -> GNN -> AI workflow: converting CAE data
+(meshes, fields, boundary conditions, physics metadata) into graph
+representations, enabling GNN training on engineering problems, running
+neural simulation on new meshes with pretrained models, and correcting
+predictions with experimental observations (ADR-008).
 
 This is the package entry point. Subpackages are exposed lazily as they
-are implemented; Phase 0 only establishes the foundation.
+are implemented.
 """
 
 __version__ = "0.1.0"
