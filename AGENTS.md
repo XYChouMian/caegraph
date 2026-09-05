@@ -66,6 +66,10 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
   （`architecture/decisions/`）
 - 合并前比对 Design UML 与 Generated UML（`diagrams/generated/`，
   仅工具生成，禁止手改）
+- Markdown 中需要表达架构、依赖、流程或状态转换的图，必须使用 Mermaid，
+  不得以 ASCII / 纯文本箭头图替代；仅在图能比段落、列表或表格明显提升理解时
+  使用，禁止为装饰而大量添加。纵向节点较多或节点标签较长的 Mermaid 流程图须
+  定义并应用 `classDef nowrap white-space:nowrap`，避免换行拉高图形。
 - 依赖分层：utils ← core ← {geometry, io} ← graph ← transforms ←
   dataset ← physics ← {models, assimilation} ← {workflow, inference} ←
   visualization，下层禁止依赖上层，同层禁止互依（兄弟层互不依赖）；

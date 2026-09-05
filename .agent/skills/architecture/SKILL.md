@@ -12,8 +12,9 @@ CAEGraph 的架构守护者。负责维护 `architecture/ARCHITECTURE.md`、Desi
 - **Generated UML**（`diagrams/generated/`）：**由工具从代码生成，任何人不得
   手工编辑**。正确链路：
 
-```
-Python code → UML generator（pyreverse 等）→ Generated UML
+```mermaid
+flowchart LR
+    A[Python code] --> B[UML generator<br>pyreverse 等] --> C[Generated UML]
 ```
 
 - Architecture Agent 的职责是**审查两者差异**：代码偏离设计 → 要求整改；
@@ -23,29 +24,30 @@ Python code → UML generator（pyreverse 等）→ Generated UML
 
 包之间是严格的单向分层，**下层禁止依赖上层**：
 
-```
-utils        ← 最底层（可依赖第三方库，不依赖 caegraph 其他包）
-  ↑
-core         ← 工程真源，torch-only，禁止 PyG
-  ↑
-geometry / io   ← 兄弟层，禁止互相依赖
-  ↑
-graph        ← PyG 原生层起点
-  ↑
-transforms
-  ↑
-dataset
-  ↑
-physics
-  ↑
-models / assimilation
-  ↑
-workflow / inference
-  ↑
-visualization ← 最上层
+```mermaid
+flowchart BT
+    classDef nowrap white-space:nowrap
+
+    A["<b>utils</b><br>最底层；可依赖第三方库，不依赖 caegraph 其他包"]
+    B["<b>core</b><br>工程真源；torch-only，禁止 PyG"]
+    C["<b>geometry / io</b><br>兄弟层，禁止互相依赖"]
+    D["<b>graph</b><br>PyG 原生层起点"]
+    E["<b>transforms</b>"]
+    F["<b>dataset</b>"]
+    G["<b>physics</b>"]
+    H["<b>models / assimilation</b>"]
+    I["<b>workflow / inference</b>"]
+    J["<b>visualization</b><br>最上层"]
+
+    J --> I --> H --> G --> F --> E --> D --> C --> B --> A
+
+    class A,B,C,D,E,F,G,H,I,J nowrap
 ```
 
 （以 `architecture/ARCHITECTURE.md` 包地图为准；此处为方向性约束。）
+
+Markdown 架构关系图遵守 `AGENTS.md` 的 Mermaid 规范：只在图能实质提升理解
+时绘制，禁止 ASCII / 纯文本箭头图；纵向层级较多时使用 nowrap 样式。
 
 - 同层包之间禁止互相依赖（如 `geometry` 不得 import `io`）。
 - `core`、`geometry`、`io` 禁止 import `torch_geometric`；PyG 边界从

@@ -40,6 +40,19 @@ docs/docs/
 3. 新增页面时：创建双语文件对，在 `docs/mkdocs.yml` 的 nav 中注册。
 4. 每次变更后本地构建验证：`mkdocs build --strict`（在 `docs/` 下执行）。
 
+## 图示规范
+
+- 架构、依赖、流程、状态转换等关系图必须使用 Mermaid，禁止用 ASCII / 纯文本
+  箭头图替代。
+- 只有图能比简短段落、列表或表格显著提升关系理解时才使用 Mermaid；不要为了
+  视觉装饰或重复正文而大量绘图。
+- 纵向流程节点较多，或节点标签较长且会显著增加图高时，定义并应用
+  `classDef nowrap white-space:nowrap`，例如 `class A,B,C nowrap`；短图无需
+  机械套用。
+- Mermaid 图的关系、方向、可选分支与术语必须和
+  `architecture/ARCHITECTURE.md`、ADR 及实际实现一致；图不能替代正文中的
+  必要限定条件。
+
 ## 禁止事项
 
 - 禁止手写与代码不符的 API 描述（API 页面必须走 mkdocstrings 指令）。
