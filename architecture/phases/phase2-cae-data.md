@@ -37,14 +37,14 @@ src/caegraph/transforms/    # BC application lives HERE, not on Graph
                             #   data.x[data.inlet_mask] = value pattern
 
 src/caegraph/dataset/
-└── dataset.py              # CAEDataset (PyG Dataset): collections, splits
+└── dataset.py              # CAEDataset(PyG Dataset): collections, splits
 ```
 
 ## Planned public APIs
 
 - `Mesh` / `Field` — domain truth (ADR-007 D3/D6)
-- `mesh.to_graph()` with configurable edge construction (node / cell
-  graph) → `Graph(torch_geometric.data.Data)`
+- `GraphBuilder.build(mesh, *, view="node" | "cell")` →
+  `Graph(torch_geometric.data.Data)`; Mesh stays unaware of graph
 - `BoundarySpec` / `BoundaryManager` / `FieldFunction`
 - Geometry / feature / physics transforms (PyG transform protocol)
 - `CAEDataset`; gmsh loader; VTK writer
@@ -57,7 +57,8 @@ src/caegraph/dataset/
   corner = multi-region membership)
 - Graph schema conformance: CAE fields present, `validate()` enforced
 - PyG boundary: `core`/`geometry`/`io` never import `torch_geometric`
-- VTK round-trip: mesh → graph → VTK → re-read
+- VTK round-trip: mesh → graph → VTK → re-read. Phase 2 owns and implements
+  the writer; Phase 4 reuses it for predicted-field export.
 
 ## Rules
 

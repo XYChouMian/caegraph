@@ -119,7 +119,7 @@ Visualization              plotting + VTK write-back (ParaView ecosystem)
 
 | Package | Responsibility | Depends on |
 | --- | --- | --- |
-| `caegraph.utils` | logging, IO, reproducibility helpers | (nothing internal) |
+| `caegraph.utils` | logging and reproducibility helpers | (nothing internal) |
 | `caegraph.core` | domain truth: BaseObject, Mesh, Field; boundary vocabulary; registries; shared enums | utils (torch allowed, PyG forbidden) |
 | `caegraph.geometry` | geometric services: metrics, edge features, interpolation | core |
 | `caegraph.io` | loaders (gmsh first) and writers (VTK); format registry | core |
@@ -130,8 +130,12 @@ Visualization              plotting + VTK write-back (ParaView ecosystem)
 | `caegraph.models` | Model interface + CAE-aware utilities (no GNN zoo) | core, graph, physics |
 | `caegraph.assimilation` | observation / correction operators (R4) | core, graph, physics |
 | `caegraph.workflow` | training utilities: loss assembly, CAE batch adaptation (no fit loop) | physics, models, assimilation, dataset |
-| `caegraph.inference` | neural-simulation harness: simulator, rollout loop (numerics model-side) | models, assimilation, io |
-| `caegraph.visualization` | mesh/field/graph plotting | core, io |
+| `caegraph.inference` | neural-simulation harness: simulator, rollout loop (numerics model-side) | core, graph, transforms, models, assimilation, io |
+| `caegraph.visualization` | mesh/field/graph plotting | core, graph, io |
+
+`caegraph.data` is an empty, deprecated compatibility namespace for the former
+umbrella data layer. New code uses the responsibility-specific packages above;
+the namespace will not be removed before version 0.3.0.
 
 Dependency layers (lower layers must never import higher layers;
 same-layer imports are forbidden):
@@ -191,6 +195,19 @@ Notes on `physics` placement:
 
 See `architecture/UML_GUIDE.md`. The two must be reconciled regularly;
 divergence is treated as technical debt.
+
+### 3.4 Conversion and inheritance contracts
+
+- Mesh→Graph conversion is owned by
+  `caegraph.graph.GraphBuilder.build(mesh, *, view=...)`. `Mesh` has no
+  `to_graph()` convenience method because core must never import graph.
+- `BaseObject` is the common base only for domain-truth objects (`Mesh` and
+  `Field`). It is not a universal base for learning-layer objects.
+- `Graph`, `CAEDataset`, and `Model` inherit the ecosystem-native bases
+  `torch_geometric.data.Data`, `torch_geometric.data.Dataset`, and
+  `torch.nn.Module`, respectively. They do not use multiple inheritance with
+  `BaseObject`.
+- These contracts are binding under ADR-009.
 
 ---
 

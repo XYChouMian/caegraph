@@ -1,5 +1,7 @@
 """Smoke tests: verify the package installs and imports correctly."""
 
+import pytest
+
 import caegraph
 
 
@@ -39,3 +41,14 @@ def test_subpackages_exist():
     for name in names:
         module = importlib.import_module(f"caegraph.{name}")
         assert module is not None
+
+
+def test_legacy_data_namespace_remains_importable():
+    """The former umbrella namespace warns but remains import-compatible."""
+    import importlib
+    import sys
+
+    sys.modules.pop("caegraph.data", None)
+    with pytest.warns(DeprecationWarning, match="caegraph.data is deprecated"):
+        module = importlib.import_module("caegraph.data")
+    assert module is not None

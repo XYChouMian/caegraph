@@ -11,7 +11,13 @@
 ' GUIDE   : see architecture/UML_GUIDE.md
 ' =============================================================================
 
-title CAEGraph Domain Abstractions (Design) - six abstractions, ADR-007/008
+title CAEGraph Domain Abstractions (Design) - ADR-007/008/009
+
+package "external ecosystem bases" {
+  class "torch_geometric.data.Data" as PyGData <<external>>
+  abstract class "torch_geometric.data.Dataset" as PyGDataset <<external>>
+  abstract class "torch.nn.Module" as TorchModule <<external>>
+}
 
 package "caegraph.core (domain truth; torch-only, never PyG)" {
   abstract class BaseObject {
@@ -94,7 +100,7 @@ package "caegraph.transforms" {
 }
 
 package "caegraph.dataset" {
-  class Dataset {
+  class CAEDataset {
     CAEDataset (PyG Dataset): collections,
     transforms, splits
   }
@@ -151,9 +157,9 @@ package "caegraph.inference (neural simulation harness)" {
 
 BaseObject <|-- Mesh
 BaseObject <|-- Field
-BaseObject <|-- Graph
-BaseObject <|-- Dataset
-BaseObject <|-- Model
+PyGData <|-- Graph
+PyGDataset <|-- CAEDataset
+TorchModule <|-- Model
 
 Mesh "1" *-- "1" BoundaryManager : owns
 BoundaryManager "1" o-- "*" BoundarySpec : binds
@@ -166,13 +172,13 @@ MeshLoader ..> Mesh : produces
 MeshWriter ..> Mesh : consumes
 GraphBuilder ..> Mesh : builds from
 GraphBuilder ..> GeometryProcessor : uses features
-Mesh "1" --> "1" Graph : to_graph() (node/cell views)
+GraphBuilder --> Graph : build(mesh, view)
 GeometryTransform ..> Graph : operates on
 FeatureTransform ..> Graph : operates on
 PhysicsTransform ..> Graph : operates on
-Dataset "1" o-- "*" Graph
+CAEDataset "1" o-- "*" Graph
 Model ..> PhysicsLoss : may consume
-Dataset "1" --> "*" Model : provides data for
+CAEDataset "1" --> "*" Model : provides data for
 
 LossAssembly ..> PhysicsLoss : composes
 LossAssembly ..> Observation : composes (training-constraint mode)

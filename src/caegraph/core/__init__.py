@@ -1,9 +1,9 @@
-"""Core abstractions of CAEGraph.
+"""Framework-independent domain vocabulary of CAEGraph.
 
 Planned responsibilities (see architecture/ARCHITECTURE.md):
-- Base data structures shared across the framework
+- BaseObject and shared vocabulary for future Mesh and Field domain truth
 - Registry / factory mechanisms
 - Common type definitions
 
-No implementation yet (Phase 0: foundation only).
+Phase 1 implementation is planned but has not landed yet.
 """

@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Clarified the ADR-007/008 architecture through ADR-009: GraphBuilder owns
+  Mesh-to-Graph conversion, BaseObject is limited to domain-truth objects, and
+  Graph/CAEDataset/Model use their native PyG/PyTorch base classes.
 - Marked Phase 0 as complete and Phase 1 (Core Data Structures) as in progress
   across the phase pointer, architecture specification, README, and MkDocs site.
 - Switched the project license from MIT to the Apache License 2.0
@@ -39,6 +42,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   3.11).
 - `.agent/skills/aggregate_skills.py`: script aggregating all
   `SKILL.md` files into `.agent/ALL_SKILLS.md`.
+
+### Deprecated
+
+- The empty `caegraph.data` umbrella namespace is retained for compatibility
+  but deprecated. New imports should use `caegraph.core`, `caegraph.io`,
+  `caegraph.graph`, `caegraph.transforms`, or `caegraph.dataset`. Removal is
+  planned no earlier than version 0.3.0.
 
 ## [0.1.0] - 2026-09-03
 

@@ -1,0 +1,33 @@
+@startuml packages_caegraph
+set namespaceSeparator none
+package "caegraph" as caegraph {
+}
+package "caegraph.assimilation" as caegraph.assimilation {
+}
+package "caegraph.core" as caegraph.core {
+}
+package "caegraph.data" as caegraph.data {
+}
+package "caegraph.dataset" as caegraph.dataset {
+}
+package "caegraph.geometry" as caegraph.geometry {
+}
+package "caegraph.graph" as caegraph.graph {
+}
+package "caegraph.inference" as caegraph.inference {
+}
+package "caegraph.io" as caegraph.io {
+}
+package "caegraph.models" as caegraph.models {
+}
+package "caegraph.physics" as caegraph.physics {
+}
+package "caegraph.transforms" as caegraph.transforms {
+}
+package "caegraph.utils" as caegraph.utils {
+}
+package "caegraph.visualization" as caegraph.visualization {
+}
+package "caegraph.workflow" as caegraph.workflow {
+}
+@enduml

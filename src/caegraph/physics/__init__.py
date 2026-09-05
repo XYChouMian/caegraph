@@ -3,7 +3,7 @@
 Planned responsibilities (see architecture/ARCHITECTURE.md):
 - Physical equations and PDE residuals
 - Physics-informed loss terms
-- Unit systems and physical constants
+- Physics constraints
 
-No implementation yet (Phase 0: foundation only).
+Planned for Phase 3; no implementation yet.
 """

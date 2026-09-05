@@ -25,9 +25,13 @@ This page summarizes the architecture; the binding specification lives in
 | `caegraph.models` | Model interface + CAE model utilities (no GNN zoo) | core, graph, physics |
 | `caegraph.assimilation` | observation / correction operators (data assimilation) | core, graph, physics |
 | `caegraph.workflow` | training utilities: loss assembly, CAE batch adaptation (no fit loop) | physics, models, assimilation, dataset |
-| `caegraph.inference` | neural-simulation harness: simulator, rollout loop (numerics model-side) | models, assimilation, io |
-| `caegraph.visualization` | mesh/field/graph plotting | core, io |
-| `caegraph.utils` | logging, IO, reproducibility helpers | — |
+| `caegraph.inference` | neural-simulation harness: simulator, rollout loop (numerics model-side) | core, graph, transforms, models, assimilation, io |
+| `caegraph.visualization` | mesh/field/graph plotting | core, graph, io |
+| `caegraph.utils` | logging and reproducibility helpers | — |
+
+Mesh→Graph conversion belongs to `caegraph.graph.GraphBuilder.build(...)`.
+Mesh never depends on graph; Graph, CAEDataset, and Model use the native PyG
+Data, PyG Dataset, and PyTorch Module bases respectively (ADR-009).
 
 ## UML dual system
 

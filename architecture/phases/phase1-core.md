@@ -24,7 +24,8 @@ src/caegraph/utils/
 
 ## Planned public APIs
 
-- `BaseObject` — ancestor of Mesh/Graph/Field/Dataset/Model per Design UML
+- `BaseObject` — shared base for the domain-truth Mesh and Field objects;
+  learning-layer classes use ecosystem-native bases (ADR-009)
 - registry decorators for future loader/transform plugins
 - `BoundaryType` / `NodeCategory` — shared vocabulary for the Phase 2
   boundary-condition and node-category semantics (ADR-007)
@@ -32,8 +33,8 @@ src/caegraph/utils/
 ## UML changes
 
 - Design UML restructured to the ADR-007/ADR-008 package architecture;
-  six core abstractions (`BaseObject`, `Mesh`, `Graph`, `Field`,
-  `Dataset`, `Model`) with the workflow bands around them (geometry/io/
+  six principal abstractions (`BaseObject`, `Mesh`, `Graph`, `Field`,
+  `CAEDataset`, `Model`) with the workflow bands around them (geometry/io/
   graph/transforms/dataset → physics/models/assimilation → workflow/
   inference).
 - First Generated UML produced via `pyreverse` into `diagrams/generated/`;

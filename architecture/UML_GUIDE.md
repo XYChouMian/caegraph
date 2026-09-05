@@ -46,9 +46,13 @@ mandatory for every contributor and agent.
 
 ## 5. Current status
 
-- Phase 1 is in progress. The design UML defines the six core
-  abstractions (`BaseObject`, `Mesh`, `Graph`, `Field`, `Dataset`,
+- Phase 1 is in progress. The design UML defines the six principal
+  abstractions (`BaseObject`, `Mesh`, `Graph`, `Field`, `CAEDataset`,
   `Model`) plus the ADR-008 workflow bands: geometry/io/graph/
   transforms/dataset (R1), physics/models/assimilation/workflow
   (R2+R4), inference (R3).
-- Generated UML: empty — no concrete classes have been implemented yet.
+- ADR-009 makes the conversion and inheritance boundaries explicit:
+  GraphBuilder owns Mesh→Graph; BaseObject is limited to domain truth;
+  Graph/CAEDataset/Model use their PyG/PyTorch native bases.
+- Generated UML contains the current package graph. The class graph remains
+  empty until concrete Phase 1 classes are implemented.

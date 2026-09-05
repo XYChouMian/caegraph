@@ -26,20 +26,32 @@ Python code → UML generator（pyreverse 等）→ Generated UML
 ```
 utils        ← 最底层（可依赖第三方库，不依赖 caegraph 其他包）
   ↑
-core
+core         ← 工程真源，torch-only，禁止 PyG
   ↑
-data
+geometry / io   ← 兄弟层，禁止互相依赖
+  ↑
+graph        ← PyG 原生层起点
+  ↑
+transforms
+  ↑
+dataset
   ↑
 physics
   ↑
-models
+models / assimilation
+  ↑
+workflow / inference
   ↑
 visualization ← 最上层
 ```
 
 （以 `architecture/ARCHITECTURE.md` 包地图为准；此处为方向性约束。）
 
-- 同层包之间禁止互相依赖（如 `data` 不得 import `models`）。
+- 同层包之间禁止互相依赖（如 `geometry` 不得 import `io`）。
+- `core`、`geometry`、`io` 禁止 import `torch_geometric`；PyG 边界从
+  `caegraph.graph` 开始（ADR-007）。
+- Mesh→Graph 转换只由 `caegraph.graph.GraphBuilder` 承担；禁止在 Mesh 上
+  增加 `to_graph()` 形成反向依赖（ADR-009）。
 - 任何反向依赖、循环依赖均为 blocking 违规。
 
 ## 工作流程

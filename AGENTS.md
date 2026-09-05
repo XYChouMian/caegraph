@@ -70,7 +70,7 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
   dataset ← physics ← {models, assimilation} ← {workflow, inference} ←
   visualization，下层禁止依赖上层，同层禁止互依（兄弟层互不依赖）；
   PyG 自 graph 层起可用，core/geometry/io 永不 import PyG（ADR-007）；
-  physics 专供 models 消费，方向不可逆
+  physics 可由 models、assimilation、workflow 消费，但不得反向依赖它们
 
 ---
 

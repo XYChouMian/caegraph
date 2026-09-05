@@ -6,6 +6,6 @@
 
 1. 将 CAE 数据加载为 `Mesh`
 2. 将 `Mesh` 转换为 PyG `Graph`
-3. 构建带变换与划分的 `Dataset`
+3. 构建带变换与划分的 `CAEDataset`
 4. 训练第一个 GNN 代理模型
 5. 加入物理信息损失

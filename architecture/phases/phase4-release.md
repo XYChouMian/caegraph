@@ -14,9 +14,6 @@ src/caegraph/inference/
 └── rollout.py       # transient rollout LOOP harness;
                      #   numerical schemes stay model-side (ADR-007 D5)
 
-src/caegraph/io/
-└── vtk_writer.py    # write-back into the ParaView ecosystem (closed loop)
-
 examples/            # concrete model architectures + end-to-end
                      # applications live here — never inside src/caegraph
                      # (no GNN zoo, ADR-008)
@@ -30,6 +27,9 @@ examples/            # concrete model architectures + end-to-end
   Phase 3, R4 at deployment time)
 - VTK write-back of predicted fields
 
+The VTK writer is implemented in Phase 2. Phase 4 reuses it to close the
+prediction-export loop; it is not reimplemented here.
+
 ## Scope
 
 1. **Neural simulation (R3)**
@@ -37,6 +37,10 @@ examples/            # concrete model architectures + end-to-end
      transforms from Phase 2 are the enabling mechanism)
    - Rollout harness for transient models; steady single-pass for others
    - Field reconstruction + VTK export for ParaView visualization
+   - Before calling the model, Simulator validates the input contract:
+     required node/edge features, units, boundary encoding, normalization
+     state, supported topology and schema version. Incompatible inputs fail
+     with an explicit validation error rather than reaching model execution.
 2. **API freeze**
    - Full public-API audit (Reviewer); deprecation policy active
 3. **Packaging polish**
@@ -48,6 +52,8 @@ examples/            # concrete model architectures + end-to-end
 ## Exit criteria
 
 - Rollout on an unseen mesh demonstrated and validated (R3)
+- Incompatible feature/unit/boundary/normalization/topology/schema inputs are
+  rejected before model execution
 - VTK round-trip: mesh → graph → prediction → VTK → ParaView
 - Release Agent checklist fully green for `1.0.0`
 

@@ -27,7 +27,7 @@ Release）是唯一验收标准。
    - [ ] 是否删除/重命名了公共类、函数、方法？
    - [ ] 是否改变了公共函数/方法的签名（参数、默认值、返回类型）？
    - [ ] Import Stability：公共 API 的 import 路径是用户契约的一部分。
-         类/函数在模块间移动（如 `caegraph.data.Mesh` → `caegraph.core`）
+         类/函数在模块间移动（如 `caegraph.graph.Graph` → `caegraph.core`）
          即使用户代码全部失效——必须在旧路径保留弃用重导出
          （deprecation re-export）至少一个版本，并记录迁移说明；
          未做则直接 `Request Changes`。

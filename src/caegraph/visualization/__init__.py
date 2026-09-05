@@ -5,5 +5,5 @@ Planned responsibilities (see architecture/ARCHITECTURE.md):
 - Field / result visualization
 - Graph structure visualization
 
-No implementation yet (Phase 0: foundation only).
+Planned for Phase 4; no implementation yet.
 """

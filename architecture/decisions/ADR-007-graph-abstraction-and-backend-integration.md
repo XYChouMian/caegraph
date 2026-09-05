@@ -52,8 +52,8 @@ fields）；边界几何词汇（BoundarySpec / BoundaryManager / FieldFunction�
 - Monitor / 训练循环 / solver 编排不入库；
 - gmsh 首发 loader；VTK 写回闭环。
 
-**D6. 六抽象**（ADR-008 冻结）：BaseObject / Mesh / Graph / Field /
-Dataset / Model（Trainer 出局）。`Field(name, values, unit, timestep,
+**D6. 六抽象**（ADR-008 冻结、ADR-009 明确继承与命名）：BaseObject / Mesh /
+Graph / Field / CAEDataset / Model（Trainer 出局）。`Field(name, values, unit, timestep,
 node/cell 归属)` 是工程真源的一等公民，graph 特征装配由此成为显式
 特征工程。
 
@@ -98,4 +98,5 @@ utils ← core ← {geometry, io} ← graph ← transforms ← dataset
   （`torch-geometric>=2.5,<3.0` 上界约束）。
 - 后续：Phase 2 实现桥接带（core 域对象 + geometry/io/graph/transforms/
   dataset）；Phase 3 落地 physics / models / assimilation / workflow；
-  Phase 4 落地 inference 与 VTK 写回；结构决策自 ADR-009 起记录。
+  Phase 4 落地 inference 与 VTK 写回；转换与继承契约见 ADR-009，后续
+  结构决策自 ADR-010 起记录。

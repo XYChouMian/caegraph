@@ -37,7 +37,8 @@ src/caegraph/workflow/
 
 ## Planned public APIs
 
-- `Model` contract (six abstractions, ADR-008) — interface, not zoo
+- `Model(torch.nn.Module)` contract (six principal abstractions, ADR-008/009)
+  — ecosystem-native interface, not zoo
 - `PhysicsLoss` consumed by physics-informed models
 - `Observation` / `Correction` operators (R4)
 - loss-assembly + batch-adaptation utilities (R2)

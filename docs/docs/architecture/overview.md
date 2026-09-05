@@ -25,9 +25,13 @@
 | `caegraph.models` | Model 接口 + CAE 模型公用设施（无 GNN zoo） | core, graph, physics |
 | `caegraph.assimilation` | 观测/修正算子（实验数据同化） | core, graph, physics |
 | `caegraph.workflow` | 训练公用设施：loss 组装、CAE 批处理适配（无 fit 循环） | physics, models, assimilation, dataset |
-| `caegraph.inference` | 神经仿真壳：simulator、rollout 循环（数值格式在模型侧） | models, assimilation, io |
-| `caegraph.visualization` | 网格/场/图可视化 | core, io |
-| `caegraph.utils` | 日志、IO、可复现性工具 | — |
+| `caegraph.inference` | 神经仿真壳：simulator、rollout 循环（数值格式在模型侧） | core, graph, transforms, models, assimilation, io |
+| `caegraph.visualization` | 网格/场/图可视化 | core, graph, io |
+| `caegraph.utils` | 日志与可复现性工具 | — |
+
+Mesh→Graph 转换由 `caegraph.graph.GraphBuilder.build(...)` 负责。Mesh 不依赖
+graph；Graph、CAEDataset、Model 分别采用 PyG Data、PyG Dataset、PyTorch Module
+原生基类（ADR-009）。
 
 ## UML 双体系
 

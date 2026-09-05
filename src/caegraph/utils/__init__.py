@@ -2,8 +2,7 @@
 
 Planned responsibilities (see architecture/ARCHITECTURE.md):
 - Logging
-- IO helpers
 - Seed / reproducibility helpers
 
-No implementation yet (Phase 0: foundation only).
+Phase 1 implementation is planned but has not landed yet.
 """
