@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "caegraph"
 version = "0.1.0"
-description = "A graph-based framework for CAE data representation, mesh processing, simulation learning, and physics-informed machine learning."
+description = "A workflow framework bridging CAE simulation and physics AI: CAE data to graph representations, GNN training on engineering problems, neural simulation on new meshes, and experimental data assimilation."
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"

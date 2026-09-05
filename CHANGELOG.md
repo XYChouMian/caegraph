@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Updated the package description in `pyproject.toml` to the frozen ADR-008
+  positioning (CAE → GNN → AI workflow).
 - Clarified the ADR-007/008 architecture through ADR-009: GraphBuilder owns
   Mesh-to-Graph conversion, BaseObject is limited to domain-truth objects, and
   Graph/CAEDataset/Model use their native PyG/PyTorch base classes.
