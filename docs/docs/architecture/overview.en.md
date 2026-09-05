@@ -15,11 +15,15 @@ This page summarizes the architecture; the binding specification lives in
 
 | Package | Responsibility | Depends on |
 | --- | --- | --- |
-| `caegraph.core` | base abstractions, registries, shared types | — |
-| `caegraph.data` | CAE data loading, mesh & graph representations, datasets | core |
-| `caegraph.models` | GNN components, physics-informed models, Trainer | core, data |
-| `caegraph.physics` | PDE residuals, physics losses, units | core |
-| `caegraph.visualization` | mesh/field/graph plotting | core, data |
+| `caegraph.core` | domain abstractions: BaseObject, Mesh, Graph, Field; registries, shared enums | — |
+| `caegraph.geometry` | geometric services: metrics, edge features, interpolation | core |
+| `caegraph.io` | loaders (gmsh first) and writers (VTK); format registry | core |
+| `caegraph.graph` | graph construction (node/cell graphs) and transforms | core, geometry |
+| `caegraph.integrations` | backend adapters: PyG `to_pyg()`, PyG datasets — the only PyG import site | core, graph |
+| `caegraph.dataset` | collections, transforms, splits | core, graph, integrations |
+| `caegraph.physics` | PDE residuals, physics losses, constraints | core |
+| `caegraph.models` | composable GNN components, physics-informed models, Trainer | core, dataset, integrations, physics |
+| `caegraph.visualization` | mesh/field/graph plotting | core, io, models |
 | `caegraph.utils` | logging, IO, reproducibility helpers | — |
 
 ## UML dual system

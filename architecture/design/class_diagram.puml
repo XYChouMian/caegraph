@@ -2,7 +2,7 @@
 ' =============================================================================
 ' CAEGraph - Design UML (Class Diagram)
 ' =============================================================================
-' PURPOSE : "Planned design" - the core abstractions of CAEGraph.
+' PURPOSE : "Planned design" - the domain abstractions of CAEGraph.
 ' OWNER   : Architecture Agent
 ' RULES   :
 '   - Update this diagram BEFORE implementing code.
@@ -11,49 +11,96 @@
 ' GUIDE   : see architecture/UML_GUIDE.md
 ' =============================================================================
 
-title CAEGraph Core Abstractions (Design)
+title CAEGraph Domain Abstractions (Design) - seven abstractions per ADR-007
 
-package "caegraph.core" {
+package "caegraph.core (domain core; torch-only, never PyG)" {
   abstract class BaseObject {
     Base abstraction: identity, metadata, validation contract
   }
+  class Mesh {
+    CAE discrete geometry object: nodes, elements,
+    faces, boundary regions;
+    composed of geometry / topology / boundary / fields
+    (anti god-object, ADR-007 D3)
+  }
+  class Graph {
+    Domain-level graph abstraction with tensor storage:
+    nodes, edges, node categories, boundary masks;
+    dumb container + schema validation;
+    NOT bound to any GNN framework (ADR-007 D1)
+  }
+  class Field {
+    Named field data: values, unit, timestep,
+    node-or-cell association (ADR-007 D6)
+  }
   enum BoundaryType {
-    Shared vocabulary: DIRICHLET / NEUMANN / FREE
+    DIRICHLET / NEUMANN / FREE
   }
   enum NodeCategory {
-    Shared vocabulary: INTERIOR / BOUNDARY / CORNER
+    INTERIOR / BOUNDARY / CORNER
+  }
+  class BoundaryManager {
+    Mesh-internal registry: boundary regions from
+    physical groups, spec binding, corner queries
+  }
+  class BoundarySpec {
+    User-facing boundary declaration: type, value,
+    weight, space/time dependence
+  }
+  abstract class FieldFunction {
+    Callable analytic boundary/initial value:
+    (t, pos) -> tensors, shape self-validation
   }
 }
 
-package "caegraph.data" {
-  class Mesh {
-    Geometric/topological representation of a CAE mesh:
-    nodes, elements, boundary regions, fields on mesh
-    (own numpy structures, no graph-library inheritance)
+package "caegraph.geometry" {
+  class GeometryProcessor {
+    Geometric services: edge features
+    (distance, direction, normal, quality),
+    field interpolation
   }
-  class Graph {
-    Thin subclass of torch_geometric.data.Data:
-    tensor-only node/edge attributes, node categories,
-    boundary masks (ADR-007 guardrails)
+}
+
+package "caegraph.io" {
+  interface MeshLoader {
+    Format readers on the core registry;
+    gmsh first (physical groups -> regions)
   }
+  interface MeshWriter {
+    Write-back into the CAE ecosystem;
+    VTK / ParaView first
+  }
+}
+
+package "caegraph.graph" {
+  class GraphBuilder {
+    Mesh -> Graph construction:
+    node graph / cell graph views
+  }
+  class GraphTransform {
+    Composable graph-space transformations
+  }
+}
+
+package "caegraph.integrations" {
+  class PyGAdapter {
+    to_pyg() + PyG datasets;
+    the ONLY place torch_geometric is imported
+    (ADR-007 D2); future backends mirror this
+  }
+}
+
+package "caegraph.dataset" {
   class Dataset {
     Collection of Graph samples with transforms,
     splits and loading semantics
   }
-  class BoundarySpec {
-    User-facing boundary condition declaration:
-    type, value (scalar / tensor / FieldFunction),
-    weight, space/time dependence flags
-  }
-  class BoundaryManager {
-    Geometry-layer registry: boundary regions from
-    mesh physical groups, spec binding,
-    region and corner vertex queries
-  }
-  abstract class FieldFunction {
-    Callable analytic boundary/initial value:
-    (t, pos) -> (B, N, C) tensors,
-    with shape self-validation
+}
+
+package "caegraph.physics" {
+  class PhysicsLoss {
+    PDE residuals / physics-informed loss terms
+    (Phase 3)
   }
 }
 
@@ -66,48 +113,39 @@ package "caegraph.models" {
     Training / evaluation / checkpoint orchestration
     for Model + Dataset
   }
-  class BoundaryOperator {
-    Compiled boundary condition (nn.Module):
-    device-managed buffers, weighted blending,
-    apply(y, t) during training/inference
-  }
 }
 
 ' --- Relationships -----------------------------------------------------------
 
 BaseObject <|-- Mesh
 BaseObject <|-- Graph
+BaseObject <|-- Field
 BaseObject <|-- Dataset
-
-Mesh "1" --> "1" Graph : mesh_to_graph conversion
-Graph "*" --> "1" Dataset : belongs to
-Dataset "1" --> "*" Model : provides data for
-Model "1" --> "1" Trainer : orchestrated by
+BaseObject <|-- Model
 
 Mesh "1" *-- "1" BoundaryManager : owns
 BoundaryManager "1" o-- "*" BoundarySpec : binds
 BoundarySpec --> BoundaryType : typed by
 BoundarySpec "*" o--> "0..1" FieldFunction : optional value
+Mesh "1" o-- "*" Field : carries
 Graph ..> NodeCategory : node attribute
-BoundaryOperator ..> BoundarySpec : compiled from (Phase 3)
-BoundaryOperator ..> Graph : compiled against (Phase 3)
 
-note right of BoundaryManager
-  Two-layer boundary architecture (ADR-007):
-  geometry/intent in caegraph.data,
-  compiled nn.Module operators in caegraph.models
-end note
+MeshLoader ..> Mesh : produces
+MeshWriter ..> Mesh : consumes
+GraphBuilder ..> Mesh : builds from
+GraphBuilder ..> GeometryProcessor : uses features
+Mesh "1" --> "1" Graph : to_graph() (node/cell views)
+GraphTransform ..> Graph : operates on
+PyGAdapter ..> Graph : converts (one-way view)
+Dataset "1" o-- "*" Graph
+Dataset ..> PyGAdapter : yields backend samples
+Model "1" --> "1" Trainer : orchestrated by
+Model ..> PhysicsLoss : may consume (Phase 3)
 
-note right of Mesh
-  Planned home: caegraph.data
-  Future: loaders feed Mesh from CAE files
-end note
-
-note bottom of Graph
-  Graph must remain PyG-compatible
-  (node/edge attr tensors);
-  tensor-only discipline, region name
-  tables stay on Mesh (ADR-007)
+note right of Graph
+  Solver-side orchestration (time integrators,
+  rollout systems, monitors) is OUT of the
+  library (ADR-007 D5) - user application land
 end note
 
 @enduml

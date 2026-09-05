@@ -4,6 +4,11 @@ Status: Planned
 
 Goal: learning on CAE graphs — `caegraph.models` + `caegraph.physics`.
 
+Scope guard (ADR-007 D5): this phase delivers composable components and
+physics losses only. Solver-side orchestration — time integrators
+(Euler/RK), PDE rollout systems, training monitors — is **out of library
+scope**; it belongs to user applications (at most Phase 4 example code).
+
 ## New modules (planned)
 
 ```

@@ -64,8 +64,10 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
   （`architecture/decisions/`）
 - 合并前比对 Design UML 与 Generated UML（`diagrams/generated/`，
   仅工具生成，禁止手改）
-- 依赖分层：utils ← core ← data ← physics ← models ← visualization，
-  下层禁止依赖上层，同层禁止互依；physics 专供 models 消费，方向不可逆
+- 依赖分层：utils ← core ← {geometry, io} ← graph ← integrations ←
+  dataset ← physics ← models ← visualization，下层禁止依赖上层，
+  同层禁止互依（geometry 与 io 互不依赖）；PyG 仅存在于
+  integrations（ADR-007）；physics 专供 models 消费，方向不可逆
 
 ---
 
@@ -80,8 +82,9 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
 - 工作流：读架构 → 查 UML → 改设计 → 再编码 → 同步文档与测试
 - 禁止在无设计依据时创建新抽象、新文件、新依赖
 - 所有源码位于 `src/caegraph/`，禁止根目录 Python 文件
-- 依赖分层：utils ← core ← data ← physics ← models ← visualization，
-  下层禁止依赖上层，同层禁止互依
+- 依赖分层：utils ← core ← {geometry, io} ← graph ← integrations ←
+  dataset ← physics ← models ← visualization，下层禁止依赖上层，
+  同层禁止互依；PyG 仅存在于 integrations（ADR-007）
 
 ---
 

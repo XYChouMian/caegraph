@@ -21,11 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Phase 2 data-layer architecture design (ADR-007): a PyG-native `Graph`
-  subclass contract, a two-layer boundary-condition architecture
-  (specs/managers in `caegraph.data`, compiled operators in
-  `caegraph.models`), and interior/boundary/corner node categories;
-  shared `BoundaryType`/`NodeCategory` enums planned for `caegraph.core`.
+- Repositioned CAEGraph as CAE ↔ GNN bridge data infrastructure and
+  redesigned the architecture accordingly (ADR-007): a domain-level graph
+  abstraction with tensor storage (backends confined to
+  `caegraph.integrations`, PyG first), a domain core
+  (`BaseObject`/`Mesh`/`Graph`/`Field`), the
+  geometry/io/graph/integrations/dataset bridge band, node categories,
+  and mesh-internal boundary vocabulary; solver-side orchestration is
+  excluded from the library. Package layout, phase designs, and the
+  dependency DAG were updated to match.
 - Shared Git governance for all Agent roles, including permission boundaries,
   branch and commit conventions, review gates, and release authorization.
 - Python 3.10 compatibility testing (CI test matrix covers both 3.10 and

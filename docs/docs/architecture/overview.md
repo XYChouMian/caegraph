@@ -15,11 +15,15 @@
 
 | 包 | 职责 | 依赖 |
 | --- | --- | --- |
-| `caegraph.core` | 基础抽象、注册机制、共享类型 | — |
-| `caegraph.data` | CAE 数据加载、网格与图表示、数据集 | core |
-| `caegraph.models` | GNN 组件、物理信息模型、Trainer | core, data |
-| `caegraph.physics` | PDE 残差、物理损失、单位制 | core |
-| `caegraph.visualization` | 网格/场/图可视化 | core, data |
+| `caegraph.core` | 域抽象：BaseObject、Mesh、Graph、Field；注册机制、共享枚举 | — |
+| `caegraph.geometry` | 几何服务：度量、边特征、插值 | core |
+| `caegraph.io` | 加载器（gmsh 首发）与写回（VTK）；格式注册表 | core |
+| `caegraph.graph` | 图构建（节点图/单元图）与变换 | core, geometry |
+| `caegraph.integrations` | 后端适配：PyG `to_pyg()`、PyG 数据集——唯一的 PyG 导入点 | core, graph |
+| `caegraph.dataset` | 集合、变换、切分 | core, graph, integrations |
+| `caegraph.physics` | PDE 残差、物理损失、约束 | core |
+| `caegraph.models` | 可组合 GNN 组件、物理信息模型、Trainer | core, dataset, integrations, physics |
+| `caegraph.visualization` | 网格/场/图可视化 | core, io, models |
 | `caegraph.utils` | 日志、IO、可复现性工具 | — |
 
 ## UML 双体系

@@ -46,6 +46,8 @@ mandatory for every contributor and agent.
 
 ## 5. Current status
 
-- Phase 1 is in progress. The design UML defines the six core abstractions
-  (`BaseObject`, `Mesh`, `Graph`, `Dataset`, `Model`, `Trainer`).
+- Phase 1 is in progress. The design UML defines the seven core
+  abstractions (`BaseObject`, `Mesh`, `Graph`, `Field`, `Dataset`,
+  `Model`, `Trainer`) plus the ADR-007 bridge band (geometry / io /
+  graph / integrations / dataset).
 - Generated UML: empty — no concrete classes have been implemented yet.

@@ -18,9 +18,22 @@ def test_version_defined():
 
 
 def test_subpackages_exist():
-    """All planned subpackages must be importable."""
+    """All planned subpackages must be importable (ADR-007 layout)."""
     import importlib
 
-    for name in ("core", "data", "models", "physics", "visualization", "utils"):
+    names = (
+        "core",
+        "geometry",
+        "io",
+        "graph",
+        "integrations",
+        "integrations.pyg",
+        "dataset",
+        "physics",
+        "models",
+        "visualization",
+        "utils",
+    )
+    for name in names:
         module = importlib.import_module(f"caegraph.{name}")
         assert module is not None

@@ -53,9 +53,12 @@ Details: [`architecture/phases/phase1-core.md`](architecture/phases/phase1-core.
 
 ## Phase 2 — CAE Data Pipeline · `Planned`
 
-`caegraph.data`: CAE result loading, `Mesh` representation, Mesh→Graph
-conversion, datasets. Conversion invariants (topology, conservation,
-boundary mapping) scientifically validated.
+Domain-core objects (`Mesh`/`Graph`/`Field`) plus the bridge band —
+`caegraph.geometry`/`caegraph.io`/`caegraph.graph`/`caegraph.integrations`/
+`caegraph.dataset`: CAE loading (gmsh first), Mesh→Graph conversion,
+backend adaptation (PyG), datasets, VTK write-back. Conversion
+invariants (topology, conservation, boundary mapping) scientifically
+validated; PyG confinement enforced (ADR-007).
 
 Details: [`architecture/phases/phase2-cae-data.md`](architecture/phases/phase2-cae-data.md)
 
