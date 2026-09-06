@@ -1,6 +1,6 @@
 # Examples
 
-No examples yet — CAEGraph is in Phase 1 (Core Data Structures).
+No examples yet — CAEGraph is in Phase 2 (CAE Data Pipeline).
 
 Planned examples (will follow implementation phases):
 

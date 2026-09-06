@@ -57,11 +57,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   branch and commit conventions, review gates, and release authorization.
 - Python 3.10 compatibility testing (CI test matrix covers both 3.10 and
   3.11).
-
-## [0.1.0] - 2026-09-03
-
-### Added
-
 - Phase 0 project foundation:
   - src-layout package skeleton (`src/caegraph/` with `core`, `data`,
     `models`, `physics`, `visualization`, `utils` subpackages)

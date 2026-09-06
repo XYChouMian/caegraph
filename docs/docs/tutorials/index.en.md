@@ -1,6 +1,6 @@
 # Tutorials
 
-No tutorials yet — CAEGraph is in Phase 1 (Core Data Structures).
+No tutorials yet — CAEGraph is in Phase 2 (CAE Data Pipeline).
 
 Planned tutorial series (will follow implementation phases):
 
