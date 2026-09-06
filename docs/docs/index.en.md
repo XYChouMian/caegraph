@@ -13,10 +13,11 @@ flowchart LR
 
 !!! note "Project status"
 
-    CAEGraph is in **Phase 1 (Core Data Structures)**. The Phase 0 package
-    skeleton, architecture specification, UML system, documentation and CI are
-    complete. Shared core abstractions are being implemented; CAE/GNN algorithms
-    remain planned.
+    CAEGraph is in **Phase 2 (CAE Data Pipeline)**. The Phase 0 package
+    skeleton, architecture specification, UML system, documentation and CI,
+    plus the Phase 1 core vocabulary (`BaseObject`, registry, shared enums),
+    are complete. `Mesh` / `Field` and the data pipeline are being implemented;
+    GNN training capabilities remain planned.
 
 ## Getting started
 
