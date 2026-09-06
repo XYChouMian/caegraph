@@ -71,11 +71,12 @@ src/caegraph/dataset/
   Runtime type enforcement (`Registry(kind, base_class=...)` +
   `issubclass`) is a recorded future option (Design UML Registry note);
   adopt it only if Phase 2 loader wiring needs it, decided explicitly.
-- Open design question (ADR-010 "未来演进"): `BoundaryType` mixes
-  mathematical constraint types with topological roles (INTERFACE).
-  Before implementing `BoundarySpec`/`BoundaryManager`, re-evaluate the
-  candidate `BoundaryConditionType` × `BoundaryRegionType` split against
-  the trigger conditions recorded there; decide by ADR, not silently.
+- Resolved design question (ADR-011): the ADR-010 "未来演进" re-evaluation
+  is complete — keep the single seven-value `BoundaryType` through Phase 2.
+  `BoundarySpec` must enforce per-type slot-coherence validation
+  (`paired_region` required for PERIODIC; value slots meaningful only for
+  constraint-valued types); refined Phase 3 re-trigger conditions for a
+  possible orthogonal role × constraint split are recorded in ADR-011.
 
 ## Depends on
 
