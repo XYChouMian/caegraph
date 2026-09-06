@@ -1,17 +1,19 @@
 # API Reference
 
-CAEGraph is in Phase 1 (Core Data Structures): `BaseObject`, registries, and
-shared types are being implemented; the core public API is not yet available.
+CAEGraph is in Phase 2 (CAE Data Pipeline): the Phase 1 vocabulary is in
+place (`BaseObject` / `Registry` / shared enums in `caegraph.core`,
+`get_logger` in `caegraph.utils`); `Mesh` / `Field` and the data band are
+being implemented.
 
-Once modules land, they will be documented here automatically via
-[mkdocstrings](https://mkdocstrings.github.io/), e.g.:
+API documentation is generated automatically from docstrings via
+[mkdocstrings](https://mkdocstrings.github.io/):
 
 ::: caegraph
     options:
       show_source: false
       heading_level: 3
 
-Planned top-level modules (see the architecture specification):
+Top-level modules (see the architecture specification):
 
 - `caegraph.core`
 - `caegraph.geometry`
@@ -26,8 +28,3 @@ Planned top-level modules (see the architecture specification):
 - `caegraph.inference`
 - `caegraph.visualization`
 - `caegraph.utils`
-
-Compatibility: the former empty `caegraph.data` namespace is temporarily
-retained with a deprecation warning. New code should use the responsibility-
-specific packages above. The compatibility namespace will not be removed
-before version 0.3.0.

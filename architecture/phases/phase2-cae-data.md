@@ -66,6 +66,16 @@ src/caegraph/dataset/
 - Synthetic meshes only in tests (Testing Skill CAE rules).
 - Real solver formats (Fluent, Abaqus, OpenFOAM…) enter here — each new
   format is a feature request routed through PM (Architecture review first).
+- Registry stays a name→factory mapping (Phase 1 contract: callable check
+  only — Python type erasure makes runtime generic checks a non-goal).
+  Runtime type enforcement (`Registry(kind, base_class=...)` +
+  `issubclass`) is a recorded future option (Design UML Registry note);
+  adopt it only if Phase 2 loader wiring needs it, decided explicitly.
+- Open design question (ADR-010 "未来演进"): `BoundaryType` mixes
+  mathematical constraint types with topological roles (INTERFACE).
+  Before implementing `BoundarySpec`/`BoundaryManager`, re-evaluate the
+  candidate `BoundaryConditionType` × `BoundaryRegionType` split against
+  the trigger conditions recorded there; decide by ADR, not silently.
 
 ## Depends on
 

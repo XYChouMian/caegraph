@@ -53,14 +53,14 @@ Establish the project skeleton so that everything later is architecture-gated.
 
 Details: [`architecture/phases/phase0-foundation.md`](architecture/phases/phase0-foundation.md)
 
-## Phase 1 — Core Data Structures · `In progress`
+## Phase 1 — Core Data Structures · `Done`
 
 Fundamental abstractions in `caegraph.core`: `BaseObject`, registries,
 shared types. First Generated UML produced by tooling.
 
 Details: [`architecture/phases/phase1-core.md`](architecture/phases/phase1-core.md)
 
-## Phase 2 — CAE Data Pipeline · `Planned`
+## Phase 2 — CAE Data Pipeline · `In progress`
 
 **R1** — domain-truth objects (`Mesh`/`Field`) plus the data band:
 `caegraph.geometry`/`caegraph.io`/`caegraph.graph`/

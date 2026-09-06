@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Marked Phase 1 (Core Data Structures) as complete and Phase 2 (CAE Data
+  Pipeline) as in progress across the phase pointer, architecture
+  specification, README, and MkDocs site.
 - Updated the package description in `pyproject.toml` to the frozen ADR-008
   positioning (CAE → GNN → AI workflow).
 - Clarified the ADR-007/008 architecture through ADR-009: GraphBuilder owns
@@ -26,6 +29,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Phase 1 core vocabulary: `caegraph.core.BaseObject` (identity, metadata,
+  fail-fast validation contract), `caegraph.core.Registry` (name-keyed
+  loader/transform factory registry), the shared enum `BoundaryType` with
+  seven mathematical BC categories (dirichlet/neumann/robin/periodic/
+  symmetry/interface/none — application names such as wall/inlet belong to
+  region metadata, ADR-010) and `NodeCategory` (ADR-007), plus
+  `caegraph.utils.get_logger`. The core and utils layers stay torch-free
+  and PyG-free (ADR-007 D2).
 - Froze the product positioning (ADR-008): CAEGraph bridges CAE
   simulation and physics AI through a **CAE → GNN → AI workflow**
   (CAE data → graph representation → GNN training → neural simulation
@@ -42,12 +53,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   branch and commit conventions, review gates, and release authorization.
 - Python 3.10 compatibility testing (CI test matrix covers both 3.10 and
   3.11).
-### Deprecated
-
-- The empty `caegraph.data` umbrella namespace is retained for compatibility
-  but deprecated. New imports should use `caegraph.core`, `caegraph.io`,
-  `caegraph.graph`, `caegraph.transforms`, or `caegraph.dataset`. Removal is
-  planned no earlier than version 0.3.0.
 
 ## [0.1.0] - 2026-09-03
 

@@ -23,6 +23,15 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
   abstract class BaseObject {
     Base abstraction: identity, metadata, validation contract
   }
+  class Registry {
+    Name-keyed registry/factory for loaders and
+    transforms (register / get / build);
+    duplicate names rejected (Phase 1);
+    name->factory only, callable check is the
+    contract; runtime type enforcement
+    (base_class + issubclass) recorded as a
+    future option, deliberately not Phase 1
+  }
   class Mesh {
     CAE discrete geometry object: nodes, elements,
     faces, boundary regions;
@@ -34,7 +43,15 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
     node-or-cell association (ADR-007 D6)
   }
   enum BoundaryType {
-    DIRICHLET / NEUMANN / FREE
+    Mathematical BC categories (ADR-010):
+    DIRICHLET / NEUMANN / ROBIN /
+    PERIODIC / SYMMETRY / INTERFACE / NONE;
+    software-specific names (wall, inlet...)
+    live in BoundaryRegion metadata, never here.
+    NOTE: single enum holds constraint types AND
+    topological roles; candidate split
+    BoundaryConditionType x BoundaryRegionType
+    on record in ADR-010 (revisit in Phase 2)
   }
   enum NodeCategory {
     INTERIOR / BOUNDARY / CORNER
@@ -45,7 +62,10 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
   }
   class BoundarySpec {
     User-facing boundary declaration: type, value,
-    weight, space/time dependence
+    weight, space/time dependence;
+    paired_region slot for PERIODIC,
+    generic parameters container for ROBIN
+    (design slots, Phase 2 contract, ADR-010)
   }
   abstract class FieldFunction {
     Callable analytic boundary/initial value:

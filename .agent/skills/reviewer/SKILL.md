@@ -30,11 +30,13 @@ Release）是唯一验收标准。
 3. API 兼容性检查（每次都做）：
    - [ ] 是否删除/重命名了公共类、函数、方法？
    - [ ] 是否改变了公共函数/方法的签名（参数、默认值、返回类型）？
-   - [ ] Import Stability：公共 API 的 import 路径是用户契约的一部分。
-         类/函数在模块间移动（如 `caegraph.graph.Graph` → `caegraph.core`）
-         即使用户代码全部失效——必须在旧路径保留弃用重导出
-         （deprecation re-export）至少一个版本，并记录迁移说明；
-         未做则直接 `Request Changes`。
+   - [ ] Import Stability：**已发布或经 ADR 冻结**的公共 API，其 import
+         路径是用户契约的一部分。类/函数在模块间移动（如
+         `caegraph.graph.Graph` → `caegraph.core`）——必须在旧路径保留
+         弃用重导出（deprecation re-export）至少一个版本，并记录迁移
+         说明；未做则直接 `Request Changes`。反之，从未发布/冻结的 API
+         不得凭空引入 legacy/deprecated/兼容层——兼容性必须来自真实的
+         历史 API，不能由 Agent 预设。
    - [ ] 任何破坏性变更必须伴随：版本号更新计划 + CHANGELOG 迁移说明，
          否则直接 `Request Changes`。
 4. 输出审查结论。

@@ -25,7 +25,6 @@ LAYERS = {
 }
 
 PYG_FREE_PACKAGES = {"core", "geometry", "io"}
-LEGACY_NAMESPACES = {"data"}
 
 
 def _python_files() -> Iterator[Path]:
@@ -103,16 +102,3 @@ def test_engineering_truth_layers_do_not_import_pyg():
             violations.append(str(path.relative_to(PACKAGE_ROOT)))
 
     assert not violations, "PyG imports below graph layer: " + ", ".join(violations)
-
-
-def test_legacy_namespaces_do_not_hide_internal_dependencies():
-    """Compatibility namespaces remain empty dependency leaves."""
-    violations = []
-    for path in _python_files():
-        if _source_package(path) not in LEGACY_NAMESPACES:
-            continue
-        for target in _internal_imports(path):
-            if target in LAYERS:
-                violations.append(f"{path.relative_to(PACKAGE_ROOT)} -> {target}")
-
-    assert not violations, "legacy namespace dependencies: " + ", ".join(violations)
