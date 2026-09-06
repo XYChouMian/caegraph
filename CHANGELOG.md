@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Replaced text-only architecture and workflow diagrams with Mermaid across
+  governance documents, the architecture specification, the roadmap, and the
+  bilingual documentation homepage; enabled native Mermaid rendering in
+  MkDocs.
 - Marked Phase 1 (Core Data Structures) as complete and Phase 2 (CAE Data
   Pipeline) as in progress across the phase pointer, architecture
   specification, README, and MkDocs site.
