@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Resolved the ADR-010 boundary-vocabulary question via ADR-011: keep the
+  single seven-value `BoundaryType` through Phase 2, harden `BoundarySpec`
+  with per-type slot-coherence validation, and record refined Phase 3
+  re-trigger conditions for a possible orthogonal role × constraint split.
+
 - Replaced text-only architecture and workflow diagrams with Mermaid across
   governance documents, the architecture specification, the roadmap, and the
   bilingual documentation homepage; enabled native Mermaid rendering in

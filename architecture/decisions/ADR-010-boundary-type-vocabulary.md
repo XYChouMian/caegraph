@@ -7,7 +7,7 @@
 - 日期：2026-09-06
 - 状态：accepted
 - 关联：ADR-007（D4 共享词汇）、ADR-008（跨软件抽象定位）、Phase 1、
-  Phase 2、Design UML `class_diagram.puml`
+  Phase 2、Design UML `class_diagram.puml`、ADR-011（Phase 2 重估结论）
 
 ## 背景（Context）
 
@@ -61,7 +61,12 @@ Phase 1 落地的 `BoundaryType` 仅有 DIRICHLET / NEUMANN / FREE 三值，
 **重估触发条件**：当 physics / transforms 层需要以不同方式处理
 "施加约束"与"接口配对"（如 INTERFACE 需要携带跨域配对元数据而非
 约束值），或 Phase 2 的 region 元数据无法自然表达角色信息时，以新
-ADR 拆分。届时 `BoundaryType` 的序列化值按上述候选分组迁移。
+  ADR 拆分。届时 `BoundaryType` 的序列化值按上述候选分组迁移。
+
+  **重估结论（2026-09-06，ADR-011）**：Phase 2 开工前重估已完成，
+  两个触发条件均未命中，维持单一枚举；候选拆分判定为分类不纯，
+  正确的未来形态是正交双轴（role × constraint）。细化后的 Phase 3
+  重触发条件与 `BoundarySpec` 槽位一致性加固措施见 ADR-011。
 
 ## 备选方案（Options considered）
 

@@ -49,9 +49,12 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
     software-specific names (wall, inlet...)
     live in BoundaryRegion metadata, never here.
     NOTE: single enum holds constraint types AND
-    topological roles; candidate split
-    BoundaryConditionType x BoundaryRegionType
-    on record in ADR-010 (revisit in Phase 2)
+    topological roles; re-evaluated in ADR-011:
+    kept single through Phase 2, hardened by
+    BoundarySpec slot-coherence validation;
+    orthogonal role x constraint axes deferred
+    until Phase 3 evidence (re-trigger
+    conditions in ADR-011)
   }
   enum NodeCategory {
     INTERIOR / BOUNDARY / CORNER
@@ -65,7 +68,9 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
     weight, space/time dependence;
     paired_region slot for PERIODIC,
     generic parameters container for ROBIN
-    (design slots, Phase 2 contract, ADR-010)
+    (design slots, Phase 2 contract, ADR-010);
+    per-type slot-coherence validation
+    required, fail-fast (ADR-011)
   }
   abstract class FieldFunction {
     Callable analytic boundary/initial value:
