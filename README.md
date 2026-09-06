@@ -7,9 +7,10 @@ simulation on new meshes → experimental-data assimilation**. It keeps
 engineering truth framework-independent while extending PyTorch Geometric for
 computational engineering.
 
-> **Status: Pre-Alpha (Phase 1 — Core Data Structures, in progress).** The
-> Phase 0 foundation is complete. Work has begun on the shared core
-> abstractions; CAE/GNN algorithms remain planned and are not implemented.
+> **Status: Pre-Alpha (Phase 2 — CAE Data Pipeline, in progress).** The
+> Phase 1 core vocabulary (`BaseObject`, registry, shared enums, logging)
+> is complete. Work has begun on the CAE data band (Mesh/Field, loaders,
+> graph construction); GNN training utilities remain planned.
 
 ## Features (planned)
 

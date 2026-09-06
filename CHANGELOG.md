@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Marked Phase 1 (Core Data Structures) as complete and Phase 2 (CAE Data
+  Pipeline) as in progress across the phase pointer, architecture
+  specification, README, and MkDocs site.
 - Updated the package description in `pyproject.toml` to the frozen ADR-008
   positioning (CAE → GNN → AI workflow).
 - Clarified the ADR-007/008 architecture through ADR-009: GraphBuilder owns

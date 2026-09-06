@@ -1,8 +1,8 @@
 # API 参考
 
-CAEGraph 处于 Phase 1（核心数据结构）：`caegraph.core` 已提供 `BaseObject`、
-`Registry` 与共享枚举 `BoundaryType` / `NodeCategory`，`caegraph.utils` 已提供
-`get_logger`；`Mesh`、`Field` 与数据带随 Phase 2 落地。
+CAEGraph 处于 Phase 2（CAE 数据管线）：Phase 1 词汇已就绪（`caegraph.core` 的
+`BaseObject` / `Registry` / 共享枚举 `BoundaryType` / `NodeCategory`，
+`caegraph.utils` 的 `get_logger`），`Mesh` / `Field` 与数据带实现中。
 
 API 文档由此处的
 [mkdocstrings](https://mkdocstrings.github.io/)
