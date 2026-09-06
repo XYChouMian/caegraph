@@ -27,14 +27,18 @@ Design UML，而不是自由发挥。
 
 ## 依赖变更工作流（新增/升级/移除任何依赖时）
 
-```
-Architecture review（必要性/兼容性/许可证）
-    ↓
-修改 pyproject.toml（宽松下限）与 environment.yml
-    ↓
-pip install -e ".[dev,docs]" 更新环境
-    ↓
-CI 验证（pytest + mkdocs build 通过）
+```mermaid
+flowchart TD
+    classDef nowrap white-space:nowrap
+
+    A["Architecture review — 必要性 / 兼容性 / 许可证"]
+    B["修改 pyproject.toml（宽松下限）与 environment.yml"]
+    C["pip install -e .[dev,docs] 更新环境"]
+    D["CI 验证 — pytest + mkdocs build 通过"]
+
+    A --> B --> C --> D
+
+    class A,B,C,D nowrap
 ```
 
 禁止绕过此流程直接 `pip install` 并在代码中使用新依赖。

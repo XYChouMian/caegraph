@@ -28,22 +28,22 @@ Phase 判定依据：`architecture/phases/CURRENT.md`（指针）+
 
 ### 2. 路由流程
 
-```
-User request
-    ↓
-Project Management Agent（分类、拆解、定义验收标准）
-    ↓
-Architecture Agent（涉及结构/依赖时必须先行）
-    ↓
-Coding Agent
-    ↓
-Testing Agent
-    ↓
-Documentation Agent
-    ↓
-Reviewer Agent
-    ↓
-Release Agent（仅发布任务）
+```mermaid
+flowchart TD
+    classDef nowrap white-space:nowrap
+
+    A["User request"]
+    B["Project Management Agent — 分类、拆解、定义验收标准"]
+    C["Architecture Agent — 涉及结构/依赖时必须先行"]
+    D["Coding Agent"]
+    E["Testing Agent"]
+    F["Documentation Agent"]
+    G["Reviewer Agent"]
+    H["Release Agent — 仅发布任务"]
+
+    A --> B --> C --> D --> E --> F --> G --> H
+
+    class A,B,C,D,E,F,G,H nowrap
 ```
 
 ### 3. 派单要求
