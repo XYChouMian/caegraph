@@ -35,12 +35,25 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
   class Mesh {
     CAE discrete geometry object: nodes, elements,
     faces, boundary regions;
-    composed of geometry / topology / boundary / fields
+    composed of geometry / topology / boundary /
+    domain regions / fields
     (anti god-object, ADR-007 D3)
   }
   class Field {
     Named field data: values, unit, timestep,
     node-or-cell association (ADR-007 D6)
+  }
+  abstract class Region {
+    Named mesh region backed by CAE physical
+    groups (ADR-012): unique name, topological
+    dimension, membership index set, open
+    metadata; BaseObject domain-truth family
+  }
+  class DomainRegion {
+    dim == topo dim: computational domain,
+    subdomain or material block;
+    CELL membership; owned by Mesh;
+    never a BoundarySpec target
   }
   enum BoundaryType {
     Mathematical BC categories (ADR-010):
@@ -60,8 +73,15 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
     INTERIOR / BOUNDARY / CORNER
   }
   class BoundaryManager {
-    Mesh-internal registry: boundary regions from
-    physical groups, spec binding, corner queries
+    Mesh-internal registry: name -> BoundaryRegion
+    objects, spec binding by name resolution,
+    corner (multi-region) queries
+  }
+  class BoundaryRegion {
+    dim == topo dim - 1: boundary position;
+    NODE membership; targetable by BoundarySpec
+    by name; carries software naming metadata
+    (wall/inlet...) per ADR-010
   }
   class BoundarySpec {
     User-facing boundary declaration: type, value,
@@ -89,7 +109,13 @@ package "caegraph.geometry" {
 package "caegraph.io" {
   interface MeshLoader {
     Format readers on the core registry;
-    gmsh first (physical groups -> regions)
+    gmsh first via meshio (external IO engine,
+    ADR-013; meshio types never leak past io);
+    physical groups classified by dim vs topo
+    dim into domain/boundary regions, low-dim
+    groups skipped with warning (ADR-012);
+    IO never infers BoundaryType - math
+    categories come from user specs only
   }
   interface MeshWriter {
     Write-back into the CAE ecosystem;
@@ -182,14 +208,20 @@ package "caegraph.inference (neural simulation harness)" {
 
 BaseObject <|-- Mesh
 BaseObject <|-- Field
+BaseObject <|-- Region
+Region <|-- DomainRegion
+Region <|-- BoundaryRegion
 PyGData <|-- Graph
 PyGDataset <|-- CAEDataset
 TorchModule <|-- Model
 
 Mesh "1" *-- "1" BoundaryManager : owns
+BoundaryManager "1" o-- "*" BoundaryRegion : registers
 BoundaryManager "1" o-- "*" BoundarySpec : binds
 BoundarySpec --> BoundaryType : typed by
+BoundarySpec "*" o--> "0..1" BoundaryRegion : targets by name
 BoundarySpec "*" o--> "0..1" FieldFunction : optional value
+Mesh "1" o-- "*" DomainRegion : partitions
 Mesh "1" o-- "*" Field : carries
 Graph ..> NodeCategory : node attribute
 
