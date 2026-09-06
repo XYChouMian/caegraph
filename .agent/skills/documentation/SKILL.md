@@ -49,6 +49,9 @@ docs/docs/
 - 纵向流程节点较多，或节点标签较长且会显著增加图高时，定义并应用
   `classDef nowrap white-space:nowrap`，例如 `class A,B,C nowrap`；短图无需
   机械套用。
+- 节点或边标签包含括号、斜杠、冒号、加号、HTML 换行等特殊字符时必须加
+  双引号：节点使用 `A["..."]`，边标签使用 `A -->|"..."| B`，避免 Mermaid
+  将标签内容误解析为图形语法。
 - Mermaid 图的关系、方向、可选分支与术语必须和
   `architecture/ARCHITECTURE.md`、ADR 及实际实现一致；图不能替代正文中的
   必要限定条件。

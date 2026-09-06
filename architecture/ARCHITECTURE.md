@@ -40,15 +40,15 @@ flowchart TD
     G["<b>Assimilation</b><br>optional observation correction (R4)"]
     H["<b>Visualization</b><br><i>ParaView ecosystem</i>"]
 
-    A -->|io: loaders, registry| B
-    B -->|geometry: metrics, edge features<br>graph: GraphBuilder.build()| C
-    C -->|transforms: feature / physics / boundary-condition encoding| D
-    D -->|physics · models: interface + utilities<br>workflow: loss assembly| E
-    E -->|pretrained model| F
-    B -.->|new mesh via GraphBuilder + transforms| F
-    F -->|io: VTK writer| H
-    F -->|optional assimilation| G
-    G -->|io: VTK writer| H
+    A -->|"io: loaders, registry"| B
+    B -->|"geometry: metrics, edge features<br>graph: GraphBuilder.build()"| C
+    C -->|"transforms: feature / physics / boundary-condition encoding"| D
+    D -->|"physics · models: interface + utilities<br>workflow: loss assembly"| E
+    E -->|"pretrained model"| F
+    B -.->|"new mesh via GraphBuilder + transforms"| F
+    F -->|"io: VTK writer"| H
+    F -->|"optional assimilation"| G
+    G -->|"io: VTK writer"| H
 
     class A,B,C,D,E,F,G,H nowrap
 ```
@@ -118,10 +118,10 @@ flowchart TD
     L["<b>Visualization</b><br>plotting; ParaView ecosystem"]
 
     A --> B --> C --> D --> E --> F --> G --> H
-    H -->|pretrained model| I
-    C -.->|new mesh via GraphBuilder + transforms| I
+    H -->|"pretrained model"| I
+    C -.->|"new mesh via GraphBuilder + transforms"| I
     I --> K --> L
-    I -->|optional assimilation| J --> K
+    I -->|"optional assimilation"| J --> K
 
     class A,B,C,D,E,F,G,H,I,J,K,L nowrap
 ```

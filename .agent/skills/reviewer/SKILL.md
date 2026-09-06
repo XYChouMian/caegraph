@@ -19,7 +19,8 @@ Release）是唯一验收标准。
    - [ ] 公共类/函数/模块是否有 docstring 与类型标注？
    - [ ] Markdown 中的架构、依赖、流程或状态图是否按 `AGENTS.md` 使用
          Mermaid，且仅在确有助于理解时绘制？纵向节点较多的图是否应用了
-         `nowrap` 样式？图示语义是否与架构和 ADR 一致？
+         `nowrap` 样式？含特殊字符的节点与边标签是否加双引号？图示语义是否
+         与架构和 ADR 一致？
    - [ ] 是否有重复代码或非法 helper 文件（`helper.py` / `common.py` /
          `misc.py` / `xxx_utils.py` 等）？
    - [ ] 是否有对应测试？测试是否用合成数据、确定性、无大文件？
