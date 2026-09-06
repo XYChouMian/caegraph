@@ -1,10 +1,11 @@
 # ADR-013: meshio 作为外部 IO 引擎
 
 - 编号：ADR-013
-- 标题：io 层采用 meshio 作为共享外部 IO 引擎（gmsh 首发、VTK 写回），
-  主依赖、懒加载、类型不渗出公共 API
-- 日期：2026-09-06
-- 状态：accepted
+- 标题：io 层**暂定**采用 meshio 作为外部 IO 引擎（gmsh 首发、VTK 写回），
+  主依赖、懒加载、类型不渗出公共 API；**不冻结，引擎在读取钩子后面
+  可整体替换**（换用触发条件见决策第 6 条）
+- 日期：2026-09-06（同日返工：由冻结改为暂定，见决策第 6 条）
+- 状态：accepted（provisional——暂定采用，非冻结选型）
 - 关联：ADR-008（定位冻结）、ADR-012（物理组语义契约）、Phase 2、
   Design UML `class_diagram.puml`（MeshLoader/MeshWriter）
 
@@ -22,7 +23,8 @@ Phase 2 要求 gmsh 首发（.msh 物理组 → 区域体系，ADR-012）与 VTK
    - 写端：VTK 系格式（覆盖 Phase 2 写回与 Phase 4 预测场导出）；
    - 未来 Fluent / Abaqus / OpenFOAM 等格式经同一 core registry 接入，
      meshio 提供多格式底座。
-2. **定位冻结**：meshio 是 **external IO engine**（io 层实现细节）——
+2. **定位声明（不随引擎更替而变）**：无论当前引擎是什么，它都是
+   **external IO engine**（io 层实现细节）——
    - 不是 CAEGraph 的 Mesh 领域抽象（domain truth 在 `caegraph.core`）；
    - 不是 solver interface / trainer / 图后端替代（不触发 ADR-008 冻结
      条款）；
@@ -36,6 +38,12 @@ Phase 2 要求 gmsh 首发（.msh 物理组 → 区域体系，ADR-012）与 VTK
    IO 需求场景的导入轻量。
 5. 加载器之间互不硬依赖（Phase 2 规则不变）：各格式 loader 独立注册于
    core registry，共享 meshio 引擎不构成 loader 间耦合。
+6. **暂定不冻结（provisional）**：ADR-012 的管线抽象使 IO 引擎只在
+   `_read` 钩子后面，替换成本被管线隔离。meshio 是当前较优解而非
+   最终裁决，出现以下任一情况时提请新 ADR 复评换用：
+   - 接入 meshio 支持不佳的格式（解析缺陷/信息丢失/性能不可接受）；
+   - 上游维护停滞与格式跟进失效；
+   - Phase 2 收尾复评（gmsh 读取 + VTK 写回双端实战检验后）。
 
 ## 备选方案（Options considered）
 

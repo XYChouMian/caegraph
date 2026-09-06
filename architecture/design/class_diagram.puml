@@ -36,24 +36,14 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
     CAE discrete geometry object: nodes, elements,
     faces, boundary regions;
     composed of geometry / topology / boundary /
-    domain regions / fields
-    (anti god-object, ADR-007 D3)
+    domain groups / fields
+    (domain groups: named global-cell-index
+    sets, plain data, ADR-012;
+    anti god-object, ADR-007 D3)
   }
   class Field {
     Named field data: values, unit, timestep,
     node-or-cell association (ADR-007 D6)
-  }
-  abstract class Region {
-    Named mesh region backed by CAE physical
-    groups (ADR-012): unique name, topological
-    dimension, membership index set, open
-    metadata; BaseObject domain-truth family
-  }
-  class DomainRegion {
-    dim == topo dim: computational domain,
-    subdomain or material block;
-    CELL membership; owned by Mesh;
-    never a BoundarySpec target
   }
   enum BoundaryType {
     Mathematical BC categories (ADR-010):
@@ -79,9 +69,11 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
   }
   class BoundaryRegion {
     dim == topo dim - 1: boundary position;
-    NODE membership; targetable by BoundarySpec
-    by name; carries software naming metadata
-    (wall/inlet...) per ADR-010
+    NODE membership (global node indices);
+    targetable by BoundarySpec by name;
+    carries software naming metadata
+    (wall/inlet...) per ADR-010;
+    BaseObject domain-truth family
   }
   class BoundarySpec {
     User-facing boundary declaration: type, value,
@@ -107,15 +99,23 @@ package "caegraph.geometry" {
 }
 
 package "caegraph.io" {
-  interface MeshLoader {
-    Format readers on the core registry;
-    gmsh first via meshio (external IO engine,
-    ADR-013; meshio types never leak past io);
-    physical groups classified by dim vs topo
-    dim into domain/boundary regions, low-dim
-    groups skipped with warning (ADR-012);
+  abstract class MeshLoader {
+    Conversion pipeline, template method
+    (ADR-012): fixed flow read -> extract
+    groups -> classify by dim vs topo dim ->
+    build Mesh -> validate; _read is the ONLY
+    format hook; domain groups become plain
+    global-cell-index data on Mesh, boundary
+    groups become BoundaryRegion objects;
     IO never infers BoundaryType - math
     categories come from user specs only
+  }
+  class GmshLoader {
+    First concrete loader: implements _read
+    via meshio (provisional engine, ADR-013;
+    types never leak past io); renumbers
+    block-local cells to the global
+    cell index space (ADR-012)
   }
   interface MeshWriter {
     Write-back into the CAE ecosystem;
@@ -208,12 +208,11 @@ package "caegraph.inference (neural simulation harness)" {
 
 BaseObject <|-- Mesh
 BaseObject <|-- Field
-BaseObject <|-- Region
-Region <|-- DomainRegion
-Region <|-- BoundaryRegion
+BaseObject <|-- BoundaryRegion
 PyGData <|-- Graph
 PyGDataset <|-- CAEDataset
 TorchModule <|-- Model
+MeshLoader <|-- GmshLoader
 
 Mesh "1" *-- "1" BoundaryManager : owns
 BoundaryManager "1" o-- "*" BoundaryRegion : registers
@@ -221,11 +220,11 @@ BoundaryManager "1" o-- "*" BoundarySpec : binds
 BoundarySpec --> BoundaryType : typed by
 BoundarySpec "*" o--> "0..1" BoundaryRegion : targets by name
 BoundarySpec "*" o--> "0..1" FieldFunction : optional value
-Mesh "1" o-- "*" DomainRegion : partitions
 Mesh "1" o-- "*" Field : carries
 Graph ..> NodeCategory : node attribute
 
 MeshLoader ..> Mesh : produces
+MeshLoader ..> BoundaryRegion : materializes
 MeshWriter ..> Mesh : consumes
 GraphBuilder ..> Mesh : builds from
 GraphBuilder ..> GeometryProcessor : uses features
