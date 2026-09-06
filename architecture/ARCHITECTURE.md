@@ -133,10 +133,6 @@ Visualization              plotting + VTK write-back (ParaView ecosystem)
 | `caegraph.inference` | neural-simulation harness: simulator, rollout loop (numerics model-side) | core, graph, transforms, models, assimilation, io |
 | `caegraph.visualization` | mesh/field/graph plotting | core, graph, io |
 
-`caegraph.data` is an empty, deprecated compatibility namespace for the former
-umbrella data layer. New code uses the responsibility-specific packages above;
-the namespace will not be removed before version 0.3.0.
-
 Dependency layers (lower layers must never import higher layers;
 same-layer imports are forbidden):
 
@@ -254,6 +250,10 @@ divergence is treated as technical debt.
 
 - Do not pin exact dependency versions in `pyproject.toml`; use lower bounds.
 - Keep the package PyPI-publishable at all times.
+- Compatibility mechanisms (legacy namespaces, deprecation shims, compat
+  re-exports) require a real, previously released or ADR-frozen public API.
+  Never invent backward compatibility for APIs that never existed — no
+  pre-release `legacy`/`deprecated`/`compat` baggage.
 
 ---
 
@@ -301,8 +301,8 @@ the current phase; phase transitions require a Review pass.
 | Phase | Scope | Exit criteria |
 | --- | --- | --- |
 | **Phase 0 — Foundation** (done) | packaging, architecture spec, UML dual system, docs, CI, agent governance | `pip install -e .` + pytest + `mkdocs build --strict` all pass; no CAE/GNN code |
-| **Phase 1 — Core data structures** (current) | `BaseObject`, registries, shared types in `caegraph.core` | core API tested + docstringed; first Generated UML produced |
-| **Phase 2 — CAE data pipeline** | domain-truth objects (`Mesh`/`Field`) + geometry/io/graph/transforms/dataset data band, `Graph(torch_geometric.data.Data)`, gmsh first, VTK write-back (R1) | conversion invariants validated (topology/conservation/BC mapping); PyG boundary enforced |
+| **Phase 1 — Core data structures** (done) | `BaseObject`, registries, shared types in `caegraph.core` | core API tested + docstringed; first Generated UML produced |
+| **Phase 2 — CAE data pipeline** (current) | domain-truth objects (`Mesh`/`Field`) + geometry/io/graph/transforms/dataset data band, `Graph(torch_geometric.data.Data)`, gmsh first, VTK write-back (R1) | conversion invariants validated (topology/conservation/BC mapping); PyG boundary enforced |
 | **Phase 3 — ML models** | physics losses, Model interface + CAE utilities, assimilation operators, workflow training utilities in `caegraph.physics`/`models`/`assimilation`/`workflow` | end-to-end training on synthetic benchmark incl. observation-constraint mode (R2+R4) |
 | **Phase 4 — Neural simulation & release** | inference harness (simulator, rollout), VTK write-back, examples, API freeze, v1.0 | rollout on unseen mesh validated (R3); Release Agent checklist fully green |
 

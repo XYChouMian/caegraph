@@ -1,3 +1,23 @@
 @startuml classes_caegraph
 set namespaceSeparator none
+class "BaseObject" as caegraph.core.base.BaseObject {
+  metadata : dict[str, Any]
+  name : str
+  update_metadata() -> None
+  {abstract}validate() -> None
+}
+class "BoundaryType" as caegraph.core.enums.BoundaryType {
+  name
+}
+class "NodeCategory" as caegraph.core.enums.NodeCategory {
+  name
+}
+class "Registry" as caegraph.core.registry.Registry {
+  kind : str
+  build() -> T
+  get(name: str) -> Callable[..., T]
+  names() -> list[str]
+  register(name: str, factory: Callable[..., T] | None) -> Callable[..., T] | Callable[[Callable[..., T]], Callable[..., T]]
+  unregister(name: str) -> None
+}
 @enduml

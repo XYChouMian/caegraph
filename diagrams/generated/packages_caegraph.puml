@@ -6,7 +6,11 @@ package "caegraph.assimilation" as caegraph.assimilation {
 }
 package "caegraph.core" as caegraph.core {
 }
-package "caegraph.data" as caegraph.data {
+package "caegraph.core.base" as caegraph.core.base {
+}
+package "caegraph.core.enums" as caegraph.core.enums {
+}
+package "caegraph.core.registry" as caegraph.core.registry {
 }
 package "caegraph.dataset" as caegraph.dataset {
 }
@@ -26,8 +30,14 @@ package "caegraph.transforms" as caegraph.transforms {
 }
 package "caegraph.utils" as caegraph.utils {
 }
+package "caegraph.utils.logging" as caegraph.utils.logging {
+}
 package "caegraph.visualization" as caegraph.visualization {
 }
 package "caegraph.workflow" as caegraph.workflow {
 }
+caegraph.core --> caegraph.core.base
+caegraph.core --> caegraph.core.enums
+caegraph.core --> caegraph.core.registry
+caegraph.utils --> caegraph.utils.logging
 @enduml

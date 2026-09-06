@@ -1,6 +1,6 @@
 # Phase 1 — Core Data Structures
 
-Status: In progress
+Status: Done (2026-09-06)
 
 Goal: the framework-independent foundation of the domain core —
 `caegraph.core` and `caegraph.utils` become real code.

@@ -1,8 +1,10 @@
 """Utility helpers for CAEGraph.
 
-Planned responsibilities (see architecture/ARCHITECTURE.md):
-- Logging
-- Seed / reproducibility helpers
-
-Phase 1 implementation is planned but has not landed yet.
+Currently provides the framework-wide logging helper
+:func:`~caegraph.utils.get_logger`. Seed / reproducibility helpers
+follow in later phases.
 """
+
+from caegraph.utils.logging import get_logger
+
+__all__ = ["get_logger"]
