@@ -33,13 +33,16 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
     future option, deliberately not Phase 1
   }
   class Mesh {
-    CAE discrete geometry object: nodes, elements,
-    faces, boundary regions;
-    composed of geometry / topology / boundary /
-    domain groups / fields
-    (domain groups: named global-cell-index
-    sets, plain data, ADR-012;
-    anti god-object, ADR-007 D3)
+    CAE discrete geometry, canonical
+    representation (ADR-014): nodes (n,3) +
+    topo_dim; cells CSR (int-coded cell_types /
+    connectivity / offsets, single truth, type
+    views derived only); explicit facets CSR +
+    validated ragged facet_cells (winding-free;
+    declared by adapter or user); domain groups
+    (plain global-cell-id data); fields
+    (appendable); structure frozen after
+    validate (anti god-object, ADR-007 D3)
   }
   class Field {
     Named field data: values, unit, timestep,
@@ -62,17 +65,29 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
   enum NodeCategory {
     INTERIOR / BOUNDARY / CORNER
   }
+  enum CellType {
+    LINE2 / TRI3 / QUAD4 / TET4 / PYR5 /
+    WEDGE6 / HEX8 (POINT + higher-order =
+    future); explicit stable integer codes,
+    never enum-declaration order; dim,
+    node_count, CAEGraph local-node
+    convention + codim-1 face templates
+    (frozen with implementation, ADR-014)
+  }
   class BoundaryManager {
-    Mesh-internal registry: name -> BoundaryRegion
-    objects, spec binding by name resolution,
+    Semantic grouping only, topology lives on
+    Mesh (ADR-014): name -> BoundaryRegion,
+    spec binding by name resolution,
     corner (multi-region) queries
   }
   class BoundaryRegion {
-    dim == topo dim - 1: boundary position;
-    NODE membership (global node indices);
-    targetable by BoundarySpec by name;
-    carries software naming metadata
-    (wall/inlet...) per ADR-010;
+    dim == topo dim - 1 boundary position;
+    canonical membership = global facet IDs,
+    node set is a derived view, never the
+    source of truth (ADR-014); references
+    topology, does not own it; targetable by
+    BoundarySpec by name; carries software
+    naming metadata per ADR-010;
     BaseObject domain-truth family
   }
   class BoundarySpec {
@@ -104,18 +119,23 @@ package "caegraph.io" {
     (ADR-012): fixed flow read -> extract
     groups -> classify by dim vs topo dim ->
     build Mesh -> validate; _read is the ONLY
-    format hook; domain groups become plain
-    global-cell-index data on Mesh, boundary
-    groups become BoundaryRegion objects;
-    IO never infers BoundaryType - math
-    categories come from user specs only
+    format hook; produces canonical Mesh
+    input including explicit facets, the
+    loading/normalization pipeline
+    establishes facet-cell adjacency
+    (ADR-014); domain groups become plain
+    global-cell-id data; IO never infers
+    BoundaryType - math categories come
+    from user specs only
   }
   class GmshLoader {
     First concrete loader: implements _read
     via meshio (provisional engine, ADR-013;
     types never leak past io); renumbers
-    block-local cells to the global
-    cell index space (ADR-012)
+    block-local cells to the global cell
+    index space and maps source node
+    ordering to the CAEGraph local-node
+    convention (ADR-012/014)
   }
   interface MeshWriter {
     Write-back into the CAE ecosystem;

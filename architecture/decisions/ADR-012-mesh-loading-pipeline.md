@@ -60,6 +60,10 @@ Pointwise…）**数据结构各异**，读取后必须转为相同的框架对�
      显式声明以防未来格式破坏）。
    - 校验不变量（validate 强制）：域分组存在时各组并集 == [0, n_cells)；
      分组索引界内；边界分组节点集 ⊆ 全体节点。
+     **修订（2026-09-06，ADR-014）**：域分组并集覆盖不再是 universal
+     invariant——改为 complete_coverage / complete_partition 两种由
+     调用方显式声明的条件检查；边界成员校验随成员表示改为全局
+     facet 索引而被 ADR-014 的 8a facet↔cell 强一致校验取代。
 
 3. **物理组维度分类契约**（格式无关，管线固定阶段）：以
    `topo_dim = 网格最高单元维度`（加载时推断）为基准：
@@ -78,6 +82,10 @@ Pointwise…）**数据结构各异**，读取后必须转为相同的框架对�
    corner（多区域交集）查询；`BoundarySpec` 以名字符串引用目标区域，
    bind 时校验存在性并拒绝域分组名。诞生地：`core/boundary/region.py`；
    io 层只消费、只构造。
+   **修订（2026-09-06，ADR-014）**：BoundaryRegion 的 canonical 成员
+   改为**全局 facet 索引**（引用 winding-free canonical facet
+   topology）；节点集降级为派生视图。BoundaryRegion 引用 topology
+   而不拥有 topology；拓扑事实由 Mesh 持有。
 
 6. **IO 永不推断 BoundaryType**：加载器的职责终点是产出命名 Region
    与朴素域分组；数学类别只能来自用户声明的 BoundarySpec。禁止任何
