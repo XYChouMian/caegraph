@@ -40,6 +40,29 @@ Phase 1 落地的 `BoundaryType` 仅有 DIRICHLET / NEUMANN / FREE 三值，
    （用户约束声明）→ BoundaryType（数学类别）。BoundaryType 仍是
    词汇枚举，不是求解器实现、软件适配器或完整边界条件引擎。
 
+## 未来演进（Future evolution，非本期决策）
+
+已识别的概念张力：当前单枚举混合了两个正交层次——
+
+- **数学约束类型**：DIRICHLET（u=g）、NEUMANN（∇u·n=q）、ROBIN
+  （a·u+b∇u·n=c）——规定"约束是什么"；
+- **拓扑角色**：INTERFACE（fluid|solid 配对）、PERIODIC / SYMMETRY
+  （区域间几何关系）——规定"区域扮演什么"。INTERFACE 严格说不是
+  传统边界条件，而是 BoundaryRole。
+
+候选拆分方向（Phase 2 实现前重新评估，不预先实现）：
+
+- `BoundaryConditionType`：DIRICHLET / NEUMANN / ROBIN / PERIODIC /
+  SYMMETRY
+- `BoundaryRegionType`：EXTERNAL / INTERFACE / INTERNAL
+
+**本期结论**：Phase 1/2 初期保持单一 `BoundaryType` 枚举——七值封闭、
+序列化面稳定，过早拆分会迫使 gmsh 物理组映射同时面向两套词汇。
+**重估触发条件**：当 physics / transforms 层需要以不同方式处理
+"施加约束"与"接口配对"（如 INTERFACE 需要携带跨域配对元数据而非
+约束值），或 Phase 2 的 region 元数据无法自然表达角色信息时，以新
+ADR 拆分。届时 `BoundaryType` 的序列化值按上述候选分组迁移。
+
 ## 备选方案（Options considered）
 
 | 方案 | 结论 | 原因 |

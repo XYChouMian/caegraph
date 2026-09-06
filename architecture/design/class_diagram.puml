@@ -43,7 +43,11 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
     DIRICHLET / NEUMANN / ROBIN /
     PERIODIC / SYMMETRY / INTERFACE / NONE;
     software-specific names (wall, inlet...)
-    live in BoundaryRegion metadata, never here
+    live in BoundaryRegion metadata, never here.
+    NOTE: single enum holds constraint types AND
+    topological roles; candidate split
+    BoundaryConditionType x BoundaryRegionType
+    on record in ADR-010 (revisit in Phase 2)
   }
   enum NodeCategory {
     INTERIOR / BOUNDARY / CORNER

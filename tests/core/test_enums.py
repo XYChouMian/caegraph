@@ -19,6 +19,7 @@ def test_boundary_type_members_and_values():
     }
     for member, value in expected.items():
         assert BoundaryType[member].value == value
+        assert BoundaryType.__getattribute__(member).value == value
     assert len(BoundaryType) == len(expected)
 
 
