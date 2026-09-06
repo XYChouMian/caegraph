@@ -1,5 +1,7 @@
 """Smoke tests: verify the package installs and imports correctly."""
 
+from packaging.version import Version
+
 import caegraph
 
 
@@ -9,12 +11,10 @@ def test_import_caegraph():
 
 
 def test_version_defined():
-    """The package must expose a valid version string."""
+    """The package must expose a valid PEP 440 version string."""
     version = caegraph.__version__
     assert isinstance(version, str)
-    parts = version.split(".")
-    assert len(parts) >= 2
-    assert all(part.isdigit() for part in parts)
+    Version(version)
 
 
 def test_subpackages_exist():
