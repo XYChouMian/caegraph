@@ -31,19 +31,19 @@ Four core requirements (frozen, ADR-008):
 flowchart TD
     classDef nowrap white-space:nowrap
 
-    A["<b>CAE software</b><br><i>Fluent, Abaqus, OpenFOAM, gmsh</i>"]
-    B["<b>Mesh representation</b><br>nodes, elements, boundary regions, fields"]
-    C["<b>Graph representation</b><br>PyG-native neural representation (ADR-007)"]
-    D["<b>Dataset</b><br>CAEDataset (PyG), transforms, splits"]
-    E["<b>Training</b><br>user loop or Lightning — CAEGraph never replaces it"]
-    F["<b>Inference</b><br>neural simulation: rollout harness → field reconstruction"]
-    G["<b>Assimilation</b><br>optional observation correction (R4)"]
-    H["<b>Visualization</b><br><i>ParaView ecosystem</i>"]
+    A["<b>CAE software</b> — <i>Fluent, Abaqus, OpenFOAM, gmsh</i>"]
+    B["<b>Mesh representation</b> — nodes, elements, boundary regions, fields"]
+    C["<b>Graph representation</b> — PyG-native neural representation (ADR-007)"]
+    D["<b>Dataset</b> — CAEDataset (PyG), transforms, splits"]
+    E["<b>Training</b> — user loop or Lightning; CAEGraph never replaces it"]
+    F["<b>Inference</b> — neural simulation: rollout harness → field reconstruction"]
+    G["<b>Assimilation</b> — optional observation correction (R4)"]
+    H["<b>Visualization</b> — <i>ParaView ecosystem</i>"]
 
     A -->|"io: loaders, registry"| B
-    B -->|"geometry: metrics, edge features<br>graph: GraphBuilder.build()"| C
+    B -->|"geometry: metrics, edge features · graph: GraphBuilder.build()"| C
     C -->|"transforms: feature / physics / boundary-condition encoding"| D
-    D -->|"physics · models: interface + utilities<br>workflow: loss assembly"| E
+    D -->|"physics · models: interface + utilities · workflow: loss assembly"| E
     E -->|"pretrained model"| F
     B -.->|"new mesh via GraphBuilder + transforms"| F
     F -->|"io: VTK writer"| H
@@ -104,18 +104,18 @@ The framework is organized around the canonical data flow:
 flowchart TD
     classDef nowrap white-space:nowrap
 
-    A["<b>CAD / CFD / FEM software</b><br>raw solver/CAD data"]
-    B["<b>io loaders</b><br>gmsh first"]
-    C["<b>Mesh</b><br>domain truth: nodes, elements, regions, fields"]
-    D["<b>geometry</b><br>metrics, edge features, interpolation"]
-    E["<b>Graph</b><br>PyG-native neural representation, tensor storage"]
-    F["<b>transforms</b><br>feature / physics / boundary-condition encoding"]
-    G["<b>Dataset</b><br>CAEDataset (PyG), transforms, splits"]
-    H["<b>Training</b><br>physics losses · Model interface · workflow utilities<br><i>user loop / Lightning; CAEGraph adapts, never replaces</i>"]
-    I["<b>Inference</b><br>neural-simulation harness: rollout, reconstruction"]
-    J["<b>Assimilation</b><br>optional observation correction (R4)"]
-    K["<b>io writers</b><br>VTK"]
-    L["<b>Visualization</b><br>plotting; ParaView ecosystem"]
+    A["<b>CAD / CFD / FEM software</b> — raw solver/CAD data"]
+    B["<b>io loaders</b> — gmsh first"]
+    C["<b>Mesh</b> — domain truth: nodes, elements, regions, fields"]
+    D["<b>geometry</b> — metrics, edge features, interpolation"]
+    E["<b>Graph</b> — PyG-native neural representation, tensor storage"]
+    F["<b>transforms</b> — feature / physics / boundary-condition encoding"]
+    G["<b>Dataset</b> — CAEDataset (PyG), transforms, splits"]
+    H["<b>Training</b> — physics losses · Model interface · workflow utilities; <i>user loop / Lightning, CAEGraph adapts and never replaces</i>"]
+    I["<b>Inference</b> — neural-simulation harness: rollout, reconstruction"]
+    J["<b>Assimilation</b> — optional observation correction (R4)"]
+    K["<b>io writers</b> — VTK"]
+    L["<b>Visualization</b> — plotting; ParaView ecosystem"]
 
     A --> B --> C --> D --> E --> F --> G --> H
     H -->|"pretrained model"| I
@@ -151,16 +151,16 @@ same-layer imports are forbidden):
 flowchart BT
     classDef nowrap white-space:nowrap
 
-    A["<b>utils</b><br>bottom"]
-    B["<b>core</b><br>domain truth; torch-only, never PyG"]
-    C["<b>geometry / io</b><br>sibling services; must not import each other"]
-    D["<b>graph</b><br>Graph(Data): PyG-native neural representation"]
+    A["<b>utils</b> — bottom"]
+    B["<b>core</b> — domain truth; torch-only, never PyG"]
+    C["<b>geometry / io</b> — sibling services; must not import each other"]
+    D["<b>graph</b> — Graph(Data): PyG-native neural representation"]
     E["<b>transforms</b>"]
     F["<b>dataset</b>"]
     G["<b>physics</b>"]
-    H["<b>models / assimilation</b><br>Model interface + utilities; observation/correction"]
-    I["<b>workflow / inference</b><br>training utilities; neural-simulation harness"]
-    J["<b>visualization</b><br>top"]
+    H["<b>models / assimilation</b> — Model interface + utilities; observation/correction"]
+    I["<b>workflow / inference</b> — training utilities; neural-simulation harness"]
+    J["<b>visualization</b> — top"]
 
     J --> I --> H --> G --> F --> E --> D --> C --> B --> A
 

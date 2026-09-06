@@ -14,7 +14,7 @@ CAEGraph 的架构守护者。负责维护 `architecture/ARCHITECTURE.md`、Desi
 
 ```mermaid
 flowchart LR
-    A[Python code] --> B[UML generator<br>pyreverse 等] --> C[Generated UML]
+    A["Python code"] --> B["UML generator — pyreverse 等"] --> C["Generated UML"]
 ```
 
 - Architecture Agent 的职责是**审查两者差异**：代码偏离设计 → 要求整改；
@@ -28,16 +28,16 @@ flowchart LR
 flowchart BT
     classDef nowrap white-space:nowrap
 
-    A["<b>utils</b><br>最底层；可依赖第三方库，不依赖 caegraph 其他包"]
-    B["<b>core</b><br>工程真源；torch-only，禁止 PyG"]
-    C["<b>geometry / io</b><br>兄弟层，禁止互相依赖"]
-    D["<b>graph</b><br>PyG 原生层起点"]
+    A["<b>utils</b> — 最底层；可依赖第三方库，不依赖 caegraph 其他包"]
+    B["<b>core</b> — 工程真源；torch-only，禁止 PyG"]
+    C["<b>geometry / io</b> — 兄弟层，禁止互相依赖"]
+    D["<b>graph</b> — PyG 原生层起点"]
     E["<b>transforms</b>"]
     F["<b>dataset</b>"]
     G["<b>physics</b>"]
     H["<b>models / assimilation</b>"]
     I["<b>workflow / inference</b>"]
-    J["<b>visualization</b><br>最上层"]
+    J["<b>visualization</b> — 最上层"]
 
     J --> I --> H --> G --> F --> E --> D --> C --> B --> A
 

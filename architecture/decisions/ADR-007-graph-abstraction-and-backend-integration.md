@@ -65,13 +65,13 @@ flowchart BT
 
     A["<b>utils</b>"]
     B["<b>core</b>"]
-    C["<b>geometry / io</b><br>sibling services"]
+    C["<b>geometry / io</b> — sibling services"]
     D["<b>graph</b>"]
     E["<b>transforms</b>"]
     F["<b>dataset</b>"]
     G["<b>physics</b>"]
-    H["<b>models / assimilation</b><br>sibling services"]
-    I["<b>workflow / inference</b><br>sibling services"]
+    H["<b>models / assimilation</b> — sibling services"]
+    I["<b>workflow / inference</b> — sibling services"]
     J["<b>visualization</b>"]
 
     J --> I --> H --> G --> F --> E --> D --> C --> B --> A

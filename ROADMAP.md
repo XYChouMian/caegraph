@@ -8,12 +8,12 @@ This file is the **strategy layer**. The layering is:
 flowchart TD
     classDef nowrap white-space:nowrap
 
-    A["<b>ROADMAP.md</b><br>future direction"]
-    B["<b>architecture/phases/</b><br>per-phase design"]
-    C["<b>GitHub Milestones</b><br>concrete goals"]
-    D["<b>Issues</b><br>tasks"]
+    A["<b>ROADMAP.md</b> — future direction"]
+    B["<b>architecture/phases/</b> — per-phase design"]
+    C["<b>GitHub Milestones</b> — concrete goals"]
+    D["<b>Issues</b> — tasks"]
     E["<b>Code</b>"]
-    F["<b>CHANGELOG</b><br>record"]
+    F["<b>CHANGELOG</b> — record"]
 
     A --> B --> C --> D --> E --> F
 

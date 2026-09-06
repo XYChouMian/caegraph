@@ -12,15 +12,15 @@ OpenCode 还是其他实现）接入 CAEGraph 开发时，**必须先读本文�
 flowchart TD
     classDef nowrap white-space:nowrap
 
-    A["<b>Requirement</b><br>用户请求"]
-    B["<b>Project Management Agent</b><br>分类、拆解、定义验收标准、路由"]
-    C["<b>Task Branch</b><br>按 Git Skill 创建具名任务分支"]
-    D["<b>Architecture Agent</b><br>结构/依赖相关时必须先行<br>更新 ARCHITECTURE.md + Design UML"]
-    E["<b>Coding Agent</b><br>按已批准设计实现 src/caegraph/"]
-    F["<b>Testing Agent</b><br>合成数据、确定性测试"]
-    G["<b>Documentation Agent</b><br>docstring / API / 教程 / 双语页面"]
-    H["<b>Reviewer Agent</b><br>七者一致性 + API 兼容性审查"]
-    I["<b>Release Agent</b><br>仅发布任务执行：版本、构建、发布清单"]
+    A["<b>Requirement</b> — 用户请求"]
+    B["<b>Project Management Agent</b> — 分类、拆解、定义验收标准、路由"]
+    C["<b>Task Branch</b> — 按 Git Skill 创建具名任务分支"]
+    D["<b>Architecture Agent</b> — 结构/依赖相关时必须先行；更新 ARCHITECTURE.md + Design UML"]
+    E["<b>Coding Agent</b> — 按已批准设计实现 src/caegraph/"]
+    F["<b>Testing Agent</b> — 合成数据、确定性测试"]
+    G["<b>Documentation Agent</b> — docstring / API / 教程 / 双语页面"]
+    H["<b>Reviewer Agent</b> — 七者一致性 + API 兼容性审查"]
+    I["<b>Release Agent</b> — 仅发布任务执行：版本、构建、发布清单"]
 
     A --> B --> C --> D --> E --> F --> G --> H --> I
 
@@ -46,8 +46,8 @@ flowchart TD
     classDef nowrap white-space:nowrap
 
     A["崩溃 / 错误结果 / CI 全红"]
-    B["<b>Project Management Agent</b><br>确认紧急级别与验收标准"]
-    C["<b>bugfix/&lt;name&gt;</b><br>从 main 创建；禁止直接提交 main"]
+    B["<b>Project Management Agent</b> — 确认紧急级别与验收标准"]
+    C["<b>bugfix/&lt;name&gt;</b> — 从 main 创建；禁止直接提交 main"]
     D["Coding"]
     E["Testing"]
     F["Reviewer"]
