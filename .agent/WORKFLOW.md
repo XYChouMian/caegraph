@@ -12,8 +12,6 @@ OpenCode 还是其他实现）接入 CAEGraph 开发时，**必须先读本文�
 flowchart TD
     classDef nowrap white-space:nowrap
 
-    classDef nowrap white-space:nowrap
-
     A["<b>Requirement</b><br>用户请求"]
     B["<b>Project Management Agent</b><br>分类、拆解、定义验收标准、路由"]
     C["<b>Task Branch</b><br>按 Git Skill 创建具名任务分支"]
@@ -45,6 +43,8 @@ flowchart TD
 
 ```mermaid
 flowchart TD
+    classDef nowrap white-space:nowrap
+
     A["崩溃 / 错误结果 / CI 全红"]
     B["<b>Project Management Agent</b><br>确认紧急级别与验收标准"]
     C["<b>bugfix/&lt;name&gt;</b><br>从 main 创建；禁止直接提交 main"]
