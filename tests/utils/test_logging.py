@@ -31,3 +31,24 @@ def test_blank_name_is_rejected():
     for bad in ("", "   ", None):
         with pytest.raises(ValueError, match="non-empty"):
             get_logger(bad)  # type: ignore[arg-type]
+
+
+def test_logger_namespace_hierarchy():
+    grandchild = get_logger("io.gmsh")
+    assert grandchild.parent is get_logger("io")
+    assert grandchild.parent.name == "caegraph.io"
+    assert grandchild.parent.parent.name == "caegraph"
+
+
+def test_null_handler_is_not_duplicated():
+    root = logging.getLogger("caegraph")
+    before = len(root.handlers)
+    get_logger("fresh.component")
+    assert len(root.handlers) == before
+    null_handlers = [h for h in root.handlers if isinstance(h, logging.NullHandler)]
+    assert len(null_handlers) == 1
+
+
+def test_library_does_not_set_level():
+    assert get_logger("core").level == logging.NOTSET
+    assert logging.getLogger("caegraph").level == logging.NOTSET
