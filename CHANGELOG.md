@@ -38,6 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Restored the `.agent/skills/aggregate_skills.py` helper for generating a
+  local `.agent/ALL_SKILLS.md` skill summary used to synchronize human and
+  web-agent context.
 - Phase 1 core vocabulary: `caegraph.core.BaseObject` (identity, metadata,
   fail-fast validation contract), `caegraph.core.Registry` (name-keyed
   loader/transform factory registry), the shared enum `BoundaryType` with
