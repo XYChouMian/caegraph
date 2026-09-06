@@ -52,6 +52,8 @@ visualization ← 最上层
   `caegraph.graph` 开始（ADR-007）。
 - Mesh→Graph 转换只由 `caegraph.graph.GraphBuilder` 承担；禁止在 Mesh 上
   增加 `to_graph()` 形成反向依赖（ADR-009）。
+- 禁止为从未发布或冻结的 API 预设兼容层（legacy namespace / deprecated
+  shim / compat re-export）；兼容性必须来自真实的历史公共 API。
 - 任何反向依赖、循环依赖均为 blocking 违规。
 
 ## 工作流程

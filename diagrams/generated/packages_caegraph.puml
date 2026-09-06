@@ -12,8 +12,6 @@ package "caegraph.core.enums" as caegraph.core.enums {
 }
 package "caegraph.core.registry" as caegraph.core.registry {
 }
-package "caegraph.data" as caegraph.data {
-}
 package "caegraph.dataset" as caegraph.dataset {
 }
 package "caegraph.geometry" as caegraph.geometry {

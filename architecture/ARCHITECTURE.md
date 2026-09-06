@@ -133,10 +133,6 @@ Visualization              plotting + VTK write-back (ParaView ecosystem)
 | `caegraph.inference` | neural-simulation harness: simulator, rollout loop (numerics model-side) | core, graph, transforms, models, assimilation, io |
 | `caegraph.visualization` | mesh/field/graph plotting | core, graph, io |
 
-`caegraph.data` is an empty, deprecated compatibility namespace for the former
-umbrella data layer. New code uses the responsibility-specific packages above;
-the namespace will not be removed before version 0.3.0.
-
 Dependency layers (lower layers must never import higher layers;
 same-layer imports are forbidden):
 
@@ -254,6 +250,10 @@ divergence is treated as technical debt.
 
 - Do not pin exact dependency versions in `pyproject.toml`; use lower bounds.
 - Keep the package PyPI-publishable at all times.
+- Compatibility mechanisms (legacy namespaces, deprecation shims, compat
+  re-exports) require a real, previously released or ADR-frozen public API.
+  Never invent backward compatibility for APIs that never existed — no
+  pre-release `legacy`/`deprecated`/`compat` baggage.
 
 ---
 

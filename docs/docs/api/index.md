@@ -28,6 +28,3 @@ API 文档由此处的
 - `caegraph.inference`
 - `caegraph.visualization`
 - `caegraph.utils`
-
-兼容说明：旧的 `caegraph.data` 空命名空间暂时保留并发出弃用警告；新代码应使用
-上述职责明确的包。该兼容命名空间不会早于 0.3.0 移除。

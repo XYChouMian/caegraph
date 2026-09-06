@@ -28,8 +28,3 @@ Top-level modules (see the architecture specification):
 - `caegraph.inference`
 - `caegraph.visualization`
 - `caegraph.utils`
-
-Compatibility: the former empty `caegraph.data` namespace is temporarily
-retained with a deprecation warning. New code should use the responsibility-
-specific packages above. The compatibility namespace will not be removed
-before version 0.3.0.
