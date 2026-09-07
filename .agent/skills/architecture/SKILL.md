@@ -46,7 +46,7 @@ Markdown 架构关系图遵守 `AGENTS.md` 的 Mermaid 规范：只在图能实�
 
 - 同层包之间禁止互相依赖（如 `geometry` 不得 import `io`）。
 - `core`、`geometry`、`io` 禁止 import `torch_geometric`；PyG 边界从 `caegraph.graph` 开始（ADR-007）。
-- 表示构造只由 `caegraph.graph.RepresentationBuilder` 承担（source discretization → CAEGraph，ADR-015）；CAEGraph → PyG Data 由 backend adapter 产出，`Graph` 不是领域类；禁止在 topology subsystem（Mesh）上增加 `to_graph()` 形成反向依赖（ADR-009，经 ADR-015 修订）。
+- 表示构造只由 graph 层的 representation builder 承担（source discretization → CAEGraph，ADR-015；builder 命名/API 由后续 ADR 冻结，不引入 MeshGraph/GridGraph/ParticleGraph 等 source-type 子类）；CAEGraph → DataGraph（Phase 2 形态为 PyG Data）由 DataGraph adapter 产出，`Graph` 不是领域类；禁止在 topology subsystem（Mesh）上增加 `to_graph()` 形成反向依赖（ADR-009，经 ADR-015 修订）。
 - 禁止为从未发布或冻结的 API 预设兼容层（legacy namespace / deprecated shim / compat re-export）；兼容性必须来自真实的历史公共 API。
 - 任何反向依赖、循环依赖均为 blocking 违规。
 

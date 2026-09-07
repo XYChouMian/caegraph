@@ -2,7 +2,7 @@
 
 **A workflow framework bridging CAE simulation and Physics AI.**
 
-CAEGraph normalizes heterogeneous CAE data into the graph-native canonical domain representation **CAEGraph** and reaches PyTorch Geometric through a GNN backend adapter, supporting GNN training for engineering problems, neural simulation across different discretizations, and experimental-data assimilation.
+CAEGraph normalizes heterogeneous CAE data into the graph-native canonical domain representation **CAEGraph** and reaches PyTorch Geometric through a DataGraph adapter, supporting GNN training for engineering problems, neural simulation across different discretizations, and experimental-data assimilation.
 
 ```mermaid
 flowchart LR

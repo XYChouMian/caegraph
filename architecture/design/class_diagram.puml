@@ -164,19 +164,23 @@ package "caegraph.io" {
   }
 }
 
-package "caegraph.graph (representation builders + GNN backend adapter)" {
+package "caegraph.graph (representation construction + DataGraph adapter)" {
   abstract class RepresentationBuilder {
     Source discretization -> CAEGraph
     entities + relations (ADR-015);
-    FEM / FVM / FDM / SPH specializations;
+    extension point - specializations per
+    source discretization family, naming/API
+    frozen by a follow-up ADR;
     replaces the single
     Mesh -> GraphBuilder contract (ADR-009)
   }
-  class PyGAdapter {
-    CAEGraph -> torch_geometric.data.Data;
-    backend adapter, never the domain
-    graph object (ADR-015); lives at
-    graph/pyg.py
+  class DataGraphAdapter {
+    CAEGraph -> DataGraph;
+    PyG Data is the Phase 2 DataGraph form;
+    backend-side object, owns no domain
+    semantics, never the domain graph
+    object (ADR-015); concrete interface
+    frozen by a follow-up ADR
   }
 }
 
@@ -274,8 +278,8 @@ MeshWriter ..> Mesh : consumes
 RepresentationBuilder ..> Mesh : consumes topology (FEM)
 RepresentationBuilder ..> GeometryProcessor : uses features
 RepresentationBuilder ..> CAEGraph : produces
-PyGAdapter ..> CAEGraph : consumes
-PyGAdapter --> PyGData : produces
+DataGraphAdapter ..> CAEGraph : consumes
+DataGraphAdapter --> PyGData : produces
 GeometryTransform ..> PyGData : operates on
 FeatureTransform ..> PyGData : operates on
 PhysicsTransform ..> PyGData : operates on
@@ -290,13 +294,14 @@ Simulator ..> Rollout : orchestrates
 Simulator ..> MeshWriter : exports results
 Correction ..> Observation : uses (post-inference mode)
 
-note right of PyGAdapter
+note right of DataGraphAdapter
   Positioning frozen (ADR-008, clarified
   by ADR-015): no solver abstraction, no
   trainer abstraction, no alternative
   graph backend layer - CAEGraph is the
-  domain representation, PyG remains the
-  graph-learning backend adapter.
+  domain representation, the DataGraph
+  adapter (PyG backend in Phase 2) is
+  the graph-learning seam.
 end note
 
 @enduml
