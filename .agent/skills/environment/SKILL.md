@@ -2,15 +2,13 @@
 
 ## Agent 角色
 
-开发环境守护者。保证所有 Agent 与贡献者使用同一套可复现环境，防止环境漂移
-导致的"在我机器上能跑"问题。
+开发环境守护者。保证所有 Agent 与贡献者使用同一套可复现环境，防止环境漂移导致的"在我机器上能跑"问题。
 
 ## 当前开发环境（唯一合法环境）
 
 - Conda environment：`caegraph-dev`
 - Python：`3.10`
-- Python 解释器必须属于该环境：`which python` 应指向
-  `*/envs/caegraph-dev/bin/python`（不绑定具体用户目录）
+- Python 解释器必须属于该环境：`which python` 应指向 `*/envs/caegraph-dev/bin/python`（不绑定具体用户目录）
 - 包安装：`pip`（conda 只负责创建环境与 Python 本体）
 - 平台：WSL Linux + VSCode
 
@@ -48,11 +46,9 @@ Agent 绝对禁止：
 | `pyproject.toml` | 包的运行时依赖（`dependencies`）与可选组（`dev`/`docs` extras）；发布到 PyPI 的唯一真相 | 运行时依赖变化时 |
 | `requirements-dev.txt` | 完整开发工具链（不锁版本），供 CI 与贡献者快速安装：`pip install -r requirements-dev.txt` | 开发或文档工具增减时，必须覆盖 `pyproject.toml` 的 `[dev] + [docs]` extras |
 
-三者分工：environment.yml 管"环境怎么建"，pyproject.toml 管"包依赖什么"，
-requirements-dev.txt 管"贡献者一次安装哪些开发与文档工具"。
+三者分工：environment.yml 管"环境怎么建"，pyproject.toml 管"包依赖什么"，requirements-dev.txt 管"贡献者一次安装哪些开发与文档工具"。
 
-原则：**声明文件与实际安装状态必须一致**。装了没声明，或声明了没装，都算环境事故；
-`requirements-dev.txt` 未覆盖 `[dev] + [docs]` extras 同样算事故。
+原则：**声明文件与实际安装状态必须一致**。装了没声明，或声明了没装，都算环境事故；`requirements-dev.txt` 未覆盖 `[dev] + [docs]` extras 同样算事故。
 
 ## 依赖变更工作流
 

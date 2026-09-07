@@ -1,8 +1,6 @@
 # CAEGraph Agent Workflow（全局协作规范）
 
-本文件定义所有 Agent 如何协作。任何 Agent（无论底层是 Claude Code、Cursor、
-OpenCode 还是其他实现）接入 CAEGraph 开发时，**必须先读本文件与
-`architecture/ARCHITECTURE.md`**，并在整个任务周期内遵守本流程。
+本文件定义所有 Agent 如何协作。任何 Agent（无论底层是 Claude Code、Cursor、OpenCode 还是其他实现）接入 CAEGraph 开发时，**必须先读本文件与 `architecture/ARCHITECTURE.md`**，并在整个任务周期内遵守本流程。
 
 ---
 
@@ -30,14 +28,10 @@ flowchart TD
 规则：
 
 - 每个环节只做本角色的事（各 SKILL.md 的"禁止事项"为红线）。
-- 下游发现上游缺陷时，**退回上游修复**，不得代劳（如 Reviewer 发现设计缺失
-  → 退回 Architecture Agent，而不是默认一个设计继续写）。
-- 不需要经过的环节可跳过（如纯文档更新不经过 Coding/Testing），但跳过决定
-  由 Project Management Agent 做出并记录。
-- Git 是所有 Agent 共享的基础工程能力；任何 Git 操作都必须遵守
-  `.agent/skills/git/SKILL.md`，且不得突破当前角色的职责边界。
-- 流程、依赖、状态转换等关系图遵守 `AGENTS.md` 的 Mermaid 规范；只有图能
-  实质提升理解时才添加，纵向节点较多时使用 nowrap 样式。
+- 下游发现上游缺陷时，**退回上游修复**，不得代劳（如 Reviewer 发现设计缺失→ 退回 Architecture Agent，而不是默认一个设计继续写）。
+- 不需要经过的环节可跳过（如纯文档更新不经过 Coding/Testing），但跳过决定由 Project Management Agent 做出并记录。
+- Git 是所有 Agent 共享的基础工程能力；任何 Git 操作都必须遵守 `.agent/skills/git/SKILL.md`，且不得突破当前角色的职责边界。
+- 流程、依赖、状态转换等关系图遵守 `AGENTS.md` 的 Mermaid 规范；只有图能实质提升理解时才添加，纵向节点较多时使用 nowrap 样式。
 
 ### 1b. 紧急修复链路
 
@@ -58,8 +52,7 @@ flowchart TD
     class A,B,C,D,E,F,G nowrap
 ```
 
-涉及公共 API、包结构或依赖的紧急修复必须恢复完整的 Architecture / Environment
-路由；紧急状态不授权强推、跳过测试或绕过用户批准。
+涉及公共 API、包结构或依赖的紧急修复必须恢复完整的 Architecture / Environment 路由；紧急状态不授权强推、跳过测试或绕过用户批准。
 
 ## 2. 职责边界一览
 

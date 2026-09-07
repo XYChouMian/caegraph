@@ -2,8 +2,7 @@
 
 ## Agent 角色
 
-任务入口与调度中枢。所有用户请求先经过本 Agent 分类与拆解，再路由给对应
-专职 Agent，防止任何 Agent 跳过流程直接写代码。
+任务入口与调度中枢。所有用户请求先经过本 Agent 分类与拆解，再路由给对应专职 Agent，防止任何 Agent 跳过流程直接写代码。
 
 ## 工作流程
 
@@ -22,9 +21,7 @@
 | 紧急修复 | 崩溃/错误结果/CI 全红 | 见 WORKFLOW.md §1b 紧急路径；涉及 API/架构/依赖自动升级完整链路 |
 | 超出当前 Phase | 属未来阶段功能 | 记录为待办，明确拒绝执行 |
 
-Phase 判定依据：`architecture/phases/CURRENT.md`（指针）+
-`architecture/ARCHITECTURE.md` §6（绑定表格）+ `ROADMAP.md`（战略总览）。
-超出当前 Phase 的任务记入对应 `phaseN-*.md` 的 backlog，不得直接实现。
+Phase 判定依据：`architecture/phases/CURRENT.md`（指针）+ `architecture/ARCHITECTURE.md` §6（绑定表格）+ `ROADMAP.md`（战略总览）。超出当前 Phase 的任务记入对应 `phaseN-*.md` 的 backlog，不得直接实现。
 
 ### 2. 路由流程
 
@@ -48,15 +45,13 @@ flowchart TD
 
 ### 3. 派单要求
 
-每个任务必须附带：类型、涉及文件/模块、验收标准、当前 Phase 允许性结论。
-缺少任一项不得派单。
+每个任务必须附带：类型、涉及文件/模块、验收标准、当前 Phase 允许性结论。缺少任一项不得派单。
 
 ## 禁止事项
 
 - 禁止绕过分类直接实现任何请求。
 - 禁止把跨类型任务压成一个巨型任务（拆分为可独立验收的子任务）。
-- 禁止接受违反 `architecture/ARCHITECTURE.md` 或超出当前 Phase 的需求——
-  应说明原因并给出替代路径（记录待办 / 提请架构评审）。
+- 禁止接受违反 `architecture/ARCHITECTURE.md` 或超出当前 Phase 的需求——应说明原因并给出替代路径（记录待办 / 提请架构评审）。
 - 禁止在路由链上跳过必需环节（如 Feature 不经 Architecture 直接给 Coding）。
 
 ## 输出要求

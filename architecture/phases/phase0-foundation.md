@@ -2,9 +2,7 @@
 
 Status: **Done** (2026-09-04; superseded by Phase 1)
 
-Goal: make everything that follows architecture-gated. No CAE algorithms,
-no GNN models, no data processing — this phase produces zero functional
-code by design.
+Goal: make everything that follows architecture-gated. No CAE algorithms, no GNN models, no data processing — this phase produces zero functional code by design.
 
 ## Deliverables
 
@@ -23,12 +21,10 @@ code by design.
 
 ## Exit criteria
 
-1. In `caegraph-dev` (Python 3.10): `pip install -e .`, `pytest`,
-   `mkdocs build --strict` all pass with zero errors.
+1. In `caegraph-dev` (Python 3.10): `pip install -e .`, `pytest`, `mkdocs build --strict` all pass with zero errors.
 2. Reviewer Agent confirms: no functional code leaked into Phase 0.
 3. PM Agent updates `CURRENT.md` → Phase 1 (only after a Review pass).
 
 ## Explicit non-goals
 
-Mesh classes, graph conversion, any torch-dependent module beyond
-declaring dependencies.
+Mesh classes, graph conversion, any torch-dependent module beyond declaring dependencies.

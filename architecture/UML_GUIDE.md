@@ -1,7 +1,6 @@
 # CAEGraph UML Guide
 
-CAEGraph maintains a **dual UML system**. Understanding the difference is
-mandatory for every contributor and agent.
+CAEGraph maintains a **dual UML system**. Understanding the difference is mandatory for every contributor and agent.
 
 ---
 
@@ -19,13 +18,11 @@ mandatory for every contributor and agent.
 
 - Design UML encodes *intent*: reviewers judge changes against the plan.
 - Generated UML encodes *reality*: it exposes drift between plan and code.
-- The gap between the two is the project's **structural technical debt** —
-  it must be visible, not hidden.
+- The gap between the two is the project's **structural technical debt** —it must be visible, not hidden.
 
 ## 3. Workflow
 
-1. Proposing structural change?
-   → Update `architecture/design/class_diagram.puml` first.
+1. Proposing structural change?→ Update `architecture/design/class_diagram.puml` first.
 2. Implementing code that matches the approved design.
 3. Regenerate diagrams into `diagrams/generated/`:
    ```bash
@@ -41,21 +38,10 @@ mandatory for every contributor and agent.
 - `diagrams/generated/` is machine-managed. Do not hand-edit generated files.
 - Design UML shows abstractions and responsibilities, not method signatures.
 - Both systems are versioned in Git; keep them in the same PR as the code.
-- Agents MUST check both before and after implementing (see
-  `architecture/ARCHITECTURE.md` §5).
+- Agents MUST check both before and after implementing (see `architecture/ARCHITECTURE.md` §5).
 
 ## 5. Current status
 
-- Phase 2 is in progress. The design UML defines the six principal
-  abstractions (`BaseObject`, `Mesh`, `Graph`, `Field`, `CAEDataset`,
-  `Model`) plus the ADR-008 workflow bands: geometry/io/graph/
-  transforms/dataset (R1), physics/models/assimilation/workflow
-  (R2+R4), inference (R3).
-- ADR-009 makes the conversion and inheritance boundaries explicit:
-  GraphBuilder owns Mesh→Graph; BaseObject is limited to domain truth;
-  Graph/CAEDataset/Model use their PyG/PyTorch native bases.
-- Generated UML contains the current package graph plus the Phase 1
-  classes (`BaseObject`, `Registry`, `BoundaryType`, `NodeCategory`).
-  The Phase 2 abstractions (`Mesh`, `Field`, `Graph`, ...) still live
-  only in the design UML and will appear in generated diagrams as they
-  are implemented and regenerated.
+- Phase 2 is in progress. The design UML defines the six principal abstractions (`BaseObject`, `Mesh`, `Graph`, `Field`, `CAEDataset`, `Model`) plus the ADR-008 workflow bands: geometry/io/graph/ transforms/dataset (R1), physics/models/assimilation/workflow (R2+R4), inference (R3).
+- ADR-009 makes the conversion and inheritance boundaries explicit: GraphBuilder owns Mesh→Graph; BaseObject is limited to domain truth; Graph/CAEDataset/Model use their PyG/PyTorch native bases.
+- Generated UML contains the current package graph plus the Phase 1 classes (`BaseObject`, `Registry`, `BoundaryType`, `NodeCategory`). The Phase 2 abstractions (`Mesh`, `Field`, `Graph`, ...) still live only in the design UML and will appear in generated diagrams as they are implemented and regenerated.
