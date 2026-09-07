@@ -10,9 +10,10 @@ channels:
 dependencies:
   - python=3.10
   - pip
-  - pip:
+  -   pip:
       # Core scientific stack (mirrors pyproject.toml dependencies)
       - numpy
+      - meshio
       - torch
       - torch-geometric
       # Documentation

@@ -32,6 +32,7 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=1.24",
+    "meshio>=5.3",
     "torch>=2.5",
     "torch-geometric>=2.5,<3.0",
 ]
