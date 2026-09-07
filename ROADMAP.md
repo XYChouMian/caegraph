@@ -55,7 +55,7 @@ Details: [`architecture/phases/phase1-core.md`](architecture/phases/phase1-core.
 
 ## Phase 2 — CAE Data Pipeline · `In progress`
 
-**R1** — domain-truth objects (`Mesh`/`Field`) plus the data band: `caegraph.geometry`/`caegraph.io`/`caegraph.graph`/ `caegraph.transforms`/`caegraph.dataset` — CAE loading (gmsh first), Mesh→`Graph(torch_geometric.data.Data)` conversion, transforms (BC encoding), CAEDataset, VTK write-back. Conversion invariants (topology, conservation, boundary mapping) scientifically validated.
+**R1** — domain-truth objects (`Mesh`/`Field`) plus the data band: `caegraph.geometry`/`caegraph.io`/`caegraph.graph`/ `caegraph.transforms`/`caegraph.dataset` — CAE loading (gmsh first), Mesh→`Graph(torch_geometric.data.Data)` conversion, transforms (BC encoding), CAEDataset, VTK write-back. Conversion invariants (topology, conservation, boundary mapping) scientifically validated. Before Phase 3, benchmark the canonical data layout (memory usage, graph construction, neighbor query, CAEGraph→PyG conversion) — CAEGraph is optimized for domain representation and data interoperability, not for replacing general graph algorithm libraries (ADR-015).
 
 Details: [`architecture/phases/phase2-cae-data.md`](architecture/phases/phase2-cae-data.md)
 

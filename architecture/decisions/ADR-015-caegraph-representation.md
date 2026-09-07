@@ -104,12 +104,9 @@ flowchart TD
 - **ADR-008「禁替代图后端」的正名**：CAEGraph 是领域真源表示，不是图计算 backend；PyG 仍是唯一图学习 backend。本 ADR 即该冻结条款预设的 "new ADR"，属澄清而非违反。
 - **ADR-007 D1/D3、ADR-009 Mesh→Graph 契约**：由本 ADR 取代（D1 的 Graph 层重释为 PyG adapter 层；D3 的 domain truth 由 Mesh 移交 CAEGraph）。
 
-## 性能边界（不主张与验证门槛）
+## 性能边界
 
-- **不主张**自研表示一定比 igraph/networkx/PyG 快——这是未经验证的假设；
-- CAEGraph 的优化对象：CAE 数据布局、大规模存储效率、source normalization、graph construction、CAEGraph→PyG conversion；**不替代** shortest path / community detection 等图算法；
-- igraph/networkx 可作为 **optional graph analysis backend**（非 canonical representation）；
-- 验证门槛（benchmark，进入 Phase 3 前执行）：memory usage / graph construction time / neighbor query / CAEGraph→PyG conversion。
+CAEGraph is optimized for domain representation and data interoperability, not for replacing general graph algorithm libraries. Benchmark expectations (memory usage, graph construction, neighbor query, CAEGraph→PyG conversion) are tracked in the roadmap.
 
 ## 备选方案（Options considered）
 
