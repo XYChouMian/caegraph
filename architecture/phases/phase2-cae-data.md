@@ -1,6 +1,6 @@
 # Phase 2 — CAE Data Pipeline
 
-Status: In progress
+Status: In progress — architecture re-evaluation open (ADR-015: CAEGraph canonical representation, **proposed**); `mesh.py` / mesh-centric io pipeline implementation is paused pending the decision; CellType (topology subsystem member) has landed and is unaffected by any outcome.
 
 Goal: implement **R1** — the CAE → GNN data band (ADR-007/008): the domain-core objects plus geometry / io / graph / transforms / dataset.
 
@@ -86,8 +86,7 @@ src/caegraph/dataset/
 
 ## Coding gate
 
-Before implementing `Mesh` or io adapters, the CellType foundation must be
-implemented and tested (ADR-014 Consequences):
+Before implementing `Mesh` or io adapters, the CellType foundation must be implemented and tested (ADR-014 Consequences):
 
 - `CellType` stable integer codes (explicit mapping, not enum-declaration order)
 - CAEGraph `CellType` local-node conventions
