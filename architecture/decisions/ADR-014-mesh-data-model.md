@@ -44,13 +44,8 @@ facets: facet_types + fconn + foffsets + facet_cells(ragged 邻接)
 ### 3. Connectivity 语义（双语冻结）
 
 ```
-facet：winding-free——canonicalization 同时考虑原序与反序的全部
-       cyclic rotations，选择唯一确定性表示（如字典序最小者）；
-       不承诺 intrinsic normal；法向始终相对于指定 adjacent cell
-       定义；signed cell-facet incidence 作为未来性能演进。
-cell ：保留有向局部拓扑语义，但不保留 backend-specific 节点编号——
-       IO normalization 必须将各来源的单元局部编号映射为 CAEGraph
-       CellType 的 local-node convention。
+facet：winding-free——canonicalization 同时考虑原序与反序的全部 cyclic rotations，选择唯一确定性表示（如字典序最小者）；不承诺 intrinsic normal；法向始终相对于指定 adjacent cell 定义；signed cell-facet incidence 作为未来性能演进。
+cell ：保留有向局部拓扑语义，但不保留 backend-specific 节点编号——IO normalization 必须将各来源的单元局部编号映射为 CAEGraph CellType 的 local-node convention。
 ```
 
 > Facet connectivity is winding-free. Cell connectivity retains oriented local-topology semantics, but backend-specific local node ordering must not leak into core.
@@ -75,10 +70,8 @@ LINE2 / TRI3 / QUAD4 / TET4 / PYR5 / WEDGE6 / HEX8
 
 ```
 Nodes        → stable global node IDs
-Cells        → stable global cell IDs + canonical CellType +
-               CAEGraph local-node convention + oriented connectivity
-Explicit Facets → stable global facet IDs + winding-free
-               connectivity + validated ragged cell adjacency
+Cells        → stable global cell IDs + canonical CellType + CAEGraph local-node convention + oriented connectivity
+Explicit Facets → stable global facet IDs + winding-free connectivity + validated ragged cell adjacency
 Domain groups（计算域/材料分组）      → global cell IDs
 Boundary / Interface groups          → global facet IDs
 Field(node) → node IDs；Field(cell) → cell IDs
@@ -123,24 +116,19 @@ metadata: BaseObject 槽位
 complete_coverage  ：组并集 == 全体目标 cells
 complete_partition ：coverage + 组间两两不交
 
-二者不是 Mesh 的 universal invariant；
-由调用方/加载管线根据数据语义显式声明并校验。
+二者不是 Mesh 的 universal invariant；由调用方/加载管线根据数据语义显式声明并校验。
 
 Gmsh physical domain groups：
 - 不默认视为 complete partition；
 - adapter 根据实际 physical-group 映射判断 coverage / overlap；
-- 只有明确满足且调用路径要求 partition 时，才执行
-  complete_partition 检查。
+- 只有明确满足且调用路径要求 partition 时，才执行 complete_partition 检查。
 ```
 
 无分组网格（拓扑合法）不被迫制造 "default" 组。
 
 ### 9. 与 ADR-012 的关系（已对齐）
 
-ADR-012 已重写为只承载「进入」契约（source normalization → canonical
-Mesh build）；早前针对其决策 2/5 的逐条修订已并入其重写正文，不再需要
-本节的修订注记。Mesh 的存储、索引与校验规则的唯一定义在本 ADR
-（决策 1–8），ADR-012 一律引用。
+ADR-012 已重写为只承载「进入」契约（source normalization → canonical Mesh build）；早前针对其决策 2/5 的逐条修订已并入其重写正文，不再需要本节的修订注记。Mesh 的存储、索引与校验规则的唯一定义在本 ADR（决策 1–8），ADR-012 一律引用。
 
 ## 备选方案（Options considered）
 
