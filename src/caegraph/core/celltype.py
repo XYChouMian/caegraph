@@ -60,7 +60,8 @@ class CellType(str, Enum):
     TET4       3     4      tetra a-b-c-d
     PYR5       3     5      quad base a-b-c-d + apex e
     WEDGE6     3     6      bottom triangle a-b-c + top d-e-f
-    HEX8       3     8      hex 0..7 (see face templates below)
+    HEX8       3     8      CAEGraph reference hexahedron node
+                            convention (see face templates below)
     =========  ====  =====  =========================================
 
     ``faces`` are the codim-1 face membership templates, one tuple of
@@ -69,7 +70,9 @@ class CellType(str, Enum):
     convention and must **not** be interpreted as an intrinsic facet
     normal orientation (facet connectivity is winding-free and normals
     are always cell-relative, ADR-014 decision 3). Facet-cell matching
-    therefore compares node sets.
+    therefore compares node sets. Face template ordering exists only
+    for deterministic topology operations; normal orientation is
+    computed from adjacent cell context.
     """
 
     LINE2 = "line2"

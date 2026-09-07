@@ -179,8 +179,10 @@ def test_hex8_cube_edges_have_degree_two():
     assert all(degree == 2 for degree in edges.values())
 
 
-def test_line2_has_no_facet_templates():
-    # dim-1 canonical cell has no codim-1 facets in the current contract
-    # (facets are codim-1 only; POINT support is a future extension).
+def test_line2_has_no_canonical_point_facets():
+    # A dim-1 canonical cell's codim-1 entity would be a point, but the
+    # current canonical topology only represents facets of codim 1 and
+    # not points; POINT support is a future extension. This is a
+    # contract property, not a claim that LINE2 has no codim-1 entity.
     assert CellType.LINE2.faces == ()
     assert CellType.LINE2.dim == 1
