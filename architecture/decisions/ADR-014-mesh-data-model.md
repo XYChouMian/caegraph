@@ -38,6 +38,7 @@ facets: facet_types + fconn + foffsets + facet_cells(ragged 邻接)
 
 - **收录范围**：仅收录**由 IO adapter 或用户显式声明、且需要保留独立语义/稳定引用**的 boundary/interface facets；未命名内部 facet 不入表，由 geometry 层按需推导（最小真源）。
 - **facet_cells**：每个 facet 邻接的全局 cell id 列表（ragged/CSR，不硬编码上限以容忍非流形：len==1 外边界候选、==2 内部/界面、≥3 非流形）。由加载/规范化管线 build 阶段计算一次并存为 canonical——它不是可随时重算的普通 geometry cache：cell-relative 法向、interface 检测、Neumann/Robin、surface graph 都依赖这套邻接。
+- **维度边界**：canonical topology 只容纳 dim == topo_dim 的 canonical cells 与 dim == topo_dim − 1 的 canonical facets；dim < topo_dim − 1 的 source entities（角点/曲线标记等）当前版本**不进入** canonical topology。本 contract 面向**单一拓扑维度网格**；真正的 mixed-dimensional mesh（3D solid + 2D shell + 1D beam）留待未来 ADR 扩展。
 - interface 能力注记：邻接 + 域分组 → 界面 facet 检测（如 fluid|solid 共享 facet），为未来 INTERFACE/PERIODIC 供数据基础。
 
 ### 3. Connectivity 语义（双语冻结）
@@ -92,7 +93,7 @@ Field(node) → node IDs；Field(cell) → cell IDs
 ### 7. Mesh 组合与生命周期
 
 ```
-nodes: ndarray (n, 3) float64（规范 3D 存储） + topo_dim（= max 域 cell dim）
+nodes: ndarray (n_nodes, 3) float64（规范 3D 存储，见 8a 强制不变量） + topo_dim（= canonical cells 的共同拓扑维度，与 domain_groups 无关）
 cells: canonical CSR（决策 1）
 facets: canonical CSR + facet_cells（决策 2）
 BoundaryManager: name → BoundaryRegion
@@ -110,7 +111,8 @@ metadata: BaseObject 槽位
 - offsets 单调（cells 与 facets 两表）；
 - 单元/facet 节点数 == CellType 规定数；
 - 节点/cell/facet 索引界内；
-- 维度层级：cell 类型 dim ≤ topo_dim 且至少一类 == topo_dim；facet 类型 dim == topo_dim − 1；
+- **nodes 形状与 dtype**：nodes 必须为二维数组，shape == (n_nodes, 3)，dtype == float64；topo_dim 独立于坐标列数——2D Mesh 仍采用三分量坐标存储，禁止以列数携带拓扑维度；
+- **维度层级（blocker 修正）**：所有 canonical cells 的 dim == topo_dim；所有 canonical facets 的 dim == topo_dim − 1；dim < topo_dim − 1 的 source entities 不得进入 canonical topology（决策 2 维度边界）；
 - **facet 邻接完整性**：每 facet ≥1 个 adjacent cell；facet_cells 中 cell id 界内且不重复；**每个 facet 必须匹配其每个 adjacent cell 的合法 codim-1 face**（依据 CellType face templates）——facet_cells 是经过验证的 canonical topology，不是未经验证的附加数组；
 - 场值长度与关联（node/cell）匹配。
 
@@ -150,6 +152,7 @@ Gmsh physical domain groups：
 | CellType 整数编码取 Enum 声明顺序 | 否决 | 隐式编码随声明顺序漂移，历史 Mesh/缓存全错 |
 | 域分组并集覆盖作为 universal invariant | 否决 | 无材料分组的合法拓扑网格被判非法，被迫制造 "default" 组（语义污染） |
 | gmsh 有体分组 ⇒ 视为 complete partition | 否决 | gmsh 实体可参与多个物理分组，外部语义不能固化进 canonical Mesh |
+| canonical cells 允许 dim ≤ topo_dim（旧 8a 表述） | 否决（评审 blocker） | 2D Mesh 会同时把 TRI3 与 LINE2 放入 canonical cells，而 LINE2 又可能作为 canonical facet，重新产生双真源；cells/facets 的维度角色必须互斥 |
 
 ## 影响（Consequences）
 
