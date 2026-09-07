@@ -1,70 +1,138 @@
-# ADR-012: Mesh 读取转换管线与物理组语义契约
+# ADR-012: 跨格式加载的 source normalization → canonical Mesh 管线与源分组语义契约
 
 - 编号：ADR-012
-- 标题：以 AbstractMeshLoader 模板方法定义跨格式统一转换管线（唯一格式钩子 `_read`）；冻结物理组维度分类契约、全局索引契约与「IO 永不推断 BoundaryType」边界；域分组为 Mesh 朴素数据，边界分组物化为 BoundaryRegion
-- 日期：2026-09-06（同日返工：初版 Region 继承树提案经评审否决，本版为重写，否决理由见备选方案表）
+- 标题：定义跨格式 Mesh 加载管线（`__call__` 稳定、protected hook 不冻结）：
+  source → format-specific normalization → canonical Mesh build（ADR-014）→
+  validate；源分组（source-group）按维度分类为 domain / boundary|interface /
+  unsupported；normalization 义务；IO 永不推断 BoundaryType
+- 日期：2026-09-06
 - 状态：accepted
-- 关联：ADR-007（D3 反 god-object / D4 共享词汇）、ADR-008（跨软件定位）、ADR-009（BaseObject 限于 domain-truth）、ADR-010（三层职责链与区域元数据）、ADR-011（槽位一致性校验）、ADR-013（IO 引擎，provisional）、Phase 2、Design UML `class_diagram.puml`
+- 关联：ADR-007（分层与共享词汇）、ADR-008（跨软件定位）、ADR-010（三层
+  职责链）、ADR-011（Spec 槽位一致性）、ADR-013（IO 引擎 provisional）、
+  **ADR-014（canonical Mesh 数据模型——Mesh 结构的权威定义）**、Phase 2、
+  Design UML `class_diagram.puml`
+
+## 职责边界（Scope）
+
+本 ADR 只回答一个问题：**外部数据如何被规范化并进入 canonical Mesh**。
+「Mesh 必须长什么样」一律由 ADR-014 立法；本 ADR 不重复定义任何存储布局、
+索引契约或校验规则，避免两处立法漂移。
+
+```
+ADR-012 = 怎么进入 Mesh（source normalization → canonical build）
+ADR-014 = Mesh 到底是什么（canonical 结构、身份、校验）
+```
 
 ## 背景（Context）
 
-CAEGraph 的 io 层要解决的真实问题：不同输入（gmsh、Fluent、ICEM、Pointwise…）**数据结构各异**，读取后必须转为相同的框架对象（`caegraph.core.Mesh`）。这个转换**流程是相同且确定的**——因此抽象预算应当投向**转换管线**（用抽象类定义一次），而非领域对象的分类学（初版提案的 Region 继承树经评审否决）。
-
-开工前暴露并需一并冻结的问题：
-
-1. **单元编址语义**：Mesh 同时持有 triangle/quad 等多类型 cell 块时，分组索引是全局编号还是块内编号必须冻结——否则 block 一重组（triangle block 0 + triangle block 1 + quad block），region 就可能指错单元。
-2. **物理组语义分类**：physical group 不全是边界（二维 `fluid_domain` dim 2 是计算域，`inlet/wall` dim 1 才是边界）。
-3. **物理语义职责边界**：`inlet → DIRICHLET` 之类的名称→类别推断是否允许出现在 IO 层（ADR-010 已裁定软件命名≠数学类别）。
+不同输入（Gmsh、Fluent、Abaqus、ICEM、Pointwise…）数据结构各异，读取后
+须转为同一框架对象 `caegraph.core.Mesh`。转换流程跨格式共享且确定，因此
+抽象预算投向 **source-normalization 管线**（统一入口），而非领域对象
+分类学（初版 Region 继承树提案经评审否决，见 Options）。同时需冻结源分组
+语义边界（维度分类、命名实体 ≠ 数学类别）与 normalization 义务。
 
 ## 决策（Decision）
 
-1. **AbstractMeshLoader 转换管线（模板方法，落于 `caegraph.io`）**：
+### 1. 加载管线契约（Pipeline contract）
 
-   ```
-   __call__(path) -> Mesh            # 固定流程（final）
-     1. raw = self._read(path)       # 唯一的格式钩子（抽象方法）
-     2. 组提取：name / (tag, dim) / 成员
-     3. dim 分类（本 ADR 第 3 条契约）
-     4. 构造：域组 → Mesh 域分组数据（第 4 条）；
-              边界组 → BoundaryRegion → BoundaryManager（第 5 条）
-     5. mesh.validate() fail-fast    # 不变量统一执行
-   ```
+统一入口稳定；格式差异经 source-specific 阶段消化，不预演未来格式形态：
 
-分类、构造、校验**只写一次**，位于基类；具体格式 loader（gmsh 首发）只实现 `_read` 钩子。未来 Fluent/ICEM/Pointwise loader 同样只写钩子，永不复制管线。IO 引擎（meshio，ADR-013）只在钩子后面，可整体替换。
+```
+AbstractMeshLoader.__call__(path) -> Mesh
+  1. obtain source representation
+  2. perform source-specific normalization
+  3. build canonical Mesh according to ADR-014
+  4. validate canonical Mesh
+  5. return Mesh
+```
 
-2. **全局索引契约（编址唯一真相）**：
-   - **全局 cell 索引**：0-based 连续，跨类型、跨 block 统一编址；域分组、单元场（Field 的 cell association）、未来 Graph 的 cell 视图共享同一全局索引空间。
-   - triangle/quad 分块仅为**内部存储结构**，禁止渗入任何编址语义。
-   - Loader 在管线固定阶段**一次性**完成 block-local → global 重编号。
-   - **全局 node 索引**：单一节点索引空间（.msh/meshio 天然全局，显式声明以防未来格式破坏）。
-   - 校验不变量（validate 强制）：域分组存在时各组并集 == [0, n_cells)；分组索引界内；边界分组节点集 ⊆ 全体节点。**修订（2026-09-06，ADR-014）**：域分组并集覆盖不再是 universal invariant——改为 complete_coverage / complete_partition 两种由调用方显式声明的条件检查；边界成员校验随成员表示改为全局 facet 索引而被 ADR-014 的 8a facet↔cell 强一致校验取代。
+> `__call__` pipeline is stable; the number and naming of protected
+> format-specific hooks are implementation details and are not frozen
+> by this ADR.
 
-3. **物理组维度分类契约**（格式无关，管线固定阶段）：以 `topo_dim = 网格最高单元维度`（加载时推断）为基准：
-   - `group_dim == topo_dim` → 计算域/子域/材料块（cell 成员）；
-   - `group_dim == topo_dim − 1` → 边界（节点成员，由边界单元归纳）；
-   - `group_dim < topo_dim − 1` → 跳过并输出 warning（确定性留痕）。
+分类、构造、校验规则不按格式复制（步骤 2 之后共享 ADR-014 的 build 语义）。
+IO 引擎（meshio，ADR-013 provisional）只存在于步骤 1–2 的实现细节，可
+整体替换。
 
-4. **域分组 = Mesh 朴素数据**：`Mesh` 持有 `name → 全局 cell 索引数组` 映射（`dict[str, ndarray]`），纳入 validate；**不设类、不设继承**——语义区分仅体现在数据与校验规则。域分组不可被 BoundarySpec 绑定。
+### 2. 源分组（source-group）语义分类契约
 
-5. **边界分组物化为 `BoundaryRegion`**（BaseObject domain-truth 家族）：槽位 = 唯一名 / dim / 节点成员集（全局 node 索引）/ 开放元数据（软件命名 wall/inlet…，ADR-010；角色提示，ADR-011）。BoundaryManager 保存 `name → BoundaryRegion 对象`并承担 spec 按名绑定解析与 corner（多区域交集）查询；`BoundarySpec` 以名字符串引用目标区域，bind 时校验存在性并拒绝域分组名。诞生地：`core/boundary/region.py`；io 层只消费、只构造。**修订（2026-09-06，ADR-014）**：BoundaryRegion 的 canonical 成员改为**全局 facet 索引**（引用 winding-free canonical facet topology）；节点集降级为派生视图。BoundaryRegion 引用 topology 而不拥有 topology；拓扑事实由 Mesh 持有。
+以 ADR-014 的 `topo_dim`（canonical cells 的共同拓扑维度）为基准，对所有
+**source named group** 分类。术语跨格式中立：Gmsh physical group、Abaqus
+element set / surface、Fluent zone 都是 source named group 的实例，不得
+被强制冠以 "physical group"：
 
-6. **IO 永不推断 BoundaryType**：加载器的职责终点是产出命名 Region 与朴素域分组；数学类别只能来自用户声明的 BoundarySpec。禁止任何 `名称 → 数学类别` 映射表进入 IO 层（同名在不同问题中可为三种数学类别，ADR-010 背景论据）。
+```
+source_group_dim == topo_dim      → domain group
+                                    → 成员 = canonical global cell IDs
+
+source_group_dim == topo_dim − 1  → explicit boundary/interface
+                                    facet group
+                                    → 成员 = canonical global facet IDs
+
+source_group_dim < topo_dim − 1   → 当前 contract 不进入 canonical
+                                    topology → warning / diagnostics
+```
+
+- 写 **boundary/interface** 而非仅 boundary：codim-1 组既可是外部边界，
+  也可是域间 interface（如 fluid|solid 共享 facet）。
+- complete_coverage / complete_partition 是否成立由调用方按数据语义显式
+  声明并校验（ADR-014 8b）；本 ADR 不默认 source named group 构成
+  partition（gmsh 实体可参与多个物理组）。
+
+### 3. Normalization 义务
+
+进入 `core.Mesh` 前，io adapter 必须消化以下全部 source 特定表示，使其
+不得渗入 canonical topology（身份契约见 ADR-014 决策 5）：
+
+- backend block-local indices → global node/cell/facet IDs；
+- source local-node ordering → ADR-014 CellType local-node convention；
+- source facet winding → winding-free canonical connectivity；
+- source group/tag representation → domain groups 与 boundary/interface
+  BoundaryRegion 成员（global facet IDs）及元数据。
+
+### 4. 物理语义边界（Physics semantic boundary）
+
+加载管线的职责终点是产出 canonical Mesh、domain groups 以及命名
+boundary/interface regions；数学 BoundaryType 只能来自用户声明的
+BoundarySpec。禁止任何 `名称 → 数学类别` 映射表进入 io 层——同名在不同
+问题中可为不同数学类别（ADR-010 背景论据；Spec 槽位一致性见 ADR-011）。
+
+### Revision history
+
+- 2026-09-06 初版：Region 抽象继承树提案 → 评审否决（见 Options）。
+- 2026-09-06 返工：改为转换管线 + 物理组维度分类（当时含 block 存储、
+  node-set 边界成员、唯一 `_read` 钩子等过渡表述）。
+- 2026-09-06 重写（本版）：ADR-014 冻结 Mesh contract 后，清退所有与
+  ADR-014 重复或已被其取代的立法（存储布局、全局索引契约、node-set
+  成员、域并覆盖不变量），只保留「进入」契约；术语统一为 source named
+  group；protected hook 数量不再冻结。
 
 ## 备选方案（Options considered）
 
 | 方案 | 结论 | 原因 |
 | --- | --- | --- |
-| Region 抽象基类 + DomainRegion / BoundaryRegion 继承树（初版提案） | 否决（评审） | 分类学非真问题；抽象预算应投向转换管线；真问题是异构输入经统一管线转为同一框架 |
-| 域分组轻量记录类（frozen dataclass，无继承） | 否决（评审） | 与「Region 不必要」裁决边缘相近；dict + 校验已足，避免无设计依据的新抽象 |
-| cell 分组采用 block 内部编号 | 否决 | block 重组即指错单元；多类型块编址歧义；违反单一编址真相 |
-| IO 层内置名称→数学类别推断表 | 否决 | 物理语义僭越；同名不同义（ADR-010）；错误随格式清单复制 |
-| 物理组全量映射为边界 | 否决 | 计算域误注册为边界：Spec 可绑定域、corner 查询污染 |
-| 各格式 loader 自行实现分类与构造 | 否决 | 契约复制漂移；Fluent/Abaqus/ICEM 会各自发明规则 |
+| Region 抽象基类 + DomainRegion / BoundaryRegion 继承树（初版提案） | 否决（评审） | 分类学非真问题；抽象预算投向转换管线 |
+| 域分组轻量记录类（frozen dataclass） | 否决（评审） | 与「Region 不必要」裁决边缘相近；dict + 校验已足 |
+| 冻结唯一 protected 钩子 `_read`（未来格式只实现一个钩子） | 否决（评审） | 各格式 source semantics 不统一，「组提取」本身可能是格式特定 normalization；过早锁死 future loader 形态 |
+| 本 ADR 继续立法 block 存储 / node-set 边界 / 域并 universal invariant | 否决（评审） | 与 ADR-014 双立法漂移；规范文字必须保持单一当前世界 |
+| "physical group" 作为跨格式核心术语 | 否决（评审） | Gmsh 专属术语；Abaqus set / Fluent zone 不应伪装成 physical group |
+| IO 层内置名称→数学类别推断表 | 否决 | 物理语义僭越；同名不同义（ADR-010） |
+| 源组全量映射为边界 | 否决 | 计算域误注册为边界；Spec 可绑定域、corner 查询污染 |
+| 各格式 loader 自行实现分类与构造 | 否决 | 契约复制漂移；各格式各自发明规则 |
 
 ## 影响（Consequences）
 
-- Phase 2 模块清单：`io/` 增加管线基类模块（abstract loader）与 `gmsh.py`（钩子实现）；`core/boundary/` 增加 `region.py`；`core/region.py` 不再需要（phase2-cae-data.md 模块树待本 ADR 评审通过后另行同步）。
-- Mesh 组成：geometry / topology / boundary / **domain groups（朴素数据）** / fields（anti god-object 边界不变，ADR-007 D3）。
-- Testing 需覆盖：全局重编号正确性（多 block 场景）、域并=全体单元、dim 分类（域组不入边界注册表）、低维组跳过告警、Spec 绑定域名被拒、索引界内、IO 无 BoundaryType 推断。
-- 未来格式加载器继承第 2、3、6 条契约，作为其各自 ADR 的既定前提。
-- 不改变依赖方向与 PyG 边界（ADR-007 不变）；不冻结 IO 引擎（ADR-013 provisional）。
+- Phase 2 模块清单：`io/` 增加管线基类（AbstractMeshLoader）与 `gmsh.py`
+  首个实现；`core/boundary/region.py`（BoundaryRegion）；domain groups 为
+  Mesh 朴素数据（phase2-cae-data.md 模块树待评审通过后另行同步）。
+- Testing 需覆盖：domain-group global-ID 映射；dim 分类（topo-dim 组不入
+  boundary/interface 注册表）；低维组 warning/diagnostics；可选
+  complete_coverage / complete_partition（**重叠组在未要求 partition 时
+  合法；无分组网格合法**）；Spec 绑定 domain 组被拒；io 层无 BoundaryType
+  推断；normalization 义务逐项（block-local / 局部编号 / 绕向 / 组表示
+  消除）。
+- 未来格式加载器（Fluent/Abaqus/ICEM/Pointwise）继承本 ADR 的管线与
+  source-group 契约 + ADR-014 的 canonical 结构，作为其各自 ADR 的既定
+  前提。
+- 不改变依赖方向与 PyG 边界（ADR-007 不变）；不冻结 IO 引擎（ADR-013
+  provisional）。

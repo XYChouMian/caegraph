@@ -4,7 +4,7 @@
 - 标题：定义 CAEGraph Mesh canonical representation——canonical cell 存储与显式 facet 拓扑双 CSR、身份契约、connectivity 语义（facet winding-free / cell 有向局部拓扑且不含 backend 编号）、CellType 词汇与显式稳定编码、校验分层（拓扑合法性 / 条件 coverage-partition）
 - 日期：2026-09-06
 - 状态：accepted
-- 关联：ADR-007（D3 反 god-object / D6 Field）、ADR-008（跨软件定位）、ADR-009（BaseObject 限于 domain-truth）、ADR-010（三层职责链）、ADR-011（槽位一致性）、ADR-012（读取管线，本 ADR 修订其决策 2/5）、ADR-013（IO 引擎 provisional）、Phase 2、Design UML `class_diagram.puml`
+- 关联：ADR-007（D3 反 god-object / D6 Field）、ADR-008（跨软件定位）、ADR-009（BaseObject 限于 domain-truth）、ADR-010（三层职责链）、ADR-011（槽位一致性）、ADR-012（读取管线——source normalization 进入契约，经重写与本 ADR 对齐）、ADR-013（IO 引擎 provisional）、Phase 2、Design UML `class_diagram.puml`
 
 ## 背景（Context）
 
@@ -134,10 +134,12 @@ Gmsh physical domain groups：
 
 无分组网格（拓扑合法）不被迫制造 "default" 组。
 
-### 9. 对 ADR-012 的修订
+### 9. 与 ADR-012 的关系（已对齐）
 
-- **决策 2**：「域分组存在时并集 == [0, n_cells)」不再是 universal invariant——改为 8b 的 complete_coverage / complete_partition 条件检查；「边界分组节点集 ⊆ 全体节点」随成员表示演进而被 8a 的 facet 强一致校验取代。
-- **决策 5**：BoundaryRegion 的 canonical 成员改为**全局 facet 索引**；节点集降级为派生视图。
+ADR-012 已重写为只承载「进入」契约（source normalization → canonical
+Mesh build）；早前针对其决策 2/5 的逐条修订已并入其重写正文，不再需要
+本节的修订注记。Mesh 的存储、索引与校验规则的唯一定义在本 ADR
+（决策 1–8），ADR-012 一律引用。
 
 ## 备选方案（Options considered）
 

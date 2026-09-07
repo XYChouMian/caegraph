@@ -115,27 +115,30 @@ package "caegraph.geometry" {
 
 package "caegraph.io" {
   abstract class MeshLoader {
-    Conversion pipeline, template method
-    (ADR-012): fixed flow read -> extract
-    groups -> classify by dim vs topo dim ->
-    build Mesh -> validate; _read is the ONLY
-    format hook; produces canonical Mesh
-    input including explicit facets, the
-    loading/normalization pipeline
-    establishes facet-cell adjacency
-    (ADR-014); domain groups become plain
-    global-cell-id data; IO never infers
-    BoundaryType - math categories come
-    from user specs only
+    Cross-format loading pipeline
+    (ADR-012): __call__(path) -> Mesh is
+    stable; per-format protected hooks are
+    implementation details, not frozen;
+    source-specific normalization, then
+    canonical Mesh build per ADR-014
+    (incl. explicit facets + validated
+    facet-cell adjacency); source named
+    groups classified by dim vs topo dim
+    into domain cell groups and explicit
+    boundary/interface facet groups
+    (lower-dim groups -> diagnostics);
+    IO never infers BoundaryType - math
+    categories come from user specs only
   }
   class GmshLoader {
-    First concrete loader: implements _read
-    via meshio (provisional engine, ADR-013;
-    types never leak past io); renumbers
-    block-local cells to the global cell
-    index space and maps source node
-    ordering to the CAEGraph local-node
-    convention (ADR-012/014)
+    First concrete MeshLoader for gmsh
+    source named groups via meshio
+    (provisional engine, ADR-013; types
+    never leak past io); performs the
+    ADR-012 normalization obligations per
+    ADR-014 (block-local ids, local-node
+    convention, facet winding, group
+    representation)
   }
   interface MeshWriter {
     Write-back into the CAE ecosystem;
