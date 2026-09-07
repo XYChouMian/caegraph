@@ -19,8 +19,7 @@
 
 科学计算测试最大的风险是"依赖真实世界的大文件"。必须遵守：
 
-- **一律使用合成数据**：小型、程序化构造的网格/场/图（如 `create_dummy_mesh()`、
-  `numpy.random.default_rng(seed)` 生成的规则网格）。
+- **一律使用合成数据**：小型、程序化构造的网格/场/图（如 `create_dummy_mesh()`、`numpy.random.default_rng(seed)` 生成的规则网格）。
 - 测试数据在代码或 fixture 中生成，**禁止提交数据文件到 `tests/`**。
 
 禁止出现：

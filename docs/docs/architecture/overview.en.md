@@ -1,7 +1,6 @@
 # Architecture Overview
 
-This page summarizes the architecture; the binding specification lives in
-[`architecture/ARCHITECTURE.md`](https://github.com/XYChouMian/caegraph/blob/main/architecture/ARCHITECTURE.md).
+This page summarizes the architecture; the binding specification lives in [`architecture/ARCHITECTURE.md`](https://github.com/XYChouMian/caegraph/blob/main/architecture/ARCHITECTURE.md).
 
 ## Design philosophy
 
@@ -29,9 +28,7 @@ This page summarizes the architecture; the binding specification lives in
 | `caegraph.visualization` | mesh/field/graph plotting | core, graph, io |
 | `caegraph.utils` | logging and reproducibility helpers | — |
 
-Mesh→Graph conversion belongs to `caegraph.graph.GraphBuilder.build(...)`.
-Mesh never depends on graph; Graph, CAEDataset, and Model use the native PyG
-Data, PyG Dataset, and PyTorch Module bases respectively (ADR-009).
+Mesh→Graph conversion belongs to `caegraph.graph.GraphBuilder.build(...)`. Mesh never depends on graph; Graph, CAEDataset, and Model use the native PyG Data, PyG Dataset, and PyTorch Module bases respectively (ADR-009).
 
 ## UML dual system
 

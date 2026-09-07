@@ -6,8 +6,7 @@
 
 ## mkdocstrings 的正确理解
 
-**mkdocstrings 不生成静态 markdown 文件**——它是在 `mkdocs build` 时从
-源码 docstring **动态渲染** API 文档。因此：
+**mkdocstrings 不生成静态 markdown 文件**——它是在 `mkdocs build` 时从源码 docstring **动态渲染** API 文档。因此：
 
 - API 页面只写 `::: caegraph.xxx` 指令，不手写 API 内容。
 - API 文档质量的源头是**代码里的 docstring**，不是文档站上的文字。
@@ -26,12 +25,9 @@ docs/docs/
 
 ## 双语要求
 
-- 每个新页面必须提供成对文件：`xxx.md`（中文，默认语言）与 `xxx.en.md`
-  （英文），除非明确标注该页暂不翻译（暂缓页需在 PR 说明并记录待办）。
-- nav 标签需要英文翻译时，在 `docs/mkdocs.yml` 的 i18n `nav_translations`
-  中登记。
-- 两种语言内容不同步视为非 blocking 缺陷，但连续两个 Phase 不同步升级为
-  blocking。
+- 每个新页面必须提供成对文件：`xxx.md`（中文，默认语言）与 `xxx.en.md`（英文），除非明确标注该页暂不翻译（暂缓页需在 PR 说明并记录待办）。
+- nav 标签需要英文翻译时，在 `docs/mkdocs.yml` 的 i18n `nav_translations` 中登记。
+- 两种语言内容不同步视为非 blocking 缺陷，但连续两个 Phase 不同步升级为 blocking。
 
 ## 工作流程
 
@@ -42,21 +38,12 @@ docs/docs/
 
 ## 图示规范
 
-- 架构、依赖、流程、状态转换等关系图必须使用 Mermaid，禁止用 ASCII / 纯文本
-  箭头图替代。
-- 只有图能比简短段落、列表或表格显著提升关系理解时才使用 Mermaid；不要为了
-  视觉装饰或重复正文而大量绘图。
-- 纵向流程节点较多，或节点标签较长且会显著增加图高时，定义并应用
-  `classDef nowrap white-space:nowrap`，例如 `class A,B,C nowrap`；短图无需
-  机械套用。
-- `flowchart TD/BT` 默认使用单行节点和边标签，优先以 `—`、`·` 或分号分隔
-  信息；仅在不换行会造成语义歧义时使用 `<br>`，不得靠大量显式换行堆高图形。
-- 节点或边标签包含括号、斜杠、冒号、加号、HTML 换行等特殊字符时必须加
-  双引号：节点使用 `A["..."]`，边标签使用 `A -->|"..."| B`，避免 Mermaid
-  将标签内容误解析为图形语法。
-- Mermaid 图的关系、方向、可选分支与术语必须和
-  `architecture/ARCHITECTURE.md`、ADR 及实际实现一致；图不能替代正文中的
-  必要限定条件。
+- 架构、依赖、流程、状态转换等关系图必须使用 Mermaid，禁止用 ASCII / 纯文本箭头图替代。
+- 只有图能比简短段落、列表或表格显著提升关系理解时才使用 Mermaid；不要为了视觉装饰或重复正文而大量绘图。
+- 纵向流程节点较多，或节点标签较长且会显著增加图高时，定义并应用 `classDef nowrap white-space:nowrap`，例如 `class A,B,C nowrap`；短图无需机械套用。
+- `flowchart TD/BT` 默认使用单行节点和边标签，优先以 `—`、`·` 或分号分隔信息；仅在不换行会造成语义歧义时使用 `<br>`，不得靠大量显式换行堆高图形。
+- 节点或边标签包含括号、斜杠、冒号、加号、HTML 换行等特殊字符时必须加双引号：节点使用 `A["..."]`，边标签使用 `A -->|"..."| B`，避免 Mermaid 将标签内容误解析为图形语法。
+- Mermaid 图的关系、方向、可选分支与术语必须和 `architecture/ARCHITECTURE.md`、ADR 及实际实现一致；图不能替代正文中的必要限定条件。
 
 ## 禁止事项
 
