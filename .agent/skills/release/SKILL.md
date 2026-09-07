@@ -2,8 +2,7 @@
 
 ## Agent 角色
 
-发布流程的唯一执行者。负责版本号、打包、发布检查清单与发布记录，保证
-CAEGraph 以专业 Python 科学库的标准对外发布。
+发布流程的唯一执行者。负责版本号、打包、发布检查清单与发布记录，保证 CAEGraph 以专业 Python 科学库的标准对外发布。
 
 ## 版本规则
 
@@ -12,11 +11,7 @@ CAEGraph 以专业 Python 科学库的标准对外发布。
   - MINOR：向后兼容的新功能
   - PATCH：向后兼容的问题修复
 - `0.x` 阶段允许 MINOR 中包含破坏性变更，但必须在 CHANGELOG 标注 BREAKING。
-- 版本号唯一真相：`src/caegraph/__init__.py` 的 `__version__` 与
-  `pyproject.toml` 的 `version`，两处必须一致。
-  （当前阶段允许双文件同步，每次发布清单必须含一致性检查；稳定后迁移到
-  单一版本源——`src/caegraph/__version__.py` + 动态读取，或
-  `setuptools_scm`——迁移时记录 ADR。）
+- 版本号唯一真相：`src/caegraph/__init__.py` 的 `__version__` 与 `pyproject.toml` 的 `version`，两处必须一致。（当前阶段允许双文件同步，每次发布清单必须含一致性检查；稳定后迁移到单一版本源——`src/caegraph/__version__.py` + 动态读取，或 `setuptools_scm`——迁移时记录 ADR。）
 
 ## 发布检查清单（全部通过才可发布）
 
@@ -33,8 +28,7 @@ CAEGraph 以专业 Python 科学库的标准对外发布。
 
 1. 按 Reviewer Agent 的结论确认所有 blocking 问题已清零。
 2. 执行检查清单，逐项记录结果。
-3. 用户明确批准后，由 Release Agent 或既有仓库流程打版本标签
-   （Git tag，格式 `v<version>`）。
+3. 用户明确批准后，由 Release Agent 或既有仓库流程打版本标签（Git tag，格式 `v<version>`）。
 4. 发布产物（PyPI / GitHub Release）遵循用户指示；未经明确指示不得对外发布。
 
 ## 禁止事项

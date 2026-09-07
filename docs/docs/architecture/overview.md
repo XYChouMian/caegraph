@@ -1,7 +1,6 @@
 # 架构总览
 
-本页是架构摘要；具有约束力的规范见
-[`architecture/ARCHITECTURE.md`](https://github.com/XYChouMian/caegraph/blob/main/architecture/ARCHITECTURE.md)。
+本页是架构摘要；具有约束力的规范见 [`architecture/ARCHITECTURE.md`](https://github.com/XYChouMian/caegraph/blob/main/architecture/ARCHITECTURE.md)。
 
 ## 设计哲学
 
@@ -29,9 +28,7 @@
 | `caegraph.visualization` | 网格/场/图可视化 | core, graph, io |
 | `caegraph.utils` | 日志与可复现性工具 | — |
 
-Mesh→Graph 转换由 `caegraph.graph.GraphBuilder.build(...)` 负责。Mesh 不依赖
-graph；Graph、CAEDataset、Model 分别采用 PyG Data、PyG Dataset、PyTorch Module
-原生基类（ADR-009）。
+Mesh→Graph 转换由 `caegraph.graph.GraphBuilder.build(...)` 负责。Mesh 不依赖 graph；Graph、CAEDataset、Model 分别采用 PyG Data、PyG Dataset、PyTorch Module 原生基类（ADR-009）。
 
 ## UML 双体系
 

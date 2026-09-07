@@ -8,18 +8,14 @@
 
 ## 背景
 
-CAEGraph 的 Agent 工作流覆盖需求、架构、编码、测试、文档、审查与发布，但此前
-只有零散 Git 限制，没有统一的权限、分支、提交、PR、发布和紧急操作规范。这会
-使角色边界与外部写操作的授权范围不清晰，也无法稳定利用 Git 追踪架构演化。
+CAEGraph 的 Agent 工作流覆盖需求、架构、编码、测试、文档、审查与发布，但此前只有零散 Git 限制，没有统一的权限、分支、提交、PR、发布和紧急操作规范。这会使角色边界与外部写操作的授权范围不清晰，也无法稳定利用 Git 追踪架构演化。
 
 ## 决策
 
 - Git 是所有 Agent 必须遵守的基础工程能力，不新增独立执行角色。
-- `.agent/skills/git/SKILL.md` 是 Git 操作规则的唯一详细来源；`AGENTS.md` 与
-  `.agent/WORKFLOW.md` 强制引用它，各角色 Skill 不重复完整规则。
+- `.agent/skills/git/SKILL.md` 是 Git 操作规则的唯一详细来源；`AGENTS.md` 与 `.agent/WORKFLOW.md` 强制引用它，各角色 Skill 不重复完整规则。
 - Agent 可在已授权任务范围内检查仓库、创建本地任务分支、显式暂存和提交。
-- merge、push、pull、fetch、tag、远程 PR/Issue/Release、历史改写与发布必须获得
-  用户对具体操作的明确批准。
+- merge、push、pull、fetch、tag、远程 PR/Issue/Release、历史改写与发布必须获得用户对具体操作的明确批准。
 - `main` 保持稳定且禁止直接提交；所有变化通过具名任务分支与 Reviewer 审查。
 - Git history 记录演化事实，ADR 记录决策理由，两者共同构成项目记忆。
 

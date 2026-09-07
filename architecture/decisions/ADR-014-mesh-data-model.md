@@ -1,24 +1,14 @@
 # ADR-014: Mesh canonical 数据模型
 
 - 编号：ADR-014
-- 标题：定义 CAEGraph Mesh canonical representation——canonical cell 存储
-  与显式 facet 拓扑双 CSR、身份契约、connectivity 语义（facet
-  winding-free / cell 有向局部拓扑且不含 backend 编号）、CellType 词汇
-  与显式稳定编码、校验分层（拓扑合法性 / 条件 coverage-partition）
+- 标题：定义 CAEGraph Mesh canonical representation——canonical cell 存储与显式 facet 拓扑双 CSR、身份契约、connectivity 语义（facet winding-free / cell 有向局部拓扑且不含 backend 编号）、CellType 词汇与显式稳定编码、校验分层（拓扑合法性 / 条件 coverage-partition）
 - 日期：2026-09-06
 - 状态：accepted
-- 关联：ADR-007（D3 反 god-object / D6 Field）、ADR-008（跨软件定位）、
-  ADR-009（BaseObject 限于 domain-truth）、ADR-010（三层职责链）、
-  ADR-011（槽位一致性）、ADR-012（读取管线，本 ADR 修订其决策 2/5）、
-  ADR-013（IO 引擎 provisional）、Phase 2、Design UML `class_diagram.puml`
+- 关联：ADR-007（D3 反 god-object / D6 Field）、ADR-008（跨软件定位）、ADR-009（BaseObject 限于 domain-truth）、ADR-010（三层职责链）、ADR-011（槽位一致性）、ADR-012（读取管线，本 ADR 修订其决策 2/5）、ADR-013（IO 引擎 provisional）、Phase 2、Design UML `class_diagram.puml`
 
 ## 背景（Context）
 
-Phase 2 开工纠偏（先设计 Mesh、后写 IO）后经七轮架构评审收敛。要解决的
-核心问题：CAEGraph Mesh 必须是**面向 CAE→Graph/Physics AI 的 canonical
-representation**，而非 meshio/Gmsh 内部结构的包装。外部世界的数据
-（block 布局、physical tag 表示、cell 局部编号、facet 源绕向）必须在
-进入 `core.Mesh` 之前被 IO normalization 完全消化。
+Phase 2 开工纠偏（先设计 Mesh、后写 IO）后经七轮架构评审收敛。要解决的核心问题：CAEGraph Mesh 必须是**面向 CAE→Graph/Physics AI 的 canonical representation**，而非 meshio/Gmsh 内部结构的包装。外部世界的数据（block 布局、physical tag 表示、cell 局部编号、facet 源绕向）必须在进入 `core.Mesh` 之前被 IO normalization 完全消化。
 
 ## 决策（Decision）
 
@@ -31,35 +21,24 @@ cells:  cell_types（显式整数编码 ndarray） + 扁平 connectivity + offse
 ```
 
 - 全局索引即存储索引（CSR 风格 ragged array）；
-- 按类型分组的二维矩阵块只能是**派生视图/缓存**（如 cells_of_type
-  风格），不具独立身份，永不构成第二套编址体系；
-- 复杂度表述（严谨版）：**O(1) 定位**某 cell/facet 的 connectivity
-  **切片**；读取为 O(k)，k 为该单元节点数（小常数）。
+- 按类型分组的二维矩阵块只能是**派生视图/缓存**（如 cells_of_type 风格），不具独立身份，永不构成第二套编址体系；
+- 复杂度表述（严谨版）：**O(1) 定位**某 cell/facet 的 connectivity **切片**；读取为 O(k)，k 为该单元节点数（小常数）。
 
 **不变量（原句冻结）**：
 
-> CAEGraph entity IDs refer to canonical Mesh storage — nodes, cells,
-> facets — never to loader/backend block-local indices.
+> CAEGraph entity IDs refer to canonical Mesh storage — nodes, cells, facets — never to loader/backend block-local indices.
 
 ### 2. Canonical explicit facet topology（平行 canonical 表）
 
-facet（dim == topo_dim − 1 的边界/界面实体：2D 网格为 edge，3D 为 face）
-拥有与 cell 平行的 canonical 表与**独立稳定的全局索引空间**：
+facet（dim == topo_dim − 1 的边界/界面实体：2D 网格为 edge，3D 为 face）拥有与 cell 平行的 canonical 表与**独立稳定的全局索引空间**：
 
 ```
 facets: facet_types + fconn + foffsets + facet_cells(ragged 邻接)
 ```
 
-- **收录范围**：仅收录**由 IO adapter 或用户显式声明、且需要保留
-  独立语义/稳定引用**的 boundary/interface facets；未命名内部 facet
-  不入表，由 geometry 层按需推导（最小真源）。
-- **facet_cells**：每个 facet 邻接的全局 cell id 列表（ragged/CSR，
-  不硬编码上限以容忍非流形：len==1 外边界候选、==2 内部/界面、
-  ≥3 非流形）。由加载/规范化管线 build 阶段计算一次并存为 canonical
-  ——它不是可随时重算的普通 geometry cache：cell-relative 法向、
-  interface 检测、Neumann/Robin、surface graph 都依赖这套邻接。
-- interface 能力注记：邻接 + 域分组 → 界面 facet 检测（如 fluid|solid
-  共享 facet），为未来 INTERFACE/PERIODIC 供数据基础。
+- **收录范围**：仅收录**由 IO adapter 或用户显式声明、且需要保留独立语义/稳定引用**的 boundary/interface facets；未命名内部 facet 不入表，由 geometry 层按需推导（最小真源）。
+- **facet_cells**：每个 facet 邻接的全局 cell id 列表（ragged/CSR，不硬编码上限以容忍非流形：len==1 外边界候选、==2 内部/界面、≥3 非流形）。由加载/规范化管线 build 阶段计算一次并存为 canonical——它不是可随时重算的普通 geometry cache：cell-relative 法向、interface 检测、Neumann/Robin、surface graph 都依赖这套邻接。
+- interface 能力注记：邻接 + 域分组 → 界面 facet 检测（如 fluid|solid 共享 facet），为未来 INTERFACE/PERIODIC 供数据基础。
 
 ### 3. Connectivity 语义（双语冻结）
 
@@ -73,13 +52,9 @@ cell ：保留有向局部拓扑语义，但不保留 backend-specific 节点编
        CellType 的 local-node convention。
 ```
 
-> Facet connectivity is winding-free. Cell connectivity retains oriented
-> local-topology semantics, but backend-specific local node ordering
-> must not leak into core.
+> Facet connectivity is winding-free. Cell connectivity retains oriented local-topology semantics, but backend-specific local node ordering must not leak into core.
 
-**CAEGraph local-node convention**：具体 per-type 局部编号表不进本 ADR，
-**随 CellType 实现冻结**（docstring 表 + 测试，一经发布即稳定），
-列为 Coding gate 的具名交付物。
+**CAEGraph local-node convention**：具体 per-type 局部编号表不进本 ADR，**随 CellType 实现冻结**（docstring 表 + 测试，一经发布即稳定），列为 Coding gate 的具名交付物。
 
 ### 4. CellType 词汇与编码
 
@@ -89,14 +64,11 @@ LINE2 / TRI3 / QUAD4 / TET4 / PYR5 / WEDGE6 / HEX8
 ```
 
 - str-Enum 序列化面（"tri3" 等，与 BoundaryType 同风格）；
-- **显式稳定整数内部编码**（概念上 LINE2↔1、TRI3↔2…），映射由
-  CAEGraph 显式定义并测试：
+- **显式稳定整数内部编码**（概念上 LINE2↔1、TRI3↔2…），映射由 CAEGraph 显式定义并测试：
 
-> Integer encoding is explicit and stable; it must not derive
-> implicitly from enum declaration order.
+> Integer encoding is explicit and stable; it must not derive implicitly from enum declaration order.
 
-- 每类型携带：`dim`、`node_count`、local-node convention、
-  **codim-1 face templates**（topology 校验与 geometry 推导的共用依据）。
+- 每类型携带：`dim`、`node_count`、local-node convention、**codim-1 face templates**（topology 校验与 geometry 推导的共用依据）。
 
 ### 5. 身份契约（canonical identity contract）
 
@@ -114,12 +86,8 @@ Field(node) → node IDs；Field(cell) → cell IDs
 ### 6. 职责切分（anti-god-object）
 
 - **Mesh 拥有拓扑事实**（nodes / cells / facets / facet_cells）；
-- **BoundaryManager 只做语义引用**：name → BoundaryRegion 的命名分组、
-  spec 按名绑定解析、corner（多区域交集）查询——不同时承担拓扑存储
-  与边界语义；
-- **BoundaryRegion 引用 topology，不拥有 topology**：canonical 成员 =
-  全局 facet 索引；节点集是派生视图，永不作为真源（节点集不能唯一
-  重建 facet connectivity，反向才成立）。
+- **BoundaryManager 只做语义引用**：name → BoundaryRegion 的命名分组、spec 按名绑定解析、corner（多区域交集）查询——不同时承担拓扑存储与边界语义；
+- **BoundaryRegion 引用 topology，不拥有 topology**：canonical 成员 = 全局 facet 索引；节点集是派生视图，永不作为真源（节点集不能唯一重建 facet connectivity，反向才成立）。
 
 ### 7. Mesh 组合与生命周期
 
@@ -133,8 +101,7 @@ fields: dict[str, Field]；经 add_field 追加并校验关联长度
 metadata: BaseObject 槽位
 ```
 
-**结构冻结、场可追加**：nodes/cells/facets/分组在构造 + validate 后
-冻结；Field 可经显式方法追加。坐标固定 `(n, 3)` 规范存储。
+**结构冻结、场可追加**：nodes/cells/facets/分组在构造 + validate 后冻结；Field 可经显式方法追加。坐标固定 `(n, 3)` 规范存储。
 
 ### 8. 校验分层
 
@@ -143,12 +110,8 @@ metadata: BaseObject 槽位
 - offsets 单调（cells 与 facets 两表）；
 - 单元/facet 节点数 == CellType 规定数；
 - 节点/cell/facet 索引界内；
-- 维度层级：cell 类型 dim ≤ topo_dim 且至少一类 == topo_dim；
-  facet 类型 dim == topo_dim − 1；
-- **facet 邻接完整性**：每 facet ≥1 个 adjacent cell；facet_cells 中
-  cell id 界内且不重复；**每个 facet 必须匹配其每个 adjacent cell 的
-  合法 codim-1 face**（依据 CellType face templates）——facet_cells
-  是经过验证的 canonical topology，不是未经验证的附加数组；
+- 维度层级：cell 类型 dim ≤ topo_dim 且至少一类 == topo_dim；facet 类型 dim == topo_dim − 1；
+- **facet 邻接完整性**：每 facet ≥1 个 adjacent cell；facet_cells 中 cell id 界内且不重复；**每个 facet 必须匹配其每个 adjacent cell 的合法 codim-1 face**（依据 CellType face templates）——facet_cells 是经过验证的 canonical topology，不是未经验证的附加数组；
 - 场值长度与关联（node/cell）匹配。
 
 **8b 条件检查（非 universal invariant；语义写准，暂不加 API）**：
@@ -171,12 +134,8 @@ Gmsh physical domain groups：
 
 ### 9. 对 ADR-012 的修订
 
-- **决策 2**：「域分组存在时并集 == [0, n_cells)」不再是 universal
-  invariant——改为 8b 的 complete_coverage / complete_partition 条件
-  检查；「边界分组节点集 ⊆ 全体节点」随成员表示演进而被 8a 的
-  facet 强一致校验取代。
-- **决策 5**：BoundaryRegion 的 canonical 成员改为**全局 facet 索引**；
-  节点集降级为派生视图。
+- **决策 2**：「域分组存在时并集 == [0, n_cells)」不再是 universal invariant——改为 8b 的 complete_coverage / complete_partition 条件检查；「边界分组节点集 ⊆ 全体节点」随成员表示演进而被 8a 的 facet 强一致校验取代。
+- **决策 5**：BoundaryRegion 的 canonical 成员改为**全局 facet 索引**；节点集降级为派生视图。
 
 ## 备选方案（Options considered）
 
@@ -194,16 +153,8 @@ Gmsh physical domain groups：
 
 ## 影响（Consequences）
 
-- **Coding gate 具名交付物**：CellType 实现——局部编号表、codim-1
-  face templates、显式整数编码映射，docstring + 测试（一经发布即稳定）。
-- loader 义务（ADR-012/013 落地时执行）：消化 block 布局、物理 tag、
-  **源局部编号映射**、**facet 源绕向消除**、build 阶段计算并验证
-  facet_cells；meshio 类型与 block-local id 死在 io 层。
-- Testing 需覆盖：全局重编号（多 block）、归一化确定性（同 facet
-  不同源序/绕向 → 同一 canonical 表示）、facet↔cell 强一致（含伪造
-  邻接的失败用例）、coverage/partition 条件检查、无分组网格合法、
-  结构冻结语义、add_field 校验。
-- 未来格式加载器（Fluent/Abaqus/ICEM/Pointwise）继承本合同的全部
-  normalization 义务。
-- 本 ADR 不引入依赖（meshio 见 ADR-013 provisional）、不改变依赖
-  方向与 PyG 边界（ADR-007 不变）。
+- **Coding gate 具名交付物**：CellType 实现——局部编号表、codim-1 face templates、显式整数编码映射，docstring + 测试（一经发布即稳定）。
+- loader 义务（ADR-012/013 落地时执行）：消化 block 布局、物理 tag、**源局部编号映射**、**facet 源绕向消除**、build 阶段计算并验证 facet_cells；meshio 类型与 block-local id 死在 io 层。
+- Testing 需覆盖：全局重编号（多 block）、归一化确定性（同 facet 不同源序/绕向 → 同一 canonical 表示）、facet↔cell 强一致（含伪造邻接的失败用例）、coverage/partition 条件检查、无分组网格合法、结构冻结语义、add_field 校验。
+- 未来格式加载器（Fluent/Abaqus/ICEM/Pointwise）继承本合同的全部 normalization 义务。
+- 本 ADR 不引入依赖（meshio 见 ADR-013 provisional）、不改变依赖方向与 PyG 边界（ADR-007 不变）。

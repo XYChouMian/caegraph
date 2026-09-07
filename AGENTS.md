@@ -1,7 +1,6 @@
 # AGENTS.md — CAEGraph 全局开发约束
 
-本文件对所有人类与 AI 贡献者生效，优先级高于任何单次对话指令。
-开始任何工作前，先通读本文件与 `architecture/ARCHITECTURE.md`。
+本文件对所有人类与 AI 贡献者生效，优先级高于任何单次对话指令。开始任何工作前，先通读本文件与 `architecture/ARCHITECTURE.md`。
 
 ---
 
@@ -32,8 +31,7 @@ which python          # 应指向 .../envs/caegraph-dev/bin/python
 
 - 操作系统：WSL Linux
 - IDE：VSCode
-- Git：用户可使用 VSCode GUI；Agent 可在既有仓库中按
-  `.agent/skills/git/SKILL.md` 使用 Git CLI
+- Git：用户可使用 VSCode GUI；Agent 可在既有仓库中按 `.agent/skills/git/SKILL.md` 使用 Git CLI
   - 禁止 `git init`
   - 禁止修改 remote 配置
   - 未经要求禁止修改 `.gitignore`
@@ -42,15 +40,10 @@ which python          # 应指向 .../envs/caegraph-dev/bin/python
 
 ## 3. 项目约束
 
-- 项目：CAEGraph —— 连接 CAE 仿真与 Physics AI 的工作流框架
-  （CAE 数据 → 图表示 → GNN 训练 → 新网格神经仿真 → 实验数据同化）
-- 定位冻结（ADR-008）：未经新 ADR 不得引入 solver 抽象、trainer 抽象、
-  替代图后端层
-- 当前阶段以 `architecture/phases/CURRENT.md` 指针为准（绑定表格：
-  `architecture/ARCHITECTURE.md` §6；战略总览：根目录 `ROADMAP.md`）；
-  禁止实现当前 Phase 之外的功能
-- 阶段红线（Phase 0）：不实现 CAE 算法、GNN 模型、数据处理功能，
-  不创建临时工具脚本
+- 项目：CAEGraph —— 连接 CAE 仿真与 Physics AI 的工作流框架（CAE 数据 → 图表示 → GNN 训练 → 新网格神经仿真 → 实验数据同化）
+- 定位冻结（ADR-008）：未经新 ADR 不得引入 solver 抽象、trainer 抽象、替代图后端层
+- 当前阶段以 `architecture/phases/CURRENT.md` 指针为准（绑定表格：`architecture/ARCHITECTURE.md` §6；战略总览：根目录 `ROADMAP.md`）；禁止实现当前 Phase 之外的功能
+- 阶段红线（Phase 0）：不实现 CAE 算法、GNN 模型、数据处理功能，不创建临时工具脚本
 
 ---
 
@@ -62,37 +55,22 @@ which python          # 应指向 .../envs/caegraph-dev/bin/python
 Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ Release
 ```
 
-- 结构变更前必须先更新 Design UML（`architecture/design/`）并记录 ADR
-  （`architecture/decisions/`）
-- 合并前比对 Design UML 与 Generated UML（`diagrams/generated/`，
-  仅工具生成，禁止手改）
-- Markdown 中需要表达架构、依赖、流程或状态转换的图，必须使用 Mermaid，
-  不得以 ASCII / 纯文本箭头图替代；仅在图能比段落、列表或表格明显提升理解时
-  使用，禁止为装饰而大量添加。纵向节点较多或节点标签较长的 Mermaid 流程图须
-  定义并应用 `classDef nowrap white-space:nowrap`；`flowchart TD/BT` 应优先
-  使用单行标签并减少 `<br>`，避免换行拉高图形。
-- 依赖分层：utils ← core ← {geometry, io} ← graph ← transforms ←
-  dataset ← physics ← {models, assimilation} ← {workflow, inference} ←
-  visualization，下层禁止依赖上层，同层禁止互依（兄弟层互不依赖）；
-  PyG 自 graph 层起可用，core/geometry/io 永不 import PyG（ADR-007）；
-  physics 可由 models、assimilation、workflow 消费，但不得反向依赖它们
+- 结构变更前必须先更新 Design UML（`architecture/design/`）并记录 ADR（`architecture/decisions/`）
+- 合并前比对 Design UML 与 Generated UML（`diagrams/generated/`，仅工具生成，禁止手改）
+- Markdown 中需要表达架构、依赖、流程或状态转换的图，必须使用 Mermaid，不得以 ASCII / 纯文本箭头图替代；仅在图能比段落、列表或表格明显提升理解时使用，禁止为装饰而大量添加。纵向节点较多或节点标签较长的 Mermaid 流程图须定义并应用 `classDef nowrap white-space:nowrap`；`flowchart TD/BT` 应优先使用单行标签并减少 `<br>`，避免换行拉高图形。
+- 依赖分层：utils ← core ← {geometry, io} ← graph ← transforms ←dataset ← physics ← {models, assimilation} ← {workflow, inference} ←visualization，下层禁止依赖上层，同层禁止互依（兄弟层互不依赖）；PyG 自 graph 层起可用，core/geometry/io 永不 import PyG（ADR-007）；physics 可由 models、assimilation、workflow 消费，但不得反向依赖它们
 
 ---
 
 ## 5. Agent 约束（不自由编码）
 
-- 全局协作流程见 `.agent/WORKFLOW.md`：任何请求先经 Project Management
-  Agent 分类路由，再进入架构 → 编码 → 测试 → 文档 → 审查链路
+- 全局协作流程见 `.agent/WORKFLOW.md`：任何请求先经 Project Management Agent 分类路由，再进入架构 → 编码 → 测试 → 文档 → 审查链路
 - 各 Agent 角色规则见 `.agent/skills/*/SKILL.md`
-- Git 是所有 Agent 共享的基础工程能力，所有 Git 操作必须遵守
-  `.agent/skills/git/SKILL.md`
+- Git 是所有 Agent 共享的基础工程能力，所有 Git 操作必须遵守 `.agent/skills/git/SKILL.md`
 - 工作流：读架构 → 查 UML → 改设计 → 再编码 → 同步文档与测试
 - 禁止在无设计依据时创建新抽象、新文件、新依赖
 - 所有源码位于 `src/caegraph/`，禁止根目录 Python 文件
-- 依赖分层：utils ← core ← {geometry, io} ← graph ← transforms ←
-  dataset ← physics ← {models, assimilation} ← {workflow, inference} ←
-  visualization，下层禁止依赖上层，同层禁止互依；PyG 自 graph 层起
-  可用，core/geometry/io 永不 import PyG（ADR-007）
+- 依赖分层：utils ← core ← {geometry, io} ← graph ← transforms ←dataset ← physics ← {models, assimilation} ← {workflow, inference} ←visualization，下层禁止依赖上层，同层禁止互依；PyG 自 graph 层起可用，core/geometry/io 永不 import PyG（ADR-007）
 
 ---
 
@@ -100,8 +78,7 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
 
 - 安装项目：`pip install -e .`
 - 运行测试：`pytest`
-- 开发工具：`pip install -r requirements-dev.txt`（覆盖 pyproject
-  `[dev] + [docs]` extras）
+- 开发工具：`pip install -r requirements-dev.txt`（覆盖 pyproject `[dev] + [docs]` extras）
 - 格式化 / 检查：`black`、`ruff`、`mypy`
 - 提交前钩子：`pre-commit install` 后自动执行 black / ruff / pytest
 - 文档：`mkdocs`（Material + mkdocstrings），提交前 `mkdocs build --strict`

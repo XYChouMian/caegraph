@@ -8,17 +8,13 @@
 
 ## 背景
 
-AI Agent 为主的开发模式容易"代码先行、设计后补"。需要一种机制让"计划设计"
-与"代码真实状态"的差异持续可见、可审查。
+AI Agent 为主的开发模式容易"代码先行、设计后补"。需要一种机制让"计划设计" 与"代码真实状态"的差异持续可见、可审查。
 
 ## 决策
 
-- Design UML：`architecture/design/*.puml`，由 Architecture Agent 手工维护，
-  结构变更前先改它。
-- Generated UML：`diagrams/generated/`，仅由工具（如 `pyreverse`）从源码生成，
-  禁止手工编辑。
-- 两套图的差异即结构性技术债，Architecture Agent 定期审查并逐项处置
-  （整改代码 / 演进设计并记录 ADR）。
+- Design UML：`architecture/design/*.puml`，由 Architecture Agent 手工维护，结构变更前先改它。
+- Generated UML：`diagrams/generated/`，仅由工具（如 `pyreverse`）从源码生成，禁止手工编辑。
+- 两套图的差异即结构性技术债，Architecture Agent 定期审查并逐项处置（整改代码 / 演进设计并记录 ADR）。
 
 ## 备选方案
 

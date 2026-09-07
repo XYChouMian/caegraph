@@ -2,32 +2,20 @@
 
 A CAE-to-Physics-AI workflow framework built for the PyG ecosystem.
 
-CAEGraph connects **CAE data → graph representations → GNN training → neural
-simulation on new meshes → experimental-data assimilation**. It keeps
-engineering truth framework-independent while extending PyTorch Geometric for
-computational engineering.
+CAEGraph connects **CAE data → graph representations → GNN training → neural simulation on new meshes → experimental-data assimilation**. It keeps engineering truth framework-independent while extending PyTorch Geometric for computational engineering.
 
-> **Status: Pre-Alpha (Phase 2 — CAE Data Pipeline, in progress).** The
-> Phase 1 core vocabulary (`BaseObject`, registry, shared enums, logging)
-> is complete. Work has begun on the CAE data band (Mesh/Field, loaders,
-> graph construction); GNN training utilities remain planned.
+> **Status: Pre-Alpha (Phase 2 — CAE Data Pipeline, in progress).** The Phase 1 core vocabulary (`BaseObject`, registry, shared enums, logging) is complete. Work has begun on the CAE data band (Mesh/Field, loaders, graph construction); GNN training utilities remain planned.
 
 ## Features (planned)
 
-- **CAE data band** — Mesh/Field/Boundary truth, loaders, geometry services,
-  PyG-native graph construction, transforms and datasets
-- **Physics AI utilities** — physics losses, observation assimilation and
-  CAE-aware training workflow components without replacing user training loops
-- **Neural simulation** — pretrained models on new meshes, field reconstruction
-  and VTK write-back
-- Built on [PyTorch](https://pytorch.org) and
-  [PyTorch Geometric](https://pyg.org), without introducing an alternative graph
-  backend, Trainer or solver abstraction
+- **CAE data band** — Mesh/Field/Boundary truth, loaders, geometry services, PyG-native graph construction, transforms and datasets
+- **Physics AI utilities** — physics losses, observation assimilation and CAE-aware training workflow components without replacing user training loops
+- **Neural simulation** — pretrained models on new meshes, field reconstruction and VTK write-back
+- Built on [PyTorch](https://pytorch.org) and [PyTorch Geometric](https://pyg.org), without introducing an alternative graph backend, Trainer or solver abstraction
 
 ## Installation
 
-CAEGraph requires Python 3.10 or later. The canonical development environment
-uses Python 3.10, while CI also verifies Python 3.11 compatibility.
+CAEGraph requires Python 3.10 or later. The canonical development environment uses Python 3.10, while CI also verifies Python 3.11 compatibility.
 
 ```bash
 pip install -e .
