@@ -14,21 +14,21 @@
 
 | 包 | 职责 | 依赖 |
 | --- | --- | --- |
-| `caegraph.core` | 工程真源：BaseObject、Mesh、Field；边界词汇、注册机制、共享枚举 | — |
+| `caegraph.core` | 工程真源：BaseObject、CAEGraph（canonical 领域表示）、topology subsystem（Mesh，cell-based）、Field；边界词汇、注册机制、共享枚举 | — |
 | `caegraph.geometry` | 几何服务：度量、边特征、插值 | core |
 | `caegraph.io` | 加载器（gmsh 首发）与写回（VTK）；格式注册表 | core |
-| `caegraph.graph` | `Graph(torch_geometric.data.Data)` 神经表示 + 构建器 | core, geometry |
-| `caegraph.transforms` | 几何/特征/物理变换（边界条件编码） | graph |
-| `caegraph.dataset` | CAEDataset（PyG）：集合、切分 | graph, transforms |
+| `caegraph.graph` | 表示构造 + 后端适配：RepresentationBuilder（source discretization → CAEGraph）、PyG adapter（CAEGraph → `torch_geometric.data.Data`） | core, geometry |
+| `caegraph.transforms` | 几何/特征/物理变换（边界条件编码），作用于 PyG Data | graph |
+| `caegraph.dataset` | CAEDataset：集合、切分（后端特定；Phase 2 采用 PyG Dataset） | graph, transforms |
 | `caegraph.physics` | PDE 残差、物理损失、约束 | core, graph |
 | `caegraph.models` | Model 接口 + CAE 模型公用设施（无 GNN zoo） | core, graph, physics |
 | `caegraph.assimilation` | 观测/修正算子（实验数据同化） | core, graph, physics |
 | `caegraph.workflow` | 训练公用设施：loss 组装、CAE 批处理适配（无 fit 循环） | physics, models, assimilation, dataset |
 | `caegraph.inference` | 神经仿真壳：simulator、rollout 循环（数值格式在模型侧） | core, graph, transforms, models, assimilation, io |
-| `caegraph.visualization` | 网格/场/图可视化 | core, graph, io |
+| `caegraph.visualization` | 离散表示/场/图可视化 | core, graph, io |
 | `caegraph.utils` | 日志与可复现性工具 | — |
 
-Mesh→Graph 转换由 `caegraph.graph.GraphBuilder.build(...)` 负责。Mesh 不依赖 graph；Graph、CAEDataset、Model 分别采用 PyG Data、PyG Dataset、PyTorch Module 原生基类（ADR-009）。
+表示构造由 `caegraph.graph` 的 RepresentationBuilder 负责：任意 source discretization（mesh / grid / particles，FEM/FVM/FDM/SPH 特化）→ CAEGraph（ADR-015）。CAEGraph → PyG Data 由 GNN backend adapter（`graph/pyg.py`）完成，"Graph" 不再是领域类。topology subsystem（Mesh）不提供 `to_graph()`，core 永不 import graph；`CAEDataset` 与 `Model` 保持后端特定——PyG Dataset 与 torch.nn.Module 是 Phase 2 的实现选择，并非冻结契约（ADR-009，经 ADR-015 修订）。
 
 ## UML 双体系
 

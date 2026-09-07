@@ -30,7 +30,7 @@ Rules of engagement:
 
 ## Vision
 
-CAEGraph bridges CAE simulation and physics AI through a **CAE → GNN → AI workflow** — converting CAE data into graph representations, enabling GNN training on engineering problems, running neural simulation on new meshes with pretrained models, and correcting predictions with experimental observations (ADR-008).
+CAEGraph bridges CAE simulation and physics AI through a **CAE → GNN → AI workflow** — normalizing heterogeneous CAE data into **CAEGraph**, the graph-native canonical domain representation (ADR-015), enabling GNN training on engineering problems through a GNN backend adapter, running neural simulation across different discretizations with pretrained models, and correcting predictions with experimental observations (ADR-008).
 
 ---
 
@@ -55,7 +55,7 @@ Details: [`architecture/phases/phase1-core.md`](architecture/phases/phase1-core.
 
 ## Phase 2 — CAE Data Pipeline · `In progress`
 
-**R1** — domain-truth objects (`Mesh`/`Field`) plus the data band: `caegraph.geometry`/`caegraph.io`/`caegraph.graph`/ `caegraph.transforms`/`caegraph.dataset` — CAE loading (gmsh first), Mesh→`Graph(torch_geometric.data.Data)` conversion, transforms (BC encoding), CAEDataset, VTK write-back. Conversion invariants (topology, conservation, boundary mapping) scientifically validated. Before Phase 3, benchmark the canonical data layout (memory usage, graph construction, neighbor query, CAEGraph→PyG conversion) — CAEGraph is optimized for domain representation and data interoperability, not for replacing general graph algorithm libraries (ADR-015).
+**R1** — the `caegraph.core` domain core: **CAEGraph**, the graph-native canonical domain representation (ADR-015), with the topology subsystem (`Mesh`/`CellType` for cell-based discretizations), `Field`, and boundary vocabulary; plus the data band: `caegraph.geometry`/`caegraph.io`/`caegraph.graph`/`caegraph.transforms`/`caegraph.dataset` — CAE loading (gmsh first) via source normalization into canonical topology, representation construction (RepresentationBuilder), the GNN backend adapter (CAEGraph → PyG Data), transforms (BC encoding), CAEDataset, VTK write-back. Conversion invariants (topology, conservation, boundary mapping) scientifically validated. Before Phase 3, benchmark the canonical data layout (memory usage, graph construction, neighbor query, CAEGraph→PyG conversion) — CAEGraph is optimized for domain representation and data interoperability, not for replacing general graph algorithm libraries (ADR-015).
 
 Details: [`architecture/phases/phase2-cae-data.md`](architecture/phases/phase2-cae-data.md)
 

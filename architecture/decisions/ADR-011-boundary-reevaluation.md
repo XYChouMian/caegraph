@@ -17,7 +17,7 @@
 
 ## 重估分析（Evaluation）
 
-**T1 未命中（证据不足）。** Phase 2 的 BC 编码（`transforms/physics.py` 规划）是 mask + 特征赋值模式：值驱动类型（DIRICHLET / NEUMANN / ROBIN）写入值或参数特征，配对驱动类型（PERIODIC / SYMMETRY / INTERFACE）只携带标识与配对信息。二者确实分叉，但分叉的**调度依据是 `BoundarySpec` 的槽位形状**（`paired_region` / `parameters` 是否存在，ADR-010 已设计）而非枚举分类学；且 Phase 2 的 GraphBuilder 只做 node / cell 视图构建，不实现周期边合成或跨域接口点匹配——配对数据在本 Phase 仅被**承载**，真正的消费方是 Phase 3 的 physics 损失层。
+**T1 未命中（证据不足）。** Phase 2 的 BC 编码（`transforms/physics.py` 规划）是 mask + 特征赋值模式：值驱动类型（DIRICHLET / NEUMANN / ROBIN）写入值或参数特征，配对驱动类型（PERIODIC / SYMMETRY / INTERFACE）只携带标识与配对信息。二者确实分叉，但分叉的**调度依据是 `BoundarySpec` 的槽位形状**（`paired_region` / `parameters` 是否存在，ADR-010 已设计）而非枚举分类学；且 Phase 2 的 RepresentationBuilder 只做 source discretization → CAEGraph 的实体/关系构造（原 GraphBuilder 的 node / cell 视图构建，ADR-015），不实现周期边合成或跨域接口点匹配——配对数据在本 Phase 仅被**承载**，真正的消费方是 Phase 3 的 physics 损失层。
 
 **T2 未命中（结构无阻塞）。** BoundaryRegion 元数据是开放的 str→Any 映射，external / interface / internal 等角色信息可以作为**数据**自然存放；gmsh 物理组 → region 的映射不因词汇单复而受阻。
 

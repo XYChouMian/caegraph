@@ -6,13 +6,13 @@
 
 ## 1. Project Vision
 
-CAEGraph is a Python framework that bridges CAE simulation and physics AI through a **CAE → GNN → AI workflow**: it converts CAE simulation data —meshes, fields, boundary conditions, physics metadata — into graph representations, enables GNN training on engineering problems, runs neural simulation on new meshes with pretrained models, and corrects predictions with experimental observations. It **extends** [PyTorch Geometric (PyG)](https://pyg.org) for computational engineering.
+CAEGraph is a Python framework that bridges CAE simulation and physics AI through a **CAE → GNN → AI workflow**: it normalizes heterogeneous CAE simulation data — meshes, grids, particles, fields, boundary conditions, physics metadata — into **CAEGraph**, the graph-native canonical domain representation (ADR-015), enables GNN training on engineering problems through a GNN backend adapter (PyG defines no domain objects), runs neural simulation across different discretizations with pretrained models, and corrects predictions with experimental observations. It **extends** the [PyTorch Geometric (PyG)](https://pyg.org) ecosystem for computational engineering without coupling its domain model to it.
 
 Four core requirements (frozen, ADR-008):
 
 - **R1** — CAE data → GNN training data (parsing, topology, features, fields, boundary encoding).
 - **R2** — GNN training workflows adapted to CAE data (not a training framework).
-- **R3** — any mesh + a pretrained GNN → neural simulation (the AI counterpart of the CAE workflow).
+- **R3** — any discretization + a pretrained GNN → neural simulation (the AI counterpart of the CAE workflow).
 - **R4** — experimental-data assimilation (e.g. PIV sparse measurements correcting dense predictions).
 
 ```mermaid
@@ -20,32 +20,36 @@ flowchart TD
     classDef nowrap white-space:nowrap
 
     A["<b>CAE software</b> — <i>Fluent, Abaqus, OpenFOAM, gmsh</i>"]
-    B["<b>Mesh representation</b> — nodes, elements, boundary regions, fields"]
-    C["<b>Graph representation</b> — PyG-native neural representation (ADR-007)"]
-    D["<b>Dataset</b> — CAEDataset (PyG), transforms, splits"]
+    B["<b>Normalization / representation construction</b> — io loaders · RepresentationBuilder"]
+    C["<b>CAEGraph</b> — graph-native canonical domain representation (ADR-015)"]
+    T["<b>Topology subsystem</b> — cell-based discretizations (Mesh); optional layer of CAEGraph"]
+    D["<b>Dataset</b> — CAEDataset (backend-specific; PyG in Phase 2), transforms, splits"]
     E["<b>Training</b> — user loop or Lightning; CAEGraph never replaces it"]
     F["<b>Inference</b> — neural simulation: rollout harness → field reconstruction"]
     G["<b>Assimilation</b> — optional observation correction (R4)"]
     H["<b>Visualization</b> — <i>ParaView ecosystem</i>"]
 
     A -->|"io: loaders, registry"| B
-    B -->|"geometry: metrics, edge features · graph: GraphBuilder.build()"| C
-    C -->|"transforms: feature / physics / boundary-condition encoding"| D
+    B -->|"entities + relations + fields"| C
+    C -->|"GNN backend adapter → PyG Data · transforms: feature / physics / BC encoding"| D
     D -->|"physics · models: interface + utilities · workflow: loss assembly"| E
     E -->|"pretrained model"| F
-    B -.->|"new mesh via GraphBuilder + transforms"| F
+    C -.->|"new discretization via RepresentationBuilder + backend adapter"| F
+    C -.->|"optional topology annotations: Mesh / CellType / facets"| T
     F -->|"io: VTK writer"| H
     F -->|"optional assimilation"| G
     G -->|"io: VTK writer"| H
 
-    class A,B,C,D,E,F,G,H nowrap
+    class A,B,C,D,E,F,G,H,T nowrap
 ```
+
+Normalization is format-specific; representation construction (`RepresentationBuilder`) covers cell-based meshes (FEM/FVM), grids (FDM), and particles (SPH) as source specializations (ADR-015). The **topology subsystem is an optional semantic layer attached to CAEGraph for cell-based discretizations** — grid- and particle-based sources construct CAEGraph without it.
 
 Long-term goals:
 
 - A stable, public, PyPI-installable scientific library — **not** a script collection.
-- First-class support for mesh-to-graph conversion (node graphs, cell graphs, heterogeneous graphs).
-- CAE-aware model utilities on top of the PyG-native graph layer; the library never locks users into one training paradigm and never becomes a GNN zoo (ADR-008).
+- First-class support for representation construction from cell-based meshes (node graphs, cell graphs), grids, and particle discretizations into the canonical CAEGraph (ADR-015).
+- CAE-aware model utilities on top of the canonical representation and its backend adapters; the library never locks users into one training paradigm and never becomes a GNN zoo (ADR-008).
 - Reproducible, tested, documented — everything an open-source scientific project requires.
 
 Non-goals (explicitly out of scope):
@@ -53,7 +57,7 @@ Non-goals (explicitly out of scope):
 - CAEGraph is **not** a mesh generator and **not** a CFD/FEA solver.
 - CAEGraph is **not** a training framework: no Trainer/optimizer/ distributed engines (ADR-008); training loops belong to users (PyTorch / Lightning).
 - CAEGraph does not implement solver numerics (time-integration schemes); the inference layer provides workflow harnesses only (ADR-007 D5).
-- CAEGraph does not reimplement PyG; it extends the PyG ecosystem for computational engineering (ADR-008) while keeping its engineering truth (Mesh/Field/Boundary) framework-free.
+- CAEGraph does not reimplement PyG; it reaches the PyG ecosystem through backend adapters (ADR-008, ADR-015) while keeping its engineering truth (CAEGraph, topology subsystem, Field, Boundary) framework-free.
 
 ---
 
@@ -78,12 +82,12 @@ flowchart TD
     classDef nowrap white-space:nowrap
 
     A["<b>CAD / CFD / FEM software</b> — raw solver/CAD data"]
-    B["<b>io loaders</b> — gmsh first"]
-    C["<b>Mesh</b> — domain truth: nodes, elements, regions, fields"]
+    B["<b>io loaders</b> — gmsh first; source normalization → canonical topology (topology subsystem)"]
+    C["<b>CAEGraph</b> — canonical domain representation: entities, relations, fields (ADR-015)"]
     D["<b>geometry</b> — metrics, edge features, interpolation"]
-    E["<b>Graph</b> — PyG-native neural representation, tensor storage"]
+    E["<b>GNN backend adapter</b> — CAEGraph → PyG Data (graph/pyg.py)"]
     F["<b>transforms</b> — feature / physics / boundary-condition encoding"]
-    G["<b>Dataset</b> — CAEDataset (PyG), transforms, splits"]
+    G["<b>Dataset</b> — CAEDataset (backend-specific; PyG in Phase 2), transforms, splits"]
     H["<b>Training</b> — physics losses · Model interface · workflow utilities; <i>user loop / Lightning, CAEGraph adapts and never replaces</i>"]
     I["<b>Inference</b> — neural-simulation harness: rollout, reconstruction"]
     J["<b>Assimilation</b> — optional observation correction (R4)"]
@@ -92,7 +96,7 @@ flowchart TD
 
     A --> B --> C --> D --> E --> F --> G --> H
     H -->|"pretrained model"| I
-    C -.->|"new mesh via GraphBuilder + transforms"| I
+    C -.->|"new discretization via RepresentationBuilder + backend adapter"| I
     I --> K --> L
     I -->|"optional assimilation"| J --> K
 
@@ -104,18 +108,18 @@ flowchart TD
 | Package | Responsibility | Depends on |
 | --- | --- | --- |
 | `caegraph.utils` | logging and reproducibility helpers | (nothing internal) |
-| `caegraph.core` | domain truth: BaseObject, Mesh, Field; boundary vocabulary; registries; shared enums | utils (torch allowed, PyG forbidden) |
+| `caegraph.core` | domain truth: BaseObject, CAEGraph (canonical domain representation), topology subsystem (Mesh, cell-based), Field; boundary vocabulary; registries; shared enums | utils (torch allowed, PyG forbidden) |
 | `caegraph.geometry` | geometric services: metrics, edge features, interpolation | core |
 | `caegraph.io` | loaders (gmsh first) and writers (VTK); format registry | core |
-| `caegraph.graph` | `Graph(torch_geometric.data.Data)` neural representation + builders | core, geometry |
-| `caegraph.transforms` | geometry / feature / physics transforms (BC encoding) on Graph | graph |
-| `caegraph.dataset` | CAEDataset (PyG): collections, splits | graph, transforms |
+| `caegraph.graph` | representation construction + backend adapters: RepresentationBuilder (source discretization → CAEGraph), PyG adapter (CAEGraph → `torch_geometric.data.Data`) | core, geometry |
+| `caegraph.transforms` | geometry / feature / physics transforms (BC encoding) on PyG Data | graph |
+| `caegraph.dataset` | CAEDataset: collections, splits (backend-specific; PyG Dataset in Phase 2) | graph, transforms |
 | `caegraph.physics` | PDE residuals, physics losses, constraints | core, graph |
 | `caegraph.models` | Model interface + CAE-aware utilities (no GNN zoo) | core, graph, physics |
 | `caegraph.assimilation` | observation / correction operators (R4) | core, graph, physics |
 | `caegraph.workflow` | training utilities: loss assembly, CAE batch adaptation (no fit loop) | physics, models, assimilation, dataset |
 | `caegraph.inference` | neural-simulation harness: simulator, rollout loop (numerics model-side) | core, graph, transforms, models, assimilation, io |
-| `caegraph.visualization` | mesh/field/graph plotting | core, graph, io |
+| `caegraph.visualization` | discretization/field/graph plotting | core, graph, io |
 
 Dependency layers (lower layers must never import higher layers; same-layer imports are forbidden):
 
@@ -124,9 +128,9 @@ flowchart BT
     classDef nowrap white-space:nowrap
 
     A["<b>utils</b> — bottom"]
-    B["<b>core</b> — domain truth; torch-only, never PyG"]
+    B["<b>core</b> — domain truth (CAEGraph + topology subsystem + Field); torch-only, never PyG"]
     C["<b>geometry / io</b> — sibling services; must not import each other"]
-    D["<b>graph</b> — Graph(Data): PyG-native neural representation"]
+    D["<b>graph</b> — representation construction (RepresentationBuilder) + GNN backend adapters"]
     E["<b>transforms</b>"]
     F["<b>dataset</b>"]
     G["<b>physics</b>"]
@@ -157,12 +161,13 @@ Notes on `physics` placement:
 
 See `architecture/UML_GUIDE.md`. The two must be reconciled regularly; divergence is treated as technical debt.
 
-### 3.4 Conversion and inheritance contracts
+### 3.4 Representation and inheritance contracts
 
-- Mesh→Graph conversion is owned by `caegraph.graph.GraphBuilder.build(mesh, *, view=...)`. `Mesh` has no `to_graph()` convenience method because core must never import graph.
-- `BaseObject` is the common base only for domain-truth objects (`Mesh` and `Field`). It is not a universal base for learning-layer objects.
-- `Graph`, `CAEDataset`, and `Model` inherit the ecosystem-native bases `torch_geometric.data.Data`, `torch_geometric.data.Dataset`, and `torch.nn.Module`, respectively. They do not use multiple inheritance with `BaseObject`.
-- These contracts are binding under ADR-009.
+- Representation construction is owned by `caegraph.graph`: `RepresentationBuilder.build(source)` constructs a `CAEGraph` from any source discretization (mesh / grid / particles; FEM/FVM/FDM/SPH specializations, ADR-015). The topology subsystem (`Mesh`) has no `to_graph()` convenience method because core must never import graph.
+- Backend conversion is owned by adapters: the PyG adapter (`graph/pyg.py`) converts `CAEGraph → torch_geometric.data.Data`. `Graph` is **not** a domain class (ADR-015); no domain type named `Graph` may be introduced.
+- `BaseObject` is the common base for the domain object family — `CAEGraph`, topology objects (`Mesh`), and `Field`. It is not a base for learning-layer objects.
+- `CAEDataset` and `Model` remain **backend-specific**: they inherit `torch_geometric.data.Dataset` and `torch.nn.Module` respectively. These are the current Phase 2 implementation choices (PyG), not a frozen contract — the backend adapter layer is the seam for alternative backends, and adopting one requires a new ADR.
+- These contracts are binding under ADR-009 as amended by ADR-015.
 
 ---
 
@@ -238,9 +243,9 @@ Development is gated by phases. Agents must not implement features outside the c
 | --- | --- | --- |
 | **Phase 0 — Foundation** (done) | packaging, architecture spec, UML dual system, docs, CI, agent governance | `pip install -e .` + pytest + `mkdocs build --strict` all pass; no CAE/GNN code |
 | **Phase 1 — Core data structures** (done) | `BaseObject`, registries, shared types in `caegraph.core` | core API tested + docstringed; first Generated UML produced |
-| **Phase 2 — CAE data pipeline** (current) | domain-truth objects (`Mesh`/`Field`) + geometry/io/graph/transforms/dataset data band, `Graph(torch_geometric.data.Data)`, gmsh first, VTK write-back (R1) | conversion invariants validated (topology/conservation/BC mapping); PyG boundary enforced |
+| **Phase 2 — CAE data pipeline** (current) | `caegraph.core` domain core: **CAEGraph** (canonical domain representation, ADR-015) + topology subsystem (`Mesh`/`CellType` — `CellType` landed) + `Field`; data band geometry/io/graph/transforms/dataset: RepresentationBuilder, GNN backend adapter (PyG), gmsh first, VTK write-back (R1) | conversion invariants validated (topology/conservation/BC mapping); PyG boundary enforced |
 | **Phase 3 — ML models** | physics losses, Model interface + CAE utilities, assimilation operators, workflow training utilities in `caegraph.physics`/`models`/`assimilation`/`workflow` | end-to-end training on synthetic benchmark incl. observation-constraint mode (R2+R4) |
-| **Phase 4 — Neural simulation & release** | inference harness (simulator, rollout), VTK write-back, examples, API freeze, v1.0 | rollout on unseen mesh validated (R3); Release Agent checklist fully green |
+| **Phase 4 — Neural simulation & release** | inference harness (simulator, rollout), VTK write-back, examples, API freeze, v1.0 | rollout on unseen discretizations validated (R3); Release Agent checklist fully green |
 
 References to "Phase" anywhere in the agent governance system (`.agent/`) mean this table.
 

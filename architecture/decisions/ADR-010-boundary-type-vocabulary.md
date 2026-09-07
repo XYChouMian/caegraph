@@ -54,6 +54,6 @@ Phase 1 落地的 `BoundaryType` 仅有 DIRICHLET / NEUMANN / FREE 三值，不�
 ## 影响（Consequences）
 
 - 公共 API：`BoundaryType.FREE` → `BoundaryType.NONE`（Phase 1 尚未发布，无兼容负担）；新增五值进入 `Unreleased`。
-- Phase 2 的 BoundarySpec/GraphBuilder/GNN 输入编码以七类为准；NodeCategory 不受影响。
+- Phase 2 的 BoundarySpec/RepresentationBuilder/GNN 输入编码以七类为准；NodeCategory 不受影响。
 - 序列化值保持小写字符串（str-Enum），序列化面仅增不改。
 - 本 ADR 不引入新包、不改变 PyG 集成与 Graph 设计（ADR-007/009 不变）。

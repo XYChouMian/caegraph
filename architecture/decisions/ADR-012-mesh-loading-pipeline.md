@@ -1,14 +1,14 @@
-# ADR-012: 跨格式加载的 source normalization → canonical Mesh 管线与源分组语义契约
+# ADR-012: 跨格式加载的 source normalization → canonical topology 管线与源分组语义契约
 
 - 编号：ADR-012
-- 标题：定义跨格式 Mesh 加载管线（`__call__` 稳定、protected hook 不冻结）：source → format-specific normalization → canonical Mesh build（ADR-014）→ validate；源分组（source-group）按维度分类为 domain / boundary|interface / unsupported；normalization 义务；IO 永不推断 BoundaryType
+- 标题：定义跨格式 Mesh 加载管线（`__call__` 稳定、protected hook 不冻结）：source → format-specific normalization → canonical topology build（ADR-014）→ validate（产物为 topology representation，经 RepresentationBuilder 构造 CAEGraph——ADR-015）；源分组（source-group）按维度分类为 domain / boundary|interface / unsupported；normalization 义务；IO 永不推断 BoundaryType
 - 日期：2026-09-06
 - 状态：accepted
 - 关联：ADR-007（分层与共享词汇）、ADR-008（跨软件定位）、ADR-010（三层职责链）、ADR-011（Spec 槽位一致性）、ADR-013（IO 引擎 provisional）、**ADR-014（canonical topology（cell-based）权威定义，经 ADR-015 收窄）**、**ADR-015（顶层 canonical 对象：CAEGraph）**、Phase 2、Design UML `class_diagram.puml`
 
 ## 职责边界（Scope）
 
-本 ADR 只回答一个问题：**外部数据如何被规范化并进入 canonical Mesh**。「Mesh 必须长什么样」一律由 ADR-014 立法；本 ADR 不重复定义任何存储布局、索引契约或校验规则，避免两处立法漂移。
+本 ADR 只回答一个问题：**外部数据如何被规范化并进入 canonical topology（进而经 RepresentationBuilder 构造 CAEGraph——ADR-015）**。「topology 必须长什么样」一律由 ADR-014 立法；本 ADR 不重复定义任何存储布局、索引契约或校验规则，避免两处立法漂移。
 
 ```
 ADR-012 = 怎么进入（source normalization → canonical topology build）
@@ -30,9 +30,9 @@ ADR-015 = 顶层 canonical 对象是什么（CAEGraph）
 AbstractMeshLoader.__call__(path) -> Mesh
   1. obtain source representation
   2. perform source-specific normalization
-  3. build canonical Mesh according to ADR-014
-  4. validate canonical Mesh
-  5. return Mesh
+  3. build canonical topology according to ADR-014
+  4. validate canonical topology
+  5. return Mesh — topology representation consumed by RepresentationBuilder → CAEGraph (ADR-015)
 ```
 
 > `__call__` pipeline is stable; the number and naming of protected format-specific hooks are implementation details and are not frozen by this ADR.

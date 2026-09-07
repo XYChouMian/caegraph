@@ -17,7 +17,7 @@ Phase 2 要求 gmsh 首发（.msh 物理组 → 区域体系，ADR-012）与 VTK
    - 写端：VTK 系格式（覆盖 Phase 2 写回与 Phase 4 预测场导出）；
    - 未来 Fluent / Abaqus / OpenFOAM 等格式经同一 core registry 接入，meshio 提供多格式底座。
 2. **定位声明（不随引擎更替而变）**：无论当前引擎是什么，它都是 **external IO engine**（io 层实现细节）——
-   - 不是 CAEGraph 的 Mesh 领域抽象（domain truth 在 `caegraph.core`）；
+   - 不是 CAEGraph 的 Mesh 领域抽象（domain truth 在 `caegraph.core`；ADR-015：顶层为 CAEGraph，Mesh 为 topology subsystem）；
    - 不是 solver interface / trainer / 图后端替代（不触发 ADR-008 冻结条款）；
    - 引入它不构成 solver 抽象化，仅为 io 层的格式编解码引擎。
 3. **类型不渗出**：公共 API 的加载入口返回 `caegraph.core.Mesh`，meshio 类型（`meshio.Mesh` 等）不得出现在公共签名、返回值或 core 层；仅限 `caegraph.io` 内部使用。

@@ -19,7 +19,7 @@ package "external ecosystem bases" {
   abstract class "torch.nn.Module" as TorchModule <<external>>
 }
 
-package "caegraph.core (domain truth; torch-only, never PyG)" {
+package "caegraph.core (domain truth: CAEGraph + topology subsystem; torch-only, never PyG)" {
   abstract class BaseObject {
     Base abstraction: identity, metadata, validation contract
   }

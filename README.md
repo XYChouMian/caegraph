@@ -2,15 +2,15 @@
 
 A CAE-to-Physics-AI workflow framework built for the PyG ecosystem.
 
-CAEGraph connects **CAE data → graph representations → GNN training → neural simulation on new meshes → experimental-data assimilation**. It keeps engineering truth framework-independent while extending PyTorch Geometric for computational engineering.
+CAEGraph connects **CAE data → canonical graph representation → GNN training → neural simulation across different discretizations → experimental-data assimilation**. It normalizes heterogeneous CAE sources into **CAEGraph**, the graph-native canonical domain representation (ADR-015), and reaches learning backends — PyTorch Geometric today — through backend adapters, keeping the engineering truth framework-independent.
 
-> **Status: Pre-Alpha (Phase 2 — CAE Data Pipeline, in progress).** The Phase 1 core vocabulary (`BaseObject`, registry, shared enums, logging) is complete. Work has begun on the CAE data band (Mesh/Field, loaders, graph construction); GNN training utilities remain planned.
+> **Status: Pre-Alpha (Phase 2 — CAE Data Pipeline, in progress).** The Phase 1 core vocabulary (`BaseObject`, registry, shared enums, logging) is complete. The architecture has adopted ADR-015 (CAEGraph as the canonical domain representation; Mesh repositioned as a topology subsystem); the topology vocabulary `CellType` has landed, and the CAEGraph core plus the data band follow its design. GNN training utilities remain planned.
 
 ## Features (planned)
 
-- **CAE data band** — Mesh/Field/Boundary truth, loaders, geometry services, PyG-native graph construction, transforms and datasets
+- **CAE data band** — CAEGraph canonical representation with topology (Mesh, cell-based), Field and boundary vocabularies; loaders, geometry services, representation construction (meshes, grids, particles), backend adapters (PyG), transforms and datasets
 - **Physics AI utilities** — physics losses, observation assimilation and CAE-aware training workflow components without replacing user training loops
-- **Neural simulation** — pretrained models on new meshes, field reconstruction and VTK write-back
+- **Neural simulation** — pretrained models across different discretizations, field reconstruction and VTK write-back
 - Built on [PyTorch](https://pytorch.org) and [PyTorch Geometric](https://pyg.org), without introducing an alternative graph backend, Trainer or solver abstraction
 
 ## Installation

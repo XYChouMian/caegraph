@@ -1,7 +1,7 @@
 # ADR-009: 转换边界与原生继承契约
 
 - 编号：ADR-009
-- 标题：Mesh→Graph 由 GraphBuilder 承担；学习层遵循 PyG/PyTorch 原生继承
+- 标题：表示构造由 RepresentationBuilder 承担（原「Mesh→Graph 由 GraphBuilder 承担」，经 ADR-015 修订）；学习层遵循 PyG/PyTorch 原生继承
 - 日期：2026-09-05
 - 状态：accepted
 - 关联：ADR-007、ADR-008、ADR-015（转换契约修订）、Phase 1–4、Design UML `class_diagram.puml`
@@ -14,9 +14,9 @@ ADR-007/008 冻结了“工程真源框架无关、学习图表示 PyG 原生”
 
 **修订（2026-09-07，ADR-015 采纳）**：决策 1 的 `GraphBuilder.build(mesh)` 单一转换契约由 **RepresentationBuilder**（source discretization → CAEGraph entities + relations；FEM/FVM/FDM/SPH 特化）取代；决策 2/3 的继承契约扩展——BaseObject 家族新增顶层领域对象 **CAEGraph**（Mesh 归位 topology subsystem，仍为 BaseObject 家族），学习层原生继承不变，但 `torch_geometric.data.Data` 由 **PyG adapter**（`graph/pyg.py`）产出而非领域类 `Graph`；CAEDataset/Model 契约不变；「core 永不 import graph/PyG」方向不变。
 
-1. Mesh→Graph 的公共转换入口是 `GraphBuilder.build(mesh, *, view="node" | "cell") -> Graph`。`GraphBuilder` 位于 `caegraph.graph`，可以消费 core.Mesh 与 geometry 服务；Mesh 不提供 `to_graph()`，core 永不 import graph。
+1. **【已取代——ADR-015：由 RepresentationBuilder 取代，见上方修订注记】** Mesh→Graph 的公共转换入口是 `GraphBuilder.build(mesh, *, view="node" | "cell") -> Graph`。`GraphBuilder` 位于 `caegraph.graph`，可以消费 core.Mesh 与 geometry 服务；Mesh 不提供 `to_graph()`，core 永不 import graph。（现行契约：`RepresentationBuilder.build(source)` 构造 CAEGraph；PyG Data 由 backend adapter 产出。）
 2. BaseObject 只服务于工程真源对象。Phase 2 的 Mesh 与 Field 继承 BaseObject；Graph、CAEDataset、Model 不继承 BaseObject。
-3. 学习层沿用生态原生继承：Graph 继承 `torch_geometric.data.Data`，CAEDataset 继承 `torch_geometric.data.Dataset`，Model 继承 `torch.nn.Module`。共享元数据和校验通过组合或各原生类的协议实现，不通过多继承复用 BaseObject。
+3. 学习层沿用生态原生继承：Graph 继承 `torch_geometric.data.Data`（ADR-015 修订：Data 由 PyG backend adapter 产出，领域类 Graph 取消），CAEDataset 继承 `torch_geometric.data.Dataset`，Model 继承 `torch.nn.Module`。共享元数据和校验通过组合或各原生类的协议实现，不通过多继承复用 BaseObject。
 4. `CAEDataset` 是公开类名，避免与 PyG 的 Dataset 混淆。
 
 ## 备选方案（Options considered）
@@ -25,7 +25,7 @@ ADR-007/008 冻结了“工程真源框架无关、学习图表示 PyG 原生”
 | --- | --- | --- |
 | Mesh.to_graph() + 延迟 import | 否决 | 隐藏而未消除 core→graph 的反向依赖 |
 | Mesh 注入转换回调 | 否决 | 为便利方法引入额外协议与生命周期复杂度 |
-| GraphBuilder.build(mesh) | 采纳 | 转换逻辑与依赖方向均落在 graph 层 |
+| GraphBuilder.build(mesh) | 采纳（ADR-015 起由 RepresentationBuilder 取代） | 转换逻辑与依赖方向均落在 graph 层 |
 | 六类统一继承 BaseObject | 否决 | 与 PyG/PyTorch 基类产生 MRO、validate 与状态管理冲突 |
 | 工程真源继承 BaseObject，学习层原生继承 | 采纳 | 域模型纯净且直接兼容既有生态 |
 

@@ -93,7 +93,7 @@ src/caegraph/dataset/
 - Synthetic meshes only in tests (Testing Skill CAE rules).
 - Real solver formats (Fluent, Abaqus, OpenFOAM…) enter here — each new format is a feature request routed through PM (Architecture review first).
 - Registry stays a name→factory mapping (Phase 1 contract: callable check only — Python type erasure makes runtime generic checks a non-goal). Runtime type enforcement (`Registry(kind, base_class=...)` + `issubclass`) is a recorded future option (Design UML Registry note); adopt it only if Phase 2 loader wiring needs it, decided explicitly.
-- Loading and Mesh structure follow ADR-012 (source normalization → canonical build) and ADR-014 (canonical Mesh data model); meshio is the provisional IO engine (ADR-013).
+- Loading and topology structure follow ADR-012 (source normalization → canonical topology build; the product feeds CAEGraph construction via RepresentationBuilder, ADR-015) and ADR-014 (canonical cell-based topology model); meshio is the provisional IO engine (ADR-013).
 - Resolved design question (ADR-011): the ADR-010 "未来演进" re-evaluation is complete — keep the single seven-value `BoundaryType` through Phase 2. `BoundarySpec` must enforce per-type slot-coherence validation (`paired_region` required for PERIODIC; value slots meaningful only for constraint-valued types); refined Phase 3 re-trigger conditions for a possible orthogonal role × constraint split are recorded in ADR-011.
 
 ## Coding gate
