@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- Established the canonical Mesh data contract and the cross-format loading boundary via ADR-012/013/014: canonical globally indexed cell storage plus explicit winding-free facets with validated cell adjacency (ADR-014); a source-normalization loading pipeline with dimension-based source-group classification and no `BoundaryType` inference in IO (ADR-012); and meshio adopted as the provisional IO engine, dependency landing with the gmsh adapter (ADR-013).
 - Resolved the ADR-010 boundary-vocabulary question via ADR-011: keep the single seven-value `BoundaryType` through Phase 2, harden `BoundarySpec` with per-type slot-coherence validation, and record refined Phase 3 re-trigger conditions for a possible orthogonal role × constraint split.
 
 - Replaced text-only architecture and workflow diagrams with Mermaid across governance documents, the architecture specification, the roadmap, and the bilingual documentation homepage; enabled native Mermaid rendering in MkDocs.
