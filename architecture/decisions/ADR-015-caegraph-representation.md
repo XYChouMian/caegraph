@@ -145,5 +145,4 @@ flowchart TD
 
 - 2026-09-07 v1：以「graph-first vs mesh-first」为框（含 A/B/C 三案）。
 - 2026-09-07 v2：问题边界重定义为「异构 CAE 源与 GNN 之间的 canonical representation」；A/B/C 重塑为 adjacency-only（否决）/ Mesh-universal（否决限制）/ CAEGraph entity-centric + topology subsystem（推荐）；补 FEM/FVM/FDM/SPH 范式表、Mermaid 概念模型、冻结条款正名与采纳后处置清单。
-- 2026-09-07 v3（本版）：topology subsystem 升格为「cell-based 一等组件」（弃 optional annotation 措辞）；Mesh 重定义为 topology-rich discretization representation（topology subsystem 的一种实现，非仅 IO source）；图构造策略更名 RepresentationBuilder（DiscretizationAdapter 备选）；PyG 命名出清（graph 层禁以 Graph 类指代 PyG 对象，adapter 落位 graph/pyg.py）；新增 Representation hierarchy 冻结节；ADR-014 收窄措辞定稿；phase2 模块树先行同步方向版。
-- 2026-09-07 v3 补全（定稿候选）：标题定为 graph-native canonical domain representation；冻结核心决策原句（meshes/grids/particles 皆为 source representations）；否定清单扩至 networkx/igraph/邻接矩阵；新增领域语义所有权与性能边界节（不主张自研更快、图算法归 optional analysis backend、benchmark 门槛）；启动文档级联（ADR-014 收窄、ADR-012 目标修订、phase2 coding gate、Design UML）。
+- 2026-09-07 v3（本版）：CAEGraph 定为 graph-native canonical domain representation；Mesh 归位 topology subsystem（cell-based 一等组件）；加载经 RepresentationBuilder 构造 CAEGraph；PyG 仅为 backend adapter。
