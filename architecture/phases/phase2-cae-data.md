@@ -6,26 +6,34 @@ Goal: implement **R1** — the CAE → GNN data band (ADR-007/008): the domain-c
 
 ## New modules (planned)
 
+The tree below reflects the ADR-015 (**proposed**) representation hierarchy; the already-landed `core/celltype.py` migrates into `core/topology/` upon ADR-015 acceptance.
+
 ```
-src/caegraph/core/          # domain objects join the Phase 1 vocabulary
-├── celltype.py             # CellType: vocabulary, explicit stable integer codes,
-│                           #   dim/node_count, CAEGraph local-node convention +
-│                           #   codim-1 face templates (ADR-014; frozen with impl)
-├── mesh.py                 # Mesh canonical representation (ADR-014): nodes (n,3),
-│                           #   cells CSR, explicit facets CSR + facet_cells,
-│                           #   domain groups (plain data), fields; structure frozen;
-│                           #   global IDs = canonical storage identity — backend
-│                           #   block indices never escape io normalization
+src/caegraph/core/          # domain canonical representation (ADR-015 proposed)
+├── caegraph.py             # CAEGraph: entity-centric canonical representation —
+│                           #   entities + stable IDs, relations, geometry hooks,
+│                           #   fields, semantic regions; never imports PyG
 ├── field.py                # Field: named field data (unit, timestep, association)
-└── boundary/               # mesh-internal boundary vocabulary
-    ├── region.py           # BoundaryRegion: named codim-1 facet region
-    │                       #   (exterior boundary / internal interface)
-    ├── manager.py          # BoundaryManager: semantic naming registry + spec
-    │                       #   binding resolution; topology ownership stays in
-    │                       #   Mesh (references, not physics manager)
-    └── spec.py             # BoundarySpec (slot-coherence validation, ADR-011)
-                            #   function.py (FieldFunction) is deferred to the
-                            #   BC-declaration slice
+├── boundary/               # semantic-region vocabulary (annotates CAEGraph)
+│   ├── region.py           # BoundaryRegion: named codim-1 facet region
+│   │                       #   (exterior boundary / internal interface)
+│   ├── manager.py          # BoundaryManager: semantic naming registry + spec
+│   │                       #   binding resolution; topology ownership stays in
+│   │                       #   the topology subsystem (references only)
+│   └── spec.py             # BoundarySpec (slot-coherence validation, ADR-011);
+│                           #   function.py (FieldFunction) deferred to the
+│                           #   BC-declaration slice
+└── topology/               # topology subsystem (ADR-014 narrowed; first-class
+    ├── celltype.py         #   for cell-based discretizations) — CellType:
+    │                       #   explicit stable integer codes, dim/node_count,
+    │                       #   CAEGraph local-node convention + codim-1 face
+    │                       #   templates (migrates from core/celltype.py)
+    └── mesh.py             # Mesh: topology-rich discretization representation —
+                            #   one realization of the topology subsystem
+                            #   (FEM/FVM); nodes (n,3), cells CSR, explicit
+                            #   facets CSR + facet_cells, domain groups;
+                            #   canonical global IDs — backend block indices
+                            #   never escape io normalization
 
 src/caegraph/geometry/
 ├── metrics.py              # mesh-derived geometric entity features:
@@ -42,10 +50,12 @@ src/caegraph/io/
 │                           #   engine, ADR-013) into the canonical Mesh
 └── vtk_writer.py           # write-back into the ParaView ecosystem
 
-src/caegraph/graph/         # PyG-native neural-representation layer
-├── graph.py                # Graph(torch_geometric.data.Data): CAE fields
-│                           #   + validate(), never operations (ADR-007 D1)
-└── builder.py              # node graph / cell graph construction
+src/caegraph/graph/         # representation builders + GNN backend adapter layer
+├── builder.py              # RepresentationBuilder: source discretization →
+│                           #   CAEGraph entities + relations (FEM / FVM / FDM / SPH)
+└── pyg.py                  # PyTorch Geometric adapter: CAEGraph →
+                            #   torch_geometric.data.Data (PyG is a backend,
+                            #   never the domain graph object; ADR-015)
 
 src/caegraph/transforms/    # BC application lives HERE, not on Graph
 ├── geometry.py             # coordinate / feature normalization
@@ -59,10 +69,12 @@ src/caegraph/dataset/
 
 ## Planned public APIs
 
-- `Mesh` / `Field` / `CellType` / `BoundaryRegion` — domain truth (ADR-007 D3/D6, ADR-014)
-- `BoundarySpec` / `BoundaryManager` — boundary vocabulary (ADR-010/011); `FieldFunction` deferred
-- `AbstractMeshLoader` + gmsh adapter — loading pipeline (ADR-012); meshio provisional engine (ADR-013)
-- `GraphBuilder.build(mesh, *, view="node" | "cell")` →`Graph(torch_geometric.data.Data)`; Mesh stays unaware of graph
+- `CAEGraph` — domain canonical representation (ADR-015 proposed): entities + stable IDs, relations, fields, geometry hooks, semantic regions; never imports PyG
+- `Mesh` / `CellType` — topology subsystem (ADR-014 narrowed): Mesh is a topology-rich discretization representation (FEM/FVM realization), no longer the top-level canonical object
+- `Field` / `BoundaryRegion` / `BoundarySpec` / `BoundaryManager` — field & semantic-region vocabulary (ADR-007 D6, ADR-010/011); `FieldFunction` deferred
+- `AbstractMeshLoader` + gmsh adapter — source loading pipeline (ADR-012; target object redefined by ADR-015 upon acceptance); meshio provisional engine (ADR-013)
+- `RepresentationBuilder` (FEM/FVM/FDM/SPH) — source discretization → CAEGraph entities + relations; replaces the single `Mesh → GraphBuilder` contract
+- PyG adapter — `CAEGraph → torch_geometric.data.Data` (backend adapter, not a domain object)
 - Geometry / feature / physics transforms (PyG transform protocol)
 - `CAEDataset`; VTK writer
 

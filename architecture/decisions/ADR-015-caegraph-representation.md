@@ -33,16 +33,18 @@ CAE data → Mesh → Graph → GNN
 
 结论：**Mesh 无法作为普适根抽象**；不同数值方法需要不同的「CAE source → graph 构造策略」。
 
-## 关键澄清（CAEGraph 不是什么）
+## 关键澄清（CAEGraph 是什么 / 不是什么）
 
 - **不是** `torch_geometric.data.Data`——PyG 是下游实现 adapter；
 - **不是** lossy 邻接图（仅 node-edge 关系）——那是被否决的方案 A；
-- **是领域级图表示**，由以下部分组成：
-  - entity representation（canonical entities + 稳定 global IDs）；
-  - optional topology semantics（cell/facet 注解——由 ADR-014 收窄后的 topology subsystem 提供）；
-  - fields（关联到实体）；
+- **是 entity-centric 领域规范表示（面向 physics AI）**，由以下部分组成：
+  - entities 与稳定 IDs；
+  - relations / connectivity；
   - geometry；
-  - regions（boundary/interface 语义分组）。
+  - fields（关联到实体）；
+  - semantic regions（boundary/interface 语义分组）；
+  - optional domain-specific structures。
+- **topology subsystem 的地位**：对 cell-based 离散（FEM/FVM）是**一等组件（first-class component）**——node/element/facet/region/field 是物理语义而非可有可无的注解；对 mesh-free 方法（SPH/FDM），拓扑可缺省或由生成的邻接关系取代。facet 之所以保留，是因为它是 **domain relation**，不是 mesh artifact。
 
 领域模型不依赖 PyG。
 
@@ -54,24 +56,44 @@ flowchart TD
     FVM["FVM 源"] --> N
     FDM["FDM 源"] --> N
     SPR["SPH / 点云源"] --> N
-    N --> C["CAEGraph canonical model"]
+    N --> B["representation builders（FEM / FVM / FDM / SPH）"]
+    B --> C["CAEGraph canonical model"]
     C --> GEO["geometry 服务"]
-    C --> TOP["optional topology subsystem（ADR-014 收窄）"]
+    C --> TOP["topology subsystem（cell-based 一等组件，ADR-014 收窄）"]
     C --> ADP["GNN backend adapter"]
     ADP --> PYG["PyTorch Geometric"]
     classDef nowrap white-space:nowrap
-    class FEM,FVM,FDM,SPR,N,C,GEO,TOP,ADP,PYG nowrap
+    class FEM,FVM,FDM,SPR,N,B,C,GEO,TOP,ADP,PYG nowrap
 ```
 
 ## 决策（Decision，若采纳）
 
-1. **主领域对象 = CAEGraph（entity-centric canonical representation）**：canonical entities（稳定 global IDs）、fields（实体关联）、geometry、regions、**optional topology annotations**（cell/facet 语义来自 topology subsystem）。
-2. **Mesh 的角色**：topology-rich source representation/view，服务 FEM/FVM 等 cell-based 方法；FDM/SPH/点云不需要它；**不是 universal domain truth**。
-3. **图构造策略**：`CAE source → graph construction strategy → CAEGraph`（如 FEMGraphBuilder / FVMGraphBuilder / FDMGraphBuilder / SPHGraphBuilder）——**取代**单一 `Mesh → GraphBuilder` 契约（ADR-009 相应条款）。
-4. **依赖方向冻结**：core（CAEGraph + topology subsystem，**永不 import PyG**）← geometry ← graph 层（PyG adapter：`CAEGraph → torch_geometric.data.Data`）；PyG 是 backend adapter，不是领域抽象。
+1. **主领域对象 = CAEGraph（entity-centric canonical representation，面向 physics AI）**：canonical entities（稳定 global IDs）、relations/connectivity、fields（实体关联）、geometry、semantic regions、optional domain-specific structures；**topology subsystem 对 cell-based 离散是一等组件，对 mesh-free 方法可缺省或由生成的邻接关系取代**。
+2. **Mesh 的角色**：topology-rich **discretization representation**（数学离散对象，非仅仅是 IO source representation）——FEM/FVM 所用，是 **CAEGraph topology subsystem 的一种实现（one realization）**；FDM/SPH/点云不需要它；**不是 universal domain truth，也不再是顶层 canonical 对象**。
+3. **表示构造策略（RepresentationBuilder）**：`CAE source → representation builder → CAEGraph`——职责是 **source discretization → CAEGraph entities + relations**，而非 mesh→PyG graph 的旧思路；命名采用 FEMRepresentationBuilder / FVMRepresentationBuilder / FDMRepresentationBuilder / SPHRepresentationBuilder（DiscretizationAdapter 为备选名）——**取代**单一 `Mesh → GraphBuilder` 契约（ADR-009 相应条款）。
+4. **依赖方向冻结 + PyG 命名出清**：core（CAEGraph + subsystems，**永不 import PyG**）← geometry ← graph 层（两部分：representation builders + **PyG adapter：`CAEGraph → torch_geometric.data.Data`**，落位 `graph/pyg.py`）；**graph 层不得再以 `Graph` 类指代 PyG 对象**——领域图对象是 core 的 CAEGraph，PyG Data 只是 adapter 输出。
 5. **最终架构陈述（原句入 ADR）**：
 
 > CAEGraph does not model meshes and then convert them into graphs. It normalizes heterogeneous CAE data sources into a canonical graph representation for physics AI. Meshes are one possible source representation used to construct graph topology, while PyG is one possible backend for graph learning.
+
+## 表示层级（Representation hierarchy，冻结）
+
+```mermaid
+flowchart TD
+    C["CAEGraph（domain canonical representation）"]
+    C --> T["topology subsystem"]
+    T --> M["Mesh topology（FEM / FVM）"]
+    C --> R["relation subsystem（SPH neighbor / FDM stencil 生成关系）"]
+    C --> G["geometry subsystem"]
+    C --> F["field subsystem"]
+    C --> RG["semantic regions"]
+    C --> A["backend adapters"]
+    A --> P["PyG Data（torch_geometric）"]
+    classDef nowrap white-space:nowrap
+    class C,T,M,R,G,F,RG,A,P nowrap
+```
+
+层级语义：CAEGraph 是唯一的 domain canonical representation；topology / relation / geometry / field / regions 是其子系统（cell-based 方法下 topology 一等，mesh-free 方法下由 relation 生成关系顶替）；backend adapters 之下才是 PyG Data。
 
 ## 与冻结条款的关系
 
@@ -85,23 +107,23 @@ flowchart TD
 | --- | --- | --- |
 | A. Graph = adjacency only（邻接图即真源） | 否决 | 丢失 cell/facet/field/region 语义；FEM/FVM 的 flux/Jacobian、facet↔cell 校验、BC 映射、VTK 拓扑一致性全部失锚（信息保真反证） |
 | B. Mesh = universal truth（ADR-007/014 现状） | 否决/限制 | 对 FDM/SPH/点云强制伪造单元拓扑；图构造被锁死为 Mesh→Graph 单一路径；Mesh 被迫承担通用网格框架的越界角色 |
-| C. CAEGraph entity-centric + topology subsystem（本提案） | 推荐 | 异构源统一规范化；cell-based 语义经 optional topology 子系统**完整保留**（ADR-014 收窄复用，不丢弃）；PyG 保持纯 adapter；与 ADR-008 定位（CAE→GNN 工作流）严格对齐 |
+| C. CAEGraph entity-centric + topology subsystem（本提案） | 推荐 | 异构源统一规范化；cell-based 语义经 **topology subsystem（一等组件）完整保留**（ADR-014 收窄复用，不丢弃）；PyG 保持纯 adapter；与 ADR-008 定位（CAE→GNN 工作流）严格对齐 |
 
 ## 待冻结问题（评审定稿）
 
 1. canonical entities 的精确集合与 ID 空间（node/edge 语义；ADR-014 的 IDs 契约如何平移）；
 2. CAEGraph 是否内含 edge 实体（构造策略产物）还是邻接作为派生视图；
 3. fields / geometry / regions 在 CAEGraph 上的挂载契约；
-4. topology subsystem 的接口边界（cell-based 源必需、cell-free 源缺省）；
-5. 图构造策略的注册与扩展契约（复用 core Registry？）。
+4. topology subsystem 的接口边界（cell-based 一等组件；mesh-free 缺省或由邻接生成顶替）；
+5. RepresentationBuilder 的层位与注册契约（graph/builder.py vs io 层；复用 core Registry？）。
 
 ## 采纳后的文档处置（本 ADR 生效前一律不动）
 
-- **ADR-014**：标题与范围收窄为「Canonical topology representation」——内容保留（stable IDs / CellType / connectivity normalization / facet 语义 / topology validation），移入 CAEGraph topology layer；不再定义整个顶层对象。
+- **ADR-014**：标题与范围收窄——**ADR-014 defines the canonical topology model used by cell-based discretizations. It does not define the complete CAEGraph representation.** 内容保留（stable IDs / CellType / connectivity normalization / facet 语义 / topology validation），归位 topology subsystem；已落地的 `core/celltype.py` 随采纳迁移至 `core/topology/celltype.py`。
 - **ADR-012**：目标对象由 canonical Mesh 改为 CAEGraph；mesh loading 成为其中一条实现路径。
 - **ADR-013**：不变——meshio 是 external source IO engine，其对象生命周期止于 IO adapter。
-- **Design UML**：概念模型更新为 CAEGraph 中心 + optional topology subsystem + PyG adapter。
-- **phase2-cae-data.md**：模块树按构造策略 / adapter 重构。
+- **Design UML**：概念模型更新为 CAEGraph 中心 + subsystems（topology 一等）+ representation builders + PyG adapter。
+- **phase2-cae-data.md**：模块树按 CAEGraph core + topology subsystem + representation builders / PyG adapter 重构（本 ADR v3 已先行同步方向版）。
 
 ## 影响（Consequences）
 
@@ -112,4 +134,5 @@ flowchart TD
 ## Revision history
 
 - 2026-09-07 v1：以「graph-first vs mesh-first」为框（含 A/B/C 三案）。
-- 2026-09-07 v2（本版）：问题边界重定义为「异构 CAE 源与 GNN 之间的 canonical representation」；A/B/C 重塑为 adjacency-only（否决）/ Mesh-universal（否决限制）/ CAEGraph entity-centric + topology subsystem（推荐）；补 FEM/FVM/FDM/SPH 范式表、Mermaid 概念模型、冻结条款正名与采纳后处置清单。
+- 2026-09-07 v2：问题边界重定义为「异构 CAE 源与 GNN 之间的 canonical representation」；A/B/C 重塑为 adjacency-only（否决）/ Mesh-universal（否决限制）/ CAEGraph entity-centric + topology subsystem（推荐）；补 FEM/FVM/FDM/SPH 范式表、Mermaid 概念模型、冻结条款正名与采纳后处置清单。
+- 2026-09-07 v3（本版）：topology subsystem 升格为「cell-based 一等组件」（弃 optional annotation 措辞）；Mesh 重定义为 topology-rich discretization representation（topology subsystem 的一种实现，非仅 IO source）；图构造策略更名 RepresentationBuilder（DiscretizationAdapter 备选）；PyG 命名出清（graph 层禁以 Graph 类指代 PyG 对象，adapter 落位 graph/pyg.py）；新增 Representation hierarchy 冻结节；ADR-014 收窄措辞定稿；phase2 模块树先行同步方向版。
