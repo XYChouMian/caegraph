@@ -42,13 +42,18 @@ AbstractMeshLoader.__call__(path) -> Mesh
 
 以 ADR-014 的 `topo_dim`（canonical cells 的共同拓扑维度）为基准，对所有 **source named group** 分类。术语跨格式中立：Gmsh physical group、Abaqus element set / surface、Fluent zone 都是 source named group 的实例，不得被强制冠以 "physical group"。
 
-**topo_dim 确定顺序**：加载过程中 Mesh 尚未正式构造，`topo_dim` 必须由 normalized canonical-cell candidates 依 ADR-014 确定，**绝不从 source-group 维度反推**：
+**`topo_dim` 确定顺序**：加载过程中 Mesh 尚未正式构造。IO 首先将 source cell entities 识别并归一化为 CAEGraph `CellType` 的 **source-cell candidates**，再由其中最高的受支持拓扑维度确定 `topo_dim`；随后仅 `dim == topo_dim` 的实体进入 canonical cell space。`topo_dim` 绝不从 source-group 维度反推：
 
 ```
-source cells → CellType normalization → 确定 top-dimensional canonical cells → topo_dim → 再分类 source groups
+source cell entities
+  → CellType recognition / local-order normalization
+  → source-cell candidates
+  → 最高受支持拓扑维度 = topo_dim
+  → dim == topo_dim 者 入 canonical cell space；
+    dim == topo_dim − 1 者为 explicit facet candidates（供 source-group 分类）
 ```
 
-（禁止反向：先看有哪些 source groups 再反推 topo_dim——避免循环定义。）
+（禁止反向：先看有哪些 source groups 再反推 topo_dim——避免循环定义。典型 2D gmsh：TRI3 source entities dim 2、LINE2 dim 1 → topo_dim = 2 → TRI3 为 canonical cells、LINE2 为 explicit facet candidates。）
 
 ```
 source_group_dim == topo_dim      → domain group → 成员 = canonical global cell IDs
@@ -56,7 +61,7 @@ source_group_dim == topo_dim − 1  → explicit boundary/interface facet group 
 source_group_dim < topo_dim − 1   → 不入 canonical topology → warning / diagnostics
 ```
 
-- 写 **boundary/interface** 而非仅 boundary：codim-1 组既可是外部边界，也可是域间 interface（如 fluid|solid 共享 facet）。两者的承载对象统一为 `BoundaryRegion`（ADR-014 决策 6：命名 codim-1 facet-region 抽象，名称不意味必然位于外边界），禁止再造 InterfaceRegion。
+- 写 **boundary/interface** 而非仅 boundary：codim-1 组既可是外部边界，也可是域间 interface（如 fluid|solid 共享 facet）。两者的承载对象统一为 `BoundaryRegion`（ADR-014 决策 6：命名 codim-1 facet-region 抽象，名称不意味必然位于外边界）。**当前 contract 不引入独立 `InterfaceRegion`**；internal interface 由 `BoundaryRegion` 统一承载。若未来 interface 获得无法由现有模型表达的独立生命周期或语义，必须经新 ADR 才可拆分新的领域抽象。
 - complete_coverage / complete_partition 是否成立由调用方按数据语义显式声明并校验（ADR-014 8b）；本 ADR 不默认 source named group 构成 partition（gmsh 实体可参与多个物理组）。
 
 ### 3. Normalization 义务
