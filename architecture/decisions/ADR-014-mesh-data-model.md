@@ -89,6 +89,7 @@ Field(node) → node IDs；Field(cell) → cell IDs
 - **Mesh 拥有拓扑事实**（nodes / cells / facets / facet_cells）；
 - **BoundaryManager 只做语义引用**：name → BoundaryRegion 的命名分组、spec 按名绑定解析、corner（多区域交集）查询——不同时承担拓扑存储与边界语义；
 - **BoundaryRegion 引用 topology，不拥有 topology**：canonical 成员 = 全局 facet 索引；节点集是派生视图，永不作为真源（节点集不能唯一重建 facet connectivity，反向才成立）。
+- **BoundaryRegion 是统一的命名 codim-1 facet-region 抽象**：既可表示 exterior boundary，也可表示 internal interface（如 fluid|solid 共享 facet）；其名称不意味着该区域必然位于外边界——禁止再造 InterfaceRegion。
 
 ### 7. Mesh 组合与生命周期
 
