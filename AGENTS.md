@@ -82,5 +82,6 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
 - 格式化 / 检查：`black`、`ruff`、`mypy`
 - 提交前钩子：`pre-commit install` 后自动执行 black / ruff / pytest
 - 文档：`mkdocs`（Material + mkdocstrings），提交前 `mkdocs build --strict`
+- **文本换行约定**：Markdown 是自适应文本（自动换行），段落、列表项、引用块**禁止人工强制换行**——一个逻辑单元（一个段落/一条列表项/一条引用）必须写成一行；仅在代码类文件（`.py`、`.puml` 等）或 Markdown 代码块内部结构行中才允许按宽度折行。mermaid 流程图另遵守 §4 图示规范。
 - CI：`.github/workflows/test.yml`（安装 → pytest → 构建 MkDocs）
 - 环境可复现描述：根目录 `environment.yml`
