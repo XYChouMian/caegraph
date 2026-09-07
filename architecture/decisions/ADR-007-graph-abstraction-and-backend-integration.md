@@ -4,7 +4,7 @@
 - 标题：Graph 是 PyG 原生的神经表示层；工程真源（Mesh/Field/Boundary）框架无关
 - 日期：2026-09-05（历经四轮定位演进后终版化，上位依据 ADR-008）
 - 状态：accepted
-- 关联：ADR-008（定位冻结）、Phase 2/3/4、Design UML `class_diagram.puml`、前身项目 CFD-paradigm 与多份重构研究文档（本地未入库）
+- 关联：ADR-008（定位冻结）、ADR-015（顶层 canonical 对象修订）、Phase 2/3/4、Design UML `class_diagram.puml`、前身项目 CFD-paradigm 与多份重构研究文档（本地未入库）
 
 ## 背景（Context）
 
@@ -16,6 +16,8 @@ CAEGraph 的定位经历四轮演进（详见 ADR-008），本 ADR 曾随之两�
 - **学习图表示**（Graph）是 PyG 原生的域扩展（domain extension）。
 
 ## 决策（Decision）
+
+**修订（2026-09-07，ADR-015 采纳）**：本 ADR 的分域答案升级——工程真源的顶层对象由 Mesh 升格为 **CAEGraph**（graph-native canonical domain representation），Mesh 与边界词汇归位其 topology subsystem；**D2 纯净性不变且强化**（core 含 CAEGraph 仍永不 import PyG）；D1 的 `Graph(Data)` 域扩展重释为 **PyG backend adapter**（`graph/pyg.py`：CAEGraph → Data），"Graph" 不再是领域类；D3 的 core 域核组成相应改写（CAEGraph + topology subsystem + Field + boundary 词汇）；D4/D5/D7 不变。详见 ADR-015。
 
 **D1. Graph = PyG-compatible domain extension**（ADR-008 推论）
 

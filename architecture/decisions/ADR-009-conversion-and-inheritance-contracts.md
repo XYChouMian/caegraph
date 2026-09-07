@@ -4,13 +4,15 @@
 - 标题：Mesh→Graph 由 GraphBuilder 承担；学习层遵循 PyG/PyTorch 原生继承
 - 日期：2026-09-05
 - 状态：accepted
-- 关联：ADR-007、ADR-008、Phase 1–4、Design UML `class_diagram.puml`
+- 关联：ADR-007、ADR-008、ADR-015（转换契约修订）、Phase 1–4、Design UML `class_diagram.puml`
 
 ## 背景（Context）
 
 ADR-007/008 冻结了“工程真源框架无关、学习图表示 PyG 原生”的定位，但初版 Design UML 与 Phase 规划仍留下两处实现歧义：`Mesh.to_graph()` 会迫使 core 依赖上层 graph；同时让 Graph、Dataset、Model 继承 BaseObject 会与 PyG/PyTorch 的原生基类形成不必要的多继承和方法契约冲突。
 
 ## 决策（Decision）
+
+**修订（2026-09-07，ADR-015 采纳）**：决策 1 的 `GraphBuilder.build(mesh)` 单一转换契约由 **RepresentationBuilder**（source discretization → CAEGraph entities + relations；FEM/FVM/FDM/SPH 特化）取代；决策 2/3 的继承契约扩展——BaseObject 家族新增顶层领域对象 **CAEGraph**（Mesh 归位 topology subsystem，仍为 BaseObject 家族），学习层原生继承不变，但 `torch_geometric.data.Data` 由 **PyG adapter**（`graph/pyg.py`）产出而非领域类 `Graph`；CAEDataset/Model 契约不变；「core 永不 import graph/PyG」方向不变。
 
 1. Mesh→Graph 的公共转换入口是 `GraphBuilder.build(mesh, *, view="node" | "cell") -> Graph`。`GraphBuilder` 位于 `caegraph.graph`，可以消费 core.Mesh 与 geometry 服务；Mesh 不提供 `to_graph()`，core 永不 import graph。
 2. BaseObject 只服务于工程真源对象。Phase 2 的 Mesh 与 Field 继承 BaseObject；Graph、CAEDataset、Model 不继承 BaseObject。

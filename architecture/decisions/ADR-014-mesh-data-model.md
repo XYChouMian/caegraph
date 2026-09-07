@@ -6,7 +6,7 @@
 - 状态：accepted
 - 关联：ADR-007（D3 反 god-object / D6 Field）、ADR-008（跨软件定位）、ADR-009（BaseObject 限于 domain-truth）、ADR-010（三层职责链）、ADR-011（槽位一致性）、ADR-012（读取管线——source normalization 进入契约，经重写与本 ADR 对齐）、ADR-013（IO 引擎 provisional）、ADR-015（顶层 canonical 对象与范围收窄）、Phase 2、Design UML `class_diagram.puml`
 
-**范围收窄（2026-09-07，ADR-015 v3 预备，随其采纳生效）**：本 ADR 的范围是 **cell-based 离散（FEM/FVM）的 canonical topology model**——*ADR-014 defines the canonical topology model used by cell-based discretizations. It does not define the complete CAEGraph representation.* 顶层 canonical 对象由 ADR-015 冻结为 CAEGraph（graph-native canonical domain representation，proposed）；本 ADR 全部内容（stable IDs / CellType / connectivity normalization / facet 语义 / topology validation / 校验分层）归位其 topology subsystem，效力不变；已落地的 `core/celltype.py` 随采纳迁移至 `core/topology/celltype.py`。
+**范围收窄（2026-09-07，ADR-015 已采纳，生效）**：本 ADR 的范围是 **cell-based 离散（FEM/FVM）的 canonical topology model**——*ADR-014 defines the canonical topology model used by cell-based discretizations. It does not define the complete CAEGraph representation.* 顶层 canonical 对象由 ADR-015 冻结为 CAEGraph（graph-native canonical domain representation）；本 ADR 全部内容（stable IDs / CellType / connectivity normalization / facet 语义 / topology validation / 校验分层）归位其 topology subsystem，效力不变；已落地的 `core/celltype.py` 随采纳迁移至 `core/topology/celltype.py`。
 
 ## 背景（Context）
 

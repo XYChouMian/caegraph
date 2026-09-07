@@ -4,7 +4,7 @@
 - 标题：冻结 CAEGraph 为 "CAE 仿真 → Physics AI 工作流框架"；四项核心需求与边界
 - 日期：2026-09-05
 - 状态：accepted
-- 关联：ADR-007（图抽象与后端集成，本 ADR 的技术推论）、Phase 1–4、Design UML、ARCHITECTURE.md §1/§7
+- 关联：ADR-007（图抽象与后端集成，本 ADR 的技术推论）、ADR-015（图后端冻结条款澄清）、Phase 1–4、Design UML、ARCHITECTURE.md §1/§7
 
 ## 背景（Context）
 
@@ -47,6 +47,8 @@ CAEGraph 的定位经历四轮演进（数据基础设施 ⇄ solver 框架 ⇄ 
 **冻结纪律（Freeze Discipline）**：
 
 > **CAEGraph positioning is frozen (ADR-008).** 未经新 ADR，任何 Agent 不得引入：solver 抽象、trainer 抽象、替代图后端层。"Graph 是不是 Data""要不要 Trainer""要不要 Solver"之辩就此关闭。
+
+**澄清（2026-09-07，ADR-015）**：「替代图后端层」禁令针对**图计算/学习后端**——PyG 仍是唯一图学习 backend。core 中的 CAEGraph 是**领域真源表示**（domain representation），不是图后端，不触本冻结条款；ADR-015 即该条款预设的澄清性 ADR。
 
 ## 备选方案（Options considered）
 

@@ -11,7 +11,7 @@
 ' GUIDE   : see architecture/UML_GUIDE.md
 ' =============================================================================
 
-title CAEGraph Domain Abstractions (Design) - ADR-007/008/009 + ADR-015 (proposed)
+title CAEGraph Domain Abstractions (Design) - ADR-007/008/009/015
 
 package "external ecosystem bases" {
   class "torch_geometric.data.Data" as PyGData <<external>>
@@ -34,7 +34,7 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
   }
   class CAEGraph {
     Graph-native canonical domain
-    representation (ADR-015, proposed):
+    representation (ADR-015):
     entities + stable IDs, relations,
     geometry hooks, fields, semantic
     regions, optional discretization

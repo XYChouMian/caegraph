@@ -1,10 +1,10 @@
 # ADR-015: CAEGraph graph-native canonical domain representation
 
 - 编号：ADR-015
-- 标题：冻结 CAEGraph 为 CAE 数据的 graph-native canonical domain representation——meshes / grids / particles 等离散化均为构造 CAEGraph entities 与 relations 的 source representation；Mesh 归位 topology subsystem（cell-based discretization representation，FEM/FVM）；PyG 为下游 backend adapter 而非领域抽象；若采纳，取代 ADR-007 D1/D3 与 ADR-009 的 Mesh→Graph 契约，收窄 ADR-014，修订 ADR-012 目标对象
+- 标题：冻结 CAEGraph 为 CAE 数据的 graph-native canonical domain representation——meshes / grids / particles 等离散化均为构造 CAEGraph entities 与 relations 的 source representation；Mesh 归位 topology subsystem（cell-based discretization representation，FEM/FVM）；PyG 为下游 backend adapter 而非领域抽象；本 ADR 取代 ADR-007 D1/D3 与 ADR-009 的 Mesh→Graph 契约，收窄 ADR-014，修订 ADR-012 目标对象
 - 日期：2026-09-07
-- 状态：**proposed（草稿待 Architecture review，未生效；本版为 v2 修订——问题边界由「graph-first vs mesh-first」重定义为「异构 CAE 源与 GNN 之间的 canonical representation 是什么」）**
-- 关联：ADR-007（D2 保留强化；D1/D3 拟取代）、ADR-008（图后端冻结条款之澄清性 ADR 即本 ADR）、ADR-009（Mesh→Graph 契约拟取代）、ADR-012（目标对象拟改写）、ADR-013（不变：meshio=external IO engine）、ADR-014（拟收窄为 topology subsystem，生效前不改）、ADR-011（future-evolution 机制先例）、Phase 2、ROADMAP、Design UML `class_diagram.puml`
+- 状态：**accepted（2026-09-07 经 Architecture review 采纳；v1→v3 演进见 Revision history）**
+- 关联：ADR-007（D1/D3 已修订，D2 保留强化）、ADR-008（图后端冻结条款之澄清性 ADR 即本 ADR）、ADR-009（Mesh→Graph 契约已取代）、ADR-012（目标对象已修订）、ADR-013（不变：meshio=external IO engine）、ADR-014（已收窄为 topology subsystem）、ADR-011（future-evolution 机制先例）、Phase 2、ROADMAP、Design UML `class_diagram.puml`
 
 ## 背景（Context）
 
@@ -67,7 +67,7 @@ flowchart TD
     class FEM,FVM,FDM,SPR,N,B,C,GEO,TOP,ADP,PYG nowrap
 ```
 
-## 决策（Decision，若采纳）
+## 决策（Decision）
 
 > **CAEGraph is the canonical graph-native representation of CAE data. Meshes, grids, particles, and other discretizations are source representations used to construct CAEGraph entities and relations.**
 
@@ -124,7 +124,7 @@ CAEGraph is optimized for domain representation and data interoperability, not f
 4. topology subsystem 的接口边界（cell-based 一等组件；mesh-free 缺省或由邻接生成顶替）；
 5. RepresentationBuilder 的层位与注册契约（graph/builder.py vs io 层；复用 core Registry？）。
 
-## 采纳后的文档处置（本 ADR 生效前一律不动）
+## 采纳后的文档处置（随本 ADR 采纳执行）
 
 - **ADR-014**：标题与范围收窄——**ADR-014 defines the canonical topology model used by cell-based discretizations. It does not define the complete CAEGraph representation.** 内容保留（stable IDs / CellType / connectivity normalization / facet 语义 / topology validation），归位 topology subsystem；已落地的 `core/celltype.py` 随采纳迁移至 `core/topology/celltype.py`。
 - **ADR-012**：目标对象由 canonical Mesh 改为 CAEGraph；mesh loading 成为其中一条实现路径。
@@ -134,8 +134,8 @@ CAEGraph is optimized for domain representation and data interoperability, not f
 
 ## 影响（Consequences）
 
-- **生效前**：仅架构工作；禁止实现 `core/mesh.py`、mesh-centric io pipeline、任何 `Mesh → GraphBuilder` 假设；**CellType 保留**（topology subsystem 成员，已入 main，任何结局不受影响）。
-- **生效后**：按上节处置清单改写相关 ADR 与文档，再重启 Coding 派单（首派单=topology subsystem 收窄落地或 CAEGraph 骨架，由评审决定）。
+- **Coding 重启**：禁止项解除，按 phase2 Coding gate 顺序执行（CAEGraph core 先行）；**CellType 已落地并归位 topology subsystem**（`core/celltype.py` → `core/topology/celltype.py` 迁移随首个 topology 派单执行）。
+- **文档处置**：相关 ADR 修订注记与本 ADR 同变更集落盘；ARCHITECTURE.md / ROADMAP / docs overview / README 的规范级联随后续变更集同步。
 - 本 ADR 不引入新第三方依赖；不改变 utils←core←{geometry,io}←graph 分层方向（graph 层职责重释为 PyG adapter + 构造策略）。
 
 ## Revision history

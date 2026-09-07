@@ -1,15 +1,15 @@
 # Phase 2 — CAE Data Pipeline
 
-Status: In progress — architecture re-evaluation open (ADR-015: CAEGraph canonical representation, **proposed**); `mesh.py` / mesh-centric io pipeline implementation is paused pending the decision; CellType (topology subsystem member) has landed and is unaffected by any outcome.
+Status: In progress — ADR-015 accepted (CAEGraph graph-native canonical domain representation); coding follows the Coding-gate order below (CAEGraph core first); CellType (topology subsystem member) has landed and is unaffected by any outcome.
 
 Goal: implement **R1** — the CAE → GNN data band (ADR-007/008): the domain-core objects plus geometry / io / graph / transforms / dataset.
 
 ## New modules (planned)
 
-The tree below reflects the ADR-015 (**proposed**) representation hierarchy; the already-landed `core/celltype.py` migrates into `core/topology/` upon ADR-015 acceptance.
+The tree below reflects the ADR-015 representation hierarchy; the already-landed `core/celltype.py` migrates into `core/topology/` upon ADR-015 acceptance.
 
 ```
-src/caegraph/core/          # domain canonical representation (ADR-015 proposed)
+src/caegraph/core/          # domain canonical representation (ADR-015)
 ├── caegraph.py             # CAEGraph: entity-centric canonical representation —
 │                           #   entities + stable IDs, relations, geometry hooks,
 │                           #   fields, semantic regions; never imports PyG
@@ -69,7 +69,7 @@ src/caegraph/dataset/
 
 ## Planned public APIs
 
-- `CAEGraph` — domain canonical representation (ADR-015 proposed): entities + stable IDs, relations, fields, geometry hooks, semantic regions; never imports PyG
+- `CAEGraph` — domain canonical representation (ADR-015): entities + stable IDs, relations, fields, geometry hooks, semantic regions; never imports PyG
 - `Mesh` / `CellType` — topology subsystem (ADR-014 narrowed): Mesh is a topology-rich discretization representation (FEM/FVM realization), no longer the top-level canonical object
 - `Field` / `BoundaryRegion` / `BoundarySpec` / `BoundaryManager` — field & semantic-region vocabulary (ADR-007 D6, ADR-010/011); `FieldFunction` deferred
 - `AbstractMeshLoader` + gmsh adapter — source loading pipeline (ADR-012; target object redefined by ADR-015 upon acceptance); meshio provisional engine (ADR-013)
@@ -98,7 +98,7 @@ src/caegraph/dataset/
 
 ## Coding gate
 
-Coding order follows the ADR-015 (**proposed**) hierarchy — CAEGraph core first, topology/discretization adapters after:
+Coding order follows the ADR-015 hierarchy — CAEGraph core first, topology/discretization adapters after:
 
 1. `CAEGraph` core (entities + stable IDs, relations, field/region hooks; never PyG)
 2. `Field` / semantic regions (`boundary/`)

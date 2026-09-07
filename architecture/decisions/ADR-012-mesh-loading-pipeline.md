@@ -4,7 +4,7 @@
 - 标题：定义跨格式 Mesh 加载管线（`__call__` 稳定、protected hook 不冻结）：source → format-specific normalization → canonical Mesh build（ADR-014）→ validate；源分组（source-group）按维度分类为 domain / boundary|interface / unsupported；normalization 义务；IO 永不推断 BoundaryType
 - 日期：2026-09-06
 - 状态：accepted
-- 关联：ADR-007（分层与共享词汇）、ADR-008（跨软件定位）、ADR-010（三层职责链）、ADR-011（Spec 槽位一致性）、ADR-013（IO 引擎 provisional）、**ADR-014（canonical Mesh 数据模型——Mesh 结构的权威定义）**、Phase 2、Design UML `class_diagram.puml`
+- 关联：ADR-007（分层与共享词汇）、ADR-008（跨软件定位）、ADR-010（三层职责链）、ADR-011（Spec 槽位一致性）、ADR-013（IO 引擎 provisional）、**ADR-014（canonical topology（cell-based）权威定义，经 ADR-015 收窄）**、**ADR-015（顶层 canonical 对象：CAEGraph）**、Phase 2、Design UML `class_diagram.puml`
 
 ## 职责边界（Scope）
 
@@ -13,7 +13,7 @@
 ```
 ADR-012 = 怎么进入（source normalization → canonical topology build）
 ADR-014 = canonical topology 是什么（cell-based，经 ADR-015 收窄）
-ADR-015 = 顶层 canonical 对象是什么（CAEGraph，proposed）
+ADR-015 = 顶层 canonical 对象是什么（CAEGraph）
 ```
 
 ## 背景（Context）
@@ -39,7 +39,7 @@ AbstractMeshLoader.__call__(path) -> Mesh
 
 分类、构造、校验规则不按格式复制（步骤 2 之后共享 ADR-014 的 build 语义）。IO 引擎（meshio，ADR-013 provisional）只存在于步骤 1–2 的实现细节，可整体替换。
 
-**修订（2026-09-07，ADR-015 v3 预备，随其采纳生效）**：在 ADR-015 层级下，本管线的产物（canonical Mesh topology）定位为 **source/discretization representation**——经 RepresentationBuilder（ADR-015）构造 CAEGraph；mesh loading 因此成为一条实现路径，管线契约与 normalization 义务本身不变。
+**修订（2026-09-07，ADR-015 已采纳，生效）**：在 ADR-015 层级下，本管线的产物（canonical Mesh topology）定位为 **source/discretization representation**——经 RepresentationBuilder（ADR-015）构造 CAEGraph；mesh loading 因此成为一条实现路径，管线契约与 normalization 义务本身不变。
 
 ### 2. 源分组（source-group）语义分类契约
 
@@ -86,7 +86,7 @@ source_group_dim < topo_dim − 1   → 不入 canonical topology → warning / 
 - 2026-09-06 返工：改为转换管线 + 物理组维度分类（当时含 block 存储、node-set 边界成员、唯一 `_read` 钩子等过渡表述）。
 - 2026-09-06 重写：ADR-014 冻结 Mesh contract 后，清退所有与 ADR-014 重复或已被其取代的立法（存储布局、全局索引契约、node-set 成员、域并覆盖不变量），只保留「进入」契约；术语统一为 source named group；protected hook 数量不再冻结。
 - 2026-09-07 评审收口：明确 BoundaryRegion 为统一 codim-1 facet-region 抽象（含 internal interface）；补 topo_dim 确定顺序（不循环定义）；不要求每种新格式自建 ADR。
-- 2026-09-07 ADR-015 v3 预备修订：管线产物定位为 source/discretization representation，经 RepresentationBuilder 构造 CAEGraph；mesh loading 成为一条实现路径，管线契约与 normalization 义务不变（随 ADR-015 采纳生效）。
+- 2026-09-07 ADR-015 采纳修订：管线产物定位为 source/discretization representation，经 RepresentationBuilder 构造 CAEGraph；mesh loading 成为一条实现路径，管线契约与 normalization 义务不变。
 
 ## 备选方案（Options considered）
 
