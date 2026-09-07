@@ -1,7 +1,7 @@
-# ADR-015: CAEGraph canonical representation（异构 CAE 源与 GNN 之间的规范化表示）
+# ADR-015: CAEGraph graph-native canonical domain representation
 
 - 编号：ADR-015
-- 标题：定义 CAEGraph canonical representation 作为异构 CAE 数据源与 GNN 模型之间的规范化表示；Mesh 降位为拓扑丰富的 source representation/view（FEM/FVM 场景专用）；PyG 为下游 backend adapter 而非领域抽象；若采纳，取代 ADR-007 D1/D3 与 ADR-009 的 Mesh→Graph 契约，收窄 ADR-014 为 topology subsystem，改写 ADR-012 的目标对象
+- 标题：冻结 CAEGraph 为 CAE 数据的 graph-native canonical domain representation——meshes / grids / particles 等离散化均为构造 CAEGraph entities 与 relations 的 source representation；Mesh 归位 topology subsystem（cell-based discretization representation，FEM/FVM）；PyG 为下游 backend adapter 而非领域抽象；若采纳，取代 ADR-007 D1/D3 与 ADR-009 的 Mesh→Graph 契约，收窄 ADR-014，修订 ADR-012 目标对象
 - 日期：2026-09-07
 - 状态：**proposed（草稿待 Architecture review，未生效；本版为 v2 修订——问题边界由「graph-first vs mesh-first」重定义为「异构 CAE 源与 GNN 之间的 canonical representation 是什么」）**
 - 关联：ADR-007（D2 保留强化；D1/D3 拟取代）、ADR-008（图后端冻结条款之澄清性 ADR 即本 ADR）、ADR-009（Mesh→Graph 契约拟取代）、ADR-012（目标对象拟改写）、ADR-013（不变：meshio=external IO engine）、ADR-014（拟收窄为 topology subsystem，生效前不改）、ADR-011（future-evolution 机制先例）、Phase 2、ROADMAP、Design UML `class_diagram.puml`
@@ -35,15 +35,16 @@ CAE data → Mesh → Graph → GNN
 
 ## 关键澄清（CAEGraph 是什么 / 不是什么）
 
-- **不是** `torch_geometric.data.Data`——PyG 是下游实现 adapter；
+- **不是** `torch_geometric.data.Data` / `networkx.Graph` / `igraph.Graph` / 简单邻接矩阵——它们是 backend 或分析引擎，不是领域模型；
 - **不是** lossy 邻接图（仅 node-edge 关系）——那是被否决的方案 A；
-- **是 entity-centric 领域规范表示（面向 physics AI）**，由以下部分组成：
+- **是面向物理仿真的 graph-native domain model（entity-centric canonical representation）**：核心不是图算法，而是稳定实体身份、物理语义、数据关联、多物理场字段、区域语义、与 GNN backend 的解耦。组成：
   - entities 与稳定 IDs；
   - relations / connectivity；
   - geometry；
   - fields（关联到实体）；
   - semantic regions（boundary/interface 语义分组）；
-  - optional domain-specific structures。
+  - optional discretization metadata（domain-specific structures）。
+- **领域语义所有权（为什么不继承通用图库）**：通用图库只知道 node/edge/attribute；CAE 需要知道 node（坐标/物理场/边界归属）、edge（连接性/几何关系/interface 关系）、region（inlet/wall/interface/periodic pair）、field（pressure/velocity/temperature）——这些领域语义属于 CAEGraph，不属于图计算库。因此方向永远是 `CAEGraph → adapter → PyG Data`，绝不反向。
 - **topology subsystem 的地位**：对 cell-based 离散（FEM/FVM）是**一等组件（first-class component）**——node/element/facet/region/field 是物理语义而非可有可无的注解；对 mesh-free 方法（SPH/FDM），拓扑可缺省或由生成的邻接关系取代。facet 之所以保留，是因为它是 **domain relation**，不是 mesh artifact。
 
 领域模型不依赖 PyG。
@@ -67,6 +68,8 @@ flowchart TD
 ```
 
 ## 决策（Decision，若采纳）
+
+> **CAEGraph is the canonical graph-native representation of CAE data. Meshes, grids, particles, and other discretizations are source representations used to construct CAEGraph entities and relations.**
 
 1. **主领域对象 = CAEGraph（entity-centric canonical representation，面向 physics AI）**：canonical entities（稳定 global IDs）、relations/connectivity、fields（实体关联）、geometry、semantic regions、optional domain-specific structures；**topology subsystem 对 cell-based 离散是一等组件，对 mesh-free 方法可缺省或由生成的邻接关系取代**。
 2. **Mesh 的角色**：topology-rich **discretization representation**（数学离散对象，非仅仅是 IO source representation）——FEM/FVM 所用，是 **CAEGraph topology subsystem 的一种实现（one realization）**；FDM/SPH/点云不需要它；**不是 universal domain truth，也不再是顶层 canonical 对象**。
@@ -100,6 +103,13 @@ flowchart TD
 - **ADR-007 D2 保留且强化**：core 永不 import PyG——CAEGraph 置于 core，PyG 停留在 graph 层 adapter。
 - **ADR-008「禁替代图后端」的正名**：CAEGraph 是领域真源表示，不是图计算 backend；PyG 仍是唯一图学习 backend。本 ADR 即该冻结条款预设的 "new ADR"，属澄清而非违反。
 - **ADR-007 D1/D3、ADR-009 Mesh→Graph 契约**：由本 ADR 取代（D1 的 Graph 层重释为 PyG adapter 层；D3 的 domain truth 由 Mesh 移交 CAEGraph）。
+
+## 性能边界（不主张与验证门槛）
+
+- **不主张**自研表示一定比 igraph/networkx/PyG 快——这是未经验证的假设；
+- CAEGraph 的优化对象：CAE 数据布局、大规模存储效率、source normalization、graph construction、CAEGraph→PyG conversion；**不替代** shortest path / community detection 等图算法；
+- igraph/networkx 可作为 **optional graph analysis backend**（非 canonical representation）；
+- 验证门槛（benchmark，进入 Phase 3 前执行）：memory usage / graph construction time / neighbor query / CAEGraph→PyG conversion。
 
 ## 备选方案（Options considered）
 
@@ -136,3 +146,4 @@ flowchart TD
 - 2026-09-07 v1：以「graph-first vs mesh-first」为框（含 A/B/C 三案）。
 - 2026-09-07 v2：问题边界重定义为「异构 CAE 源与 GNN 之间的 canonical representation」；A/B/C 重塑为 adjacency-only（否决）/ Mesh-universal（否决限制）/ CAEGraph entity-centric + topology subsystem（推荐）；补 FEM/FVM/FDM/SPH 范式表、Mermaid 概念模型、冻结条款正名与采纳后处置清单。
 - 2026-09-07 v3（本版）：topology subsystem 升格为「cell-based 一等组件」（弃 optional annotation 措辞）；Mesh 重定义为 topology-rich discretization representation（topology subsystem 的一种实现，非仅 IO source）；图构造策略更名 RepresentationBuilder（DiscretizationAdapter 备选）；PyG 命名出清（graph 层禁以 Graph 类指代 PyG 对象，adapter 落位 graph/pyg.py）；新增 Representation hierarchy 冻结节；ADR-014 收窄措辞定稿；phase2 模块树先行同步方向版。
+- 2026-09-07 v3 补全（定稿候选）：标题定为 graph-native canonical domain representation；冻结核心决策原句（meshes/grids/particles 皆为 source representations）；否定清单扩至 networkx/igraph/邻接矩阵；新增领域语义所有权与性能边界节（不主张自研更快、图算法归 optional analysis backend、benchmark 门槛）；启动文档级联（ADR-014 收窄、ADR-012 目标修订、phase2 coding gate、Design UML）。

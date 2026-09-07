@@ -11,7 +11,7 @@
 ' GUIDE   : see architecture/UML_GUIDE.md
 ' =============================================================================
 
-title CAEGraph Domain Abstractions (Design) - ADR-007/008/009
+title CAEGraph Domain Abstractions (Design) - ADR-007/008/009 + ADR-015 (proposed)
 
 package "external ecosystem bases" {
   class "torch_geometric.data.Data" as PyGData <<external>>
@@ -32,17 +32,18 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
     (base_class + issubclass) recorded as a
     future option, deliberately not Phase 1
   }
-  class Mesh {
-    CAE discrete geometry, canonical
-    representation (ADR-014): nodes (n,3) +
-    topo_dim; cells CSR (int-coded cell_types /
-    connectivity / offsets, single truth, type
-    views derived only); explicit facets CSR +
-    validated ragged facet_cells (winding-free;
-    declared by adapter or user); domain groups
-    (plain global-cell-id data); fields
-    (appendable); structure frozen after
-    validate (anti god-object, ADR-007 D3)
+  class CAEGraph {
+    Graph-native canonical domain
+    representation (ADR-015, proposed):
+    entities + stable IDs, relations,
+    geometry hooks, fields, semantic
+    regions, optional discretization
+    metadata; topology subsystem is
+    first-class for cell-based
+    discretizations; never imports PyG -
+    PyG / networkx / igraph are backends
+    or optional analysis engines, never
+    the domain model
   }
   class Field {
     Named field data: values, unit, timestep,
@@ -64,15 +65,6 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
   }
   enum NodeCategory {
     INTERIOR / BOUNDARY / CORNER
-  }
-  enum CellType {
-    LINE2 / TRI3 / QUAD4 / TET4 / PYR5 /
-    WEDGE6 / HEX8 (POINT + higher-order =
-    future); explicit stable integer codes,
-    never enum-declaration order; dim,
-    node_count, CAEGraph local-node
-    convention + codim-1 face templates
-    (frozen with implementation, ADR-014)
   }
   class BoundaryManager {
     Semantic grouping only, topology lives on
@@ -102,6 +94,32 @@ package "caegraph.core (domain truth; torch-only, never PyG)" {
   abstract class FieldFunction {
     Callable analytic boundary/initial value:
     (t, pos) -> tensors, shape self-validation
+  }
+}
+
+package "caegraph.core.topology (topology subsystem - first-class for cell-based discretizations, ADR-014 narrowed / ADR-015)" {
+  class Mesh {
+    Topology-rich discretization
+    representation (ADR-015): one
+    realization of the topology subsystem
+    (FEM/FVM); nodes (n,3) + topo_dim;
+    cells CSR (int-coded cell_types /
+    connectivity / offsets, single truth,
+    type views derived only); explicit
+    facets CSR + validated ragged
+    facet_cells (winding-free); domain
+    groups (plain global-cell-id data);
+    structure frozen after validate
+    (ADR-014)
+  }
+  enum CellType {
+    LINE2 / TRI3 / QUAD4 / TET4 / PYR5 /
+    WEDGE6 / HEX8 (POINT + higher-order =
+    future); explicit stable integer codes,
+    never enum-declaration order; dim,
+    node_count, CAEGraph local-node
+    convention + codim-1 face templates
+    (frozen with implementation, ADR-014)
   }
 }
 
@@ -146,16 +164,19 @@ package "caegraph.io" {
   }
 }
 
-package "caegraph.graph (PyG-native layer)" {
-  class Graph {
-    extends torch_geometric.data.Data:
-    neural representation, NOT engineering truth;
-    adds CAE fields + validate(), never operations
-    (ADR-007 D1 / ADR-008)
+package "caegraph.graph (representation builders + GNN backend adapter)" {
+  abstract class RepresentationBuilder {
+    Source discretization -> CAEGraph
+    entities + relations (ADR-015);
+    FEM / FVM / FDM / SPH specializations;
+    replaces the single
+    Mesh -> GraphBuilder contract (ADR-009)
   }
-  class GraphBuilder {
-    Mesh -> Graph construction:
-    node graph / cell graph views
+  class PyGAdapter {
+    CAEGraph -> torch_geometric.data.Data;
+    backend adapter, never the domain
+    graph object (ADR-015); lives at
+    graph/pyg.py
   }
 }
 
@@ -229,10 +250,10 @@ package "caegraph.inference (neural simulation harness)" {
 
 ' --- Relationships -----------------------------------------------------------
 
+BaseObject <|-- CAEGraph
 BaseObject <|-- Mesh
 BaseObject <|-- Field
 BaseObject <|-- BoundaryRegion
-PyGData <|-- Graph
 PyGDataset <|-- CAEDataset
 TorchModule <|-- Model
 MeshLoader <|-- GmshLoader
@@ -243,19 +264,22 @@ BoundaryManager "1" o-- "*" BoundarySpec : binds
 BoundarySpec --> BoundaryType : typed by
 BoundarySpec "*" o--> "0..1" BoundaryRegion : targets by name
 BoundarySpec "*" o--> "0..1" FieldFunction : optional value
-Mesh "1" o-- "*" Field : carries
-Graph ..> NodeCategory : node attribute
+CAEGraph "1" o-- "*" Field : carries
+CAEGraph "1" o-- "0..1" Mesh : topology subsystem (cell-based)
+CAEGraph ..> NodeCategory : entity annotation
 
 MeshLoader ..> Mesh : produces
 MeshLoader ..> BoundaryRegion : materializes
 MeshWriter ..> Mesh : consumes
-GraphBuilder ..> Mesh : builds from
-GraphBuilder ..> GeometryProcessor : uses features
-GraphBuilder --> Graph : build(mesh, view)
-GeometryTransform ..> Graph : operates on
-FeatureTransform ..> Graph : operates on
-PhysicsTransform ..> Graph : operates on
-CAEDataset "1" o-- "*" Graph
+RepresentationBuilder ..> Mesh : consumes topology (FEM)
+RepresentationBuilder ..> GeometryProcessor : uses features
+RepresentationBuilder ..> CAEGraph : produces
+PyGAdapter ..> CAEGraph : consumes
+PyGAdapter --> PyGData : produces
+GeometryTransform ..> PyGData : operates on
+FeatureTransform ..> PyGData : operates on
+PhysicsTransform ..> PyGData : operates on
+CAEDataset "1" o-- "*" PyGData
 Model ..> PhysicsLoss : may consume
 CAEDataset "1" --> "*" Model : provides data for
 
@@ -266,11 +290,13 @@ Simulator ..> Rollout : orchestrates
 Simulator ..> MeshWriter : exports results
 Correction ..> Observation : uses (post-inference mode)
 
-note right of Graph
-  Positioning frozen (ADR-008):
-  no solver abstraction, no trainer abstraction,
-  no alternative graph backend layer
-  without a new ADR.
+note right of PyGAdapter
+  Positioning frozen (ADR-008, clarified
+  by ADR-015): no solver abstraction, no
+  trainer abstraction, no alternative
+  graph backend layer - CAEGraph is the
+  domain representation, PyG remains the
+  graph-learning backend adapter.
 end note
 
 @enduml

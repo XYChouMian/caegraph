@@ -98,13 +98,14 @@ src/caegraph/dataset/
 
 ## Coding gate
 
-Before implementing `Mesh` or io adapters, the CellType foundation must be implemented and tested (ADR-014 Consequences):
+Coding order follows the ADR-015 (**proposed**) hierarchy — CAEGraph core first, topology/discretization adapters after:
 
-- `CellType` stable integer codes (explicit mapping, not enum-declaration order)
-- CAEGraph `CellType` local-node conventions
-- codim-1 face templates
+1. `CAEGraph` core (entities + stable IDs, relations, field/region hooks; never PyG)
+2. `Field` / semantic regions (`boundary/`)
+3. topology subsystem + discretization adapters (FEM: Mesh topology + CellType — the CellType foundation has already landed and is tested)
+4. PyG adapter (`graph/pyg.py`)
 
-Concrete tables freeze with the implementation (docstring + tests).
+CellType prerequisites remain binding for any topology work: stable integer codes (explicit mapping, not enum-declaration order), CAEGraph local-node conventions, codim-1 face templates — frozen with the implementation (docstring + tests).
 
 ## Depends on
 
