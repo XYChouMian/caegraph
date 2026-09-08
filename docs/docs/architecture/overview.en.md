@@ -17,7 +17,7 @@ This page summarizes the architecture; the binding specification lives in [`arch
 | `caegraph.core` | domain truth: BaseObject, CAEGraph (canonical domain representation), topology subsystem (Mesh, cell-based), Field; boundary vocabulary, registries, shared enums | — |
 | `caegraph.geometry` | geometric services: metrics, edge features, interpolation | core |
 | `caegraph.io` | loaders (gmsh first) and writers (VTK); format registry | core |
-| `caegraph.graph` | representation construction (source discretization → CAEGraph; builder extension points) + DataGraph adapter (CAEGraph → DataGraph; PyG Data in Phase 2) | core, geometry |
+| `caegraph.graph` | representation construction (source discretization → CAEGraph; construction contract in ADR-016) + backend adapter (CAEGraph → framework representation; PyG Data in Phase 2; ADR-017) | core, geometry |
 | `caegraph.transforms` | geometry / feature / physics transforms (BC encoding) on PyG Data | graph |
 | `caegraph.dataset` | CAEDataset: collections, splits (backend-specific; PyG Dataset in Phase 2) | graph, transforms |
 | `caegraph.physics` | PDE residuals, physics losses, constraints | core, graph |
@@ -28,7 +28,26 @@ This page summarizes the architecture; the binding specification lives in [`arch
 | `caegraph.visualization` | discretization/field/graph plotting | core, graph, io |
 | `caegraph.utils` | logging and reproducibility helpers | — |
 
-Representation construction belongs to `caegraph.graph`: representation builders map any source discretization (mesh / grid / particles) onto a CAEGraph (ADR-015); the builder abstraction and its API are frozen by a follow-up ADR. CAEGraph → DataGraph (PyG Data in Phase 2) conversion belongs to the DataGraph adapter; `Graph` is not a domain class, and CAEGraph has no source-type subclasses. The topology subsystem (`Mesh`) offers no `to_graph()`, and core never imports graph; `CAEDataset` and `Model` remain backend-specific — PyG Dataset and torch.nn.Module are the current Phase 2 implementation choices, not a frozen contract (ADR-009, as amended by ADR-015).
+Representation construction belongs to `caegraph.graph`: representation builders map any source discretization (mesh / grid / particles) onto a CAEGraph (ADR-015); construction contracts are defined in ADR-016 (proposed). CAEGraph → framework representation (PyG Data in Phase 2) conversion belongs to the backend adapter (adaptation contract in ADR-017, proposed — DataGraph is a conceptual backend representation layer, not a required class); `Graph` is not a domain class, and CAEGraph has no source-type subclasses. The topology subsystem (`Mesh`) offers no `to_graph()`, and core never imports graph; `CAEDataset` and `Model` remain backend-specific — PyG Dataset and torch.nn.Module are the current Phase 2 implementation choices, not a frozen contract (ADR-009, as amended by ADR-015).
+
+## Representation hierarchy
+
+```mermaid
+flowchart TD
+    C["<b>CAEGraph</b> — domain canonical representation"]
+    C --> T["topology subsystem (cell-based; ADR-014)"]
+    T --> M["Mesh topology (FEM / FVM)"]
+    C --> R["relation subsystem (SPH neighbor / FDM stencil relations)"]
+    C --> G["geometry subsystem"]
+    C --> F["field subsystem"]
+    C --> RG["semantic regions"]
+    C --> A["backend adapter (ADR-017)"]
+    A --> DG["DataGraph — conceptual backend representation (PyG Data in Phase 2)"]
+    classDef nowrap white-space:nowrap
+    class C,T,M,R,G,F,RG,A,DG nowrap
+```
+
+Hierarchy semantics: CAEGraph is the single domain canonical representation; the composition of its semantic subsystems depends on the source discretization — the topology subsystem is first-class for cell-based methods and absent for mesh-free ones, where generated adjacency relations take its place. Construction contracts live in ADR-016, backend adaptation in ADR-017 (ADR-015).
 
 ## UML dual system
 

@@ -164,23 +164,26 @@ package "caegraph.io" {
   }
 }
 
-package "caegraph.graph (representation construction + DataGraph adapter)" {
+package "caegraph.graph (representation construction + backend adapter)" {
   abstract class RepresentationBuilder {
     Source discretization -> CAEGraph
     entities + relations (ADR-015);
-    extension point - specializations per
-    source discretization family, naming/API
-    frozen by a follow-up ADR;
+    extension point (ADR-016) -
+    specializations per source
+    discretization family; API/class
+    names/registry/layout not frozen;
     replaces the single
     Mesh -> GraphBuilder contract (ADR-009)
   }
   class DataGraphAdapter {
-    CAEGraph -> DataGraph;
-    PyG Data is the Phase 2 DataGraph form;
-    backend-side object, owns no domain
-    semantics, never the domain graph
-    object (ADR-015); concrete interface
-    frozen by a follow-up ADR
+    CAEGraph -> framework-specific
+    graph representation;
+    PyG Data is the Phase 2 form;
+    DataGraph is a conceptual backend
+    representation layer, not a required
+    class, never the domain graph
+    object (ADR-017); concrete
+    interface not frozen
   }
 }
 
@@ -299,9 +302,9 @@ note right of DataGraphAdapter
   by ADR-015): no solver abstraction, no
   trainer abstraction, no alternative
   graph backend layer - CAEGraph is the
-  domain representation, the DataGraph
-  adapter (PyG backend in Phase 2) is
-  the graph-learning seam.
+  domain representation, the backend
+  adapter (PyG in Phase 2) is the
+  graph-learning seam (ADR-017).
 end note
 
 @enduml

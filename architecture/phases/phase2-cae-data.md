@@ -50,14 +50,16 @@ src/caegraph/io/
 │                           #   engine, ADR-013) into the canonical Mesh
 └── vtk_writer.py           # write-back into the ParaView ecosystem
 
-src/caegraph/graph/         # representation construction + DataGraph adapter layer
+src/caegraph/graph/         # representation construction + backend adapter layer
 ├── builder.py              # representation builder (extension point, ADR-015):
 │                           #   source discretization → CAEGraph entities +
-│                           #   relations; naming/API frozen by a follow-up ADR
-└── pyg.py                  # DataGraph adapter: CAEGraph → DataGraph,
-                            #   concretized as torch_geometric.data.Data in
-                            #   Phase 2 (PyG is a backend, never the domain
-                            #   graph object; ADR-015)
+│                           #   relations; construction contract: ADR-016
+│                           #   (proposed; API/registry/layout not frozen)
+└── pyg.py                  # backend adapter: CAEGraph → framework-specific
+                            #   representation, concretized as
+                            #   torch_geometric.data.Data in Phase 2
+                            #   (adaptation contract: ADR-017; PyG is a
+                            #   backend, never the domain graph object)
 
 src/caegraph/transforms/    # BC application lives HERE, not on Graph
 ├── geometry.py             # coordinate / feature normalization
@@ -75,8 +77,8 @@ src/caegraph/dataset/
 - `Mesh` / `CellType` — topology subsystem (ADR-014 narrowed): Mesh is a topology-rich discretization representation (FEM/FVM realization), no longer the top-level canonical object
 - `Field` / `BoundaryRegion` / `BoundarySpec` / `BoundaryManager` — field & semantic-region vocabulary (ADR-007 D6, ADR-010/011); `FieldFunction` deferred
 - `AbstractMeshLoader` + gmsh adapter — source loading pipeline (ADR-012; target object redefined by ADR-015 upon acceptance); meshio provisional engine (ADR-013)
-- representation builder — source discretization → CAEGraph entities + relations; extension point per ADR-015 (naming/API deferred to the follow-up construction/backend-adaptation ADR); replaces the single `Mesh → GraphBuilder` contract
-- DataGraph adapter — `CAEGraph → DataGraph` (PyG Data in Phase 2; backend-side object, owns no domain semantics, not a domain class)
+- representation builder — source discretization → CAEGraph entities + relations; extension point per ADR-015, construction boundary frozen by ADR-016 (proposed; API/naming/registry deferred to the coding dispatch); replaces the single `Mesh → GraphBuilder` contract
+- backend adapter — `CAEGraph → framework-specific representation` (PyG Data in Phase 2; adaptation boundary frozen by ADR-017, proposed — DataGraph is the conceptual backend representation layer, backend-side, owns no domain semantics, not a domain class)
 - Geometry / feature / physics transforms (PyG transform protocol)
 - `CAEDataset`; VTK writer
 
@@ -95,7 +97,7 @@ src/caegraph/dataset/
 - Synthetic meshes only in tests (Testing Skill CAE rules).
 - Real solver formats (Fluent, Abaqus, OpenFOAM…) enter here — each new format is a feature request routed through PM (Architecture review first).
 - Registry stays a name→factory mapping (Phase 1 contract: callable check only — Python type erasure makes runtime generic checks a non-goal). Runtime type enforcement (`Registry(kind, base_class=...)` + `issubclass`) is a recorded future option (Design UML Registry note); adopt it only if Phase 2 loader wiring needs it, decided explicitly.
-- Loading and topology structure follow ADR-012 (source normalization → canonical topology build; the product feeds CAEGraph construction via representation builders, ADR-015) and ADR-014 (canonical cell-based topology model); meshio is the provisional IO engine (ADR-013).
+- Loading and topology structure follow ADR-012 (source normalization → canonical topology build; the product feeds CAEGraph construction, ADR-015/016) and ADR-014 (canonical cell-based topology model); meshio is the provisional IO engine (ADR-013).
 - Resolved design question (ADR-011): the ADR-010 "未来演进" re-evaluation is complete — keep the single seven-value `BoundaryType` through Phase 2. `BoundarySpec` must enforce per-type slot-coherence validation (`paired_region` required for PERIODIC; value slots meaningful only for constraint-valued types); refined Phase 3 re-trigger conditions for a possible orthogonal role × constraint split are recorded in ADR-011.
 
 ## Coding gate
@@ -105,7 +107,7 @@ Coding order follows the ADR-015 hierarchy — CAEGraph core first, topology/dis
 1. `CAEGraph` core (entities + stable IDs, relations, field/region hooks; never PyG)
 2. `Field` / semantic regions (`boundary/`)
 3. topology subsystem + discretization adapters (FEM: Mesh topology + CellType — the CellType foundation has already landed and is tested)
-4. DataGraph adapter (PyG Data as the Phase 2 DataGraph form)
+4. backend adapter (PyG Data as the Phase 2 framework representation; ADR-017)
 
 CellType prerequisites remain binding for any topology work: stable integer codes (explicit mapping, not enum-declaration order), CAEGraph local-node conventions, codim-1 face templates — frozen with the implementation (docstring + tests).
 
