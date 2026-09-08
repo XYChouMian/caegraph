@@ -248,6 +248,8 @@ Additionally:
 flowchart LR
     A[Code] <--> B[Architecture] <--> C[UML] <--> D[Documentation]
     D <--> E[Testing] <--> F[Environment] <--> G[Release]
+    classDef nowrap white-space:nowrap
+    class A,B,C,D,E,F,G nowrap
 ```
 
 Violations of any rule in this file are blocking review findings.

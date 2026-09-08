@@ -12,6 +12,8 @@ CAEGraph 的架构守护者。负责维护 `architecture/ARCHITECTURE.md`、Desi
 ```mermaid
 flowchart LR
     A["Python code"] --> B["UML generator — pyreverse 等"] --> C["Generated UML"]
+    classDef nowrap white-space:nowrap
+    class A,B,C nowrap
 ```
 
 - Architecture Agent 的职责是**审查两者差异**：代码偏离设计 → 要求整改；设计确需演进 → 更新 Design UML 并说明理由。

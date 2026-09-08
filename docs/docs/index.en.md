@@ -7,6 +7,8 @@ CAEGraph normalizes heterogeneous CAE data into the graph-native canonical domai
 ```mermaid
 flowchart LR
     A[CAE Data] --> B[CAEGraph Representation] --> C[GNN Training] --> D[Neural Simulation] --> E[Assimilation]
+    classDef nowrap white-space:nowrap
+    class A,B,C,D,E nowrap
 ```
 
 !!! note "Project status"

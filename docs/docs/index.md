@@ -7,6 +7,8 @@ CAEGraph 将异构 CAE 数据规范化为图原生领域表示 **CAEGraph**，�
 ```mermaid
 flowchart LR
     A[CAE 数据] --> B[CAEGraph 表示] --> C[GNN 训练] --> D[跨离散神经仿真] --> E[实验数据同化]
+    classDef nowrap white-space:nowrap
+    class A,B,C,D,E nowrap
 ```
 
 !!! note "项目状态"
