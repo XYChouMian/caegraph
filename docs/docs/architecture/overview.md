@@ -42,12 +42,12 @@ flowchart LR
     C --> F["field subsystem"]
     C --> RG["semantic regions"]
     C --> A["backend adapter（ADR-017）"]
-    A --> DG["DataGraph——<br>概念性 backend 表示<br>（Phase 2 形态为 PyG Data）"]
+    A --> DG["backend graph representation<br>（Phase 2 形态为 PyG Data）"]
     classDef nowrap white-space:nowrap
     class C,T,M,R,G,F,RG,A,DG nowrap
 ```
 
-层级语义：CAEGraph 是唯一的领域 canonical 表示，各语义子系统的组成取决于源离散——cell-based 方法下 topology 一等，mesh-free 方法下由生成邻接关系顶替；构造契约见 ADR-016，backend 适配契约见 ADR-017（ADR-015）。
+层级语义：CAEGraph 是唯一的领域 canonical 表示，各语义子系统的组成取决于源离散——cell-based 方法下 topology 一等，mesh-free 方法下由生成邻接关系顶替；**子系统关系描述语义组成，而非 Python 继承**。构造契约见 ADR-016，backend 适配契约见 ADR-017（ADR-015）。
 
 ## UML 双体系
 

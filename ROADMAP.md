@@ -30,7 +30,7 @@ Rules of engagement:
 
 ## Vision
 
-CAEGraph bridges CAE simulation and physics AI through a **CAE → GNN → AI workflow** — normalizing heterogeneous CAE data into **CAEGraph**, the graph-native canonical domain representation (ADR-015), enabling GNN training on engineering problems through a DataGraph adapter, running neural simulation across different discretizations with pretrained models, and correcting predictions with experimental observations (ADR-008).
+CAEGraph bridges CAE simulation and physics AI through a **CAE → GNN → AI workflow** — normalizing heterogeneous CAE data into **CAEGraph**, the graph-native canonical domain representation (ADR-015), enabling GNN training on engineering problems through a backend adapter, running neural simulation across different discretizations with pretrained models, and correcting predictions with experimental observations (ADR-008).
 
 ---
 

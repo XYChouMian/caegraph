@@ -2,7 +2,7 @@
 
 **连接 CAE 仿真与 Physics AI 的工作流框架。**
 
-CAEGraph 将异构 CAE 数据规范化为图原生领域表示 **CAEGraph**，通过 DataGraph adapter 接入 PyTorch Geometric，支持面向工程问题的 GNN 训练、跨离散表示的神经仿真以及实验数据同化。
+CAEGraph 将异构 CAE 数据规范化为图原生领域表示 **CAEGraph**，通过 backend adapter 接入 PyTorch Geometric，支持面向工程问题的 GNN 训练、跨离散表示的神经仿真以及实验数据同化。
 
 ```mermaid
 flowchart LR

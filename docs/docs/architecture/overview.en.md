@@ -42,12 +42,12 @@ flowchart LR
     C --> F["field subsystem"]
     C --> RG["semantic regions"]
     C --> A["backend adapter (ADR-017)"]
-    A --> DG["DataGraph —<br>conceptual backend representation<br>(PyG Data in Phase 2)"]
+    A --> DG["backend graph representation<br>(PyG Data in Phase 2)"]
     classDef nowrap white-space:nowrap
     class C,T,M,R,G,F,RG,A,DG nowrap
 ```
 
-Hierarchy semantics: CAEGraph is the single domain canonical representation; the composition of its semantic subsystems depends on the source discretization — the topology subsystem is first-class for cell-based methods and absent for mesh-free ones, where generated adjacency relations take its place. Construction contracts live in ADR-016, backend adaptation in ADR-017 (ADR-015).
+Hierarchy semantics: CAEGraph is the single domain canonical representation; the composition of its semantic subsystems depends on the source discretization — the topology subsystem is first-class for cell-based methods and absent for mesh-free ones, where generated adjacency relations take its place. **Subsystem relationships describe semantic composition, not Python inheritance.** Construction contracts live in ADR-016, backend adaptation in ADR-017 (ADR-015).
 
 ## UML dual system
 

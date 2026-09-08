@@ -50,7 +50,10 @@ src/caegraph/io/
 │                           #   engine, ADR-013) into the canonical Mesh
 └── vtk_writer.py           # write-back into the ParaView ecosystem
 
-src/caegraph/graph/         # representation construction + backend adapter layer
+src/caegraph/graph/         # representation construction + backend adapter layer;
+│                           #   two logically separate concerns — construction
+│                           #   (ADR-016) and adaptation (ADR-017); the layer
+│                           #   must never be imported by core (no core → graph)
 ├── builder.py              # representation builder (extension point, ADR-015):
 │                           #   source discretization → CAEGraph entities +
 │                           #   relations; construction contract: ADR-016

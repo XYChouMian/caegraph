@@ -1,7 +1,7 @@
 # ADR-007: 图抽象与后端集成（Graph abstraction and backend integration）
 
 - 编号：ADR-007
-- 标题：Graph 是 PyG 原生的神经表示层（ADR-015 重释为 DataGraph adapter）；工程真源顶层为 CAEGraph，Mesh/Field/Boundary 归位其子系统且框架无关
+- 标题：Graph 是 PyG 原生的神经表示层（ADR-015 重释为 backend adapter）；工程真源顶层为 CAEGraph，Mesh/Field/Boundary 归位其子系统且框架无关
 - 日期：2026-09-05（历经四轮定位演进后终版化，上位依据 ADR-008）
 - 状态：accepted
 - 关联：ADR-008（定位冻结）、ADR-015（顶层 canonical 对象修订）、Phase 2/3/4、Design UML `class_diagram.puml`、前身项目 CFD-paradigm 与多份重构研究文档（本地未入库）
@@ -17,9 +17,9 @@ CAEGraph 的定位经历四轮演进（详见 ADR-008），本 ADR 曾随之两�
 
 ## 决策（Decision）
 
-**修订（2026-09-07，ADR-015 采纳）**：本 ADR 的分域答案升级——工程真源的顶层对象由 Mesh 升格为 **CAEGraph**（graph-native canonical domain representation），Mesh 与边界词汇归位其 topology subsystem；**D2 纯净性不变且强化**（core 含 CAEGraph 仍永不 import PyG）；D1 的 `Graph(Data)` 域扩展重释为 **DataGraph adapter**（CAEGraph → DataGraph，Phase 2 形态为 PyG Data），"Graph" 不再是领域类；D3 的 core 域核组成相应改写（CAEGraph + topology subsystem + Field + boundary 词汇）；D4/D5/D7 不变。详见 ADR-015。
+**修订（2026-09-07，ADR-015 采纳）**：本 ADR 的分域答案升级——工程真源的顶层对象由 Mesh 升格为 **CAEGraph**（graph-native canonical domain representation），Mesh 与边界词汇归位其 topology subsystem；**D2 纯净性不变且强化**（core 含 CAEGraph 仍永不 import PyG）；D1 的 `Graph(Data)` 域扩展重释为 **backend adapter**（CAEGraph → backend graph representation，Phase 2 形态为 PyG Data），"Graph" 不再是领域类；D3 的 core 域核组成相应改写（CAEGraph + topology subsystem + Field + boundary 词汇）；D4/D5/D7 不变。详见 ADR-015。
 
-**D1. Graph = PyG-compatible domain extension**（ADR-008 推论；ADR-015 重释：领域对象为 CAEGraph，DataGraph 由 DataGraph adapter 产出）
+**D1. Graph = PyG-compatible domain extension**（ADR-008 推论；ADR-015 重释：领域对象为 CAEGraph，DataGraph 由 backend adapter 产出）
 
 - `caegraph.graph.Graph` 继承 `torch_geometric.data.Data`：PyG 运行时生态（Transform / Dataset / DataLoader / Batch / MessagePassing）直接可用；
 - 增加且仅增加：CAE 域字段（node_category、边界掩码、区域索引等）+ `validate()` 契约；表述纪律：Graph 是 **neural representation**，不是 engineering truth source；
@@ -29,7 +29,7 @@ CAEGraph 的定位经历四轮演进（详见 ADR-008），本 ADR 曾随之两�
 
 - core（CAEGraph + topology subsystem（Mesh）/ Field / boundary 词汇 / registry / enums，组成经 ADR-015 修订）、geometry、io 永不 import PyG；自 `caegraph.graph` 起为 PyG 原生层。
 
-**D3. 域核包**：core = BaseObject + CAEGraph + topology subsystem（Mesh）+ Field + registry + enums（torch-only；组成经 ADR-015 修订）；Mesh 反 God-Object 组合（geometry / topology / boundary / fields）；边界几何词汇（BoundarySpec / BoundaryManager / FieldFunction）为 topology subsystem 内部结构。DataGraph（PyG Data 为 Phase 2 形态）由 graph 层 DataGraph adapter 产出，领域真源不在 graph 层。
+**D3. 域核包**：core = BaseObject + CAEGraph + topology subsystem（Mesh）+ Field + registry + enums（torch-only；组成经 ADR-015 修订）；Mesh 反 God-Object 组合（geometry / topology / boundary / fields）；边界几何词汇（BoundarySpec / BoundaryManager / FieldFunction）为 topology subsystem 内部结构。DataGraph（PyG Data 为 Phase 2 形态）由 graph 层 backend adapter 产出，领域真源不在 graph 层。
 
 **D4. NodeCategory**：interior / boundary / corner 三分类；corner = 多边界区域归属节点；以张量掩码/索引表示。
 
@@ -40,7 +40,7 @@ CAEGraph 的定位经历四轮演进（详见 ADR-008），本 ADR 曾随之两�
 - Monitor / 训练循环 / solver 编排不入库；
 - gmsh 首发 loader；VTK 写回闭环。
 
-**D6. 六抽象**（ADR-008 冻结、ADR-009 明确继承与命名；ADR-015 修订）：BaseObject / CAEGraph / Mesh（topology subsystem）/ Field / CAEDataset / Model（Trainer 出局；Graph 由 DataGraph adapter 侧对象取代，不再是领域类）。`Field(name, values, unit, timestep, node/cell 归属)` 是工程真源的一等公民，graph 特征装配由此成为显式特征工程。
+**D6. 六抽象**（ADR-008 冻结、ADR-009 明确继承与命名；ADR-015 修订）：BaseObject / CAEGraph / Mesh（topology subsystem）/ Field / CAEDataset / Model（Trainer 出局；Graph 由 backend adapter 侧对象取代，不再是领域类）。`Field(name, values, unit, timestep, node/cell 归属)` 是工程真源的一等公民，graph 特征装配由此成为显式特征工程。
 
 **D7. 包架构与依赖 DAG（终版）**
 

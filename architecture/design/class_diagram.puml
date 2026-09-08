@@ -175,7 +175,7 @@ package "caegraph.graph (representation construction + backend adapter)" {
     replaces the single
     Mesh -> GraphBuilder contract (ADR-009)
   }
-  class DataGraphAdapter {
+  class BackendAdapter {
     CAEGraph -> framework-specific
     graph representation;
     PyG Data is the Phase 2 form;
@@ -281,8 +281,8 @@ MeshWriter ..> Mesh : consumes
 RepresentationBuilder ..> Mesh : consumes topology (FEM)
 RepresentationBuilder ..> GeometryProcessor : uses features
 RepresentationBuilder ..> CAEGraph : produces
-DataGraphAdapter ..> CAEGraph : consumes
-DataGraphAdapter --> PyGData : produces
+BackendAdapter ..> CAEGraph : consumes
+BackendAdapter --> PyGData : produces
 GeometryTransform ..> PyGData : operates on
 FeatureTransform ..> PyGData : operates on
 PhysicsTransform ..> PyGData : operates on
@@ -297,7 +297,7 @@ Simulator ..> Rollout : orchestrates
 Simulator ..> MeshWriter : exports results
 Correction ..> Observation : uses (post-inference mode)
 
-note right of DataGraphAdapter
+note right of BackendAdapter
   Positioning frozen (ADR-008, clarified
   by ADR-015): no solver abstraction, no
   trainer abstraction, no alternative

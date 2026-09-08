@@ -32,7 +32,7 @@ CAEGraph 的定位经历四轮演进（数据基础设施 ⇄ solver 框架 ⇄ 
 | 对象 | 身份 | 规则 |
 | --- | --- | --- |
 | Mesh / Field / Boundary | 工程真源（domain truth；ADR-015：顶层为 CAEGraph，Mesh 归位 topology subsystem） | 框架无关，torch-only，永不依赖 PyG |
-| `Graph(torch_geometric.data.Data)`（ADR-015：由 DataGraph adapter 产出，非领域类） | 神经表示（neural representation） | PyG 原生；只加 CAE 字段与校验，不加操作 |
+| `Graph(torch_geometric.data.Data)`（ADR-015：由 backend adapter 产出，非领域类） | 神经表示（neural representation） | PyG 原生；只加 CAE 字段与校验，不加操作 |
 | `models` 包 | Model 接口 + CAE-aware 公用设施 | **禁止 GNN zoo**：MeshGraphNet/GNO/Transformer 等具体模型 → examples 或外部项目 |
 | `workflow` 包 | 训练公用设施（loss 组装、CAE 批处理适配、约束装配） | 无 fit 循环，不替代 Lightning |
 | `inference` 包 | 神经仿真壳（mesh→graph→model→场重构→导出；rollout 循环壳） | 数值格式（RK 等）属模型侧，库永不实现 |
