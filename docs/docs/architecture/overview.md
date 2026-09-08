@@ -33,16 +33,16 @@
 ## 表示层级
 
 ```mermaid
-flowchart TD
-    C["<b>CAEGraph</b>（领域 canonical 表示）"]
-    C --> T["topology subsystem（cell-based；ADR-014）"]
-    T --> M["Mesh topology（FEM / FVM）"]
-    C --> R["relation subsystem（SPH 邻接 / FDM stencil 生成关系）"]
+flowchart LR
+    C["<b>CAEGraph</b>——<br>领域 canonical 表示"]
+    C --> T["topology subsystem<br>（cell-based；ADR-014）"]
+    T --> M["Mesh topology<br>（FEM / FVM）"]
+    C --> R["relation subsystem<br>（SPH 邻接 / FDM stencil 生成关系）"]
     C --> G["geometry subsystem"]
     C --> F["field subsystem"]
     C --> RG["semantic regions"]
     C --> A["backend adapter（ADR-017）"]
-    A --> DG["DataGraph——概念性 backend 表示（Phase 2 形态为 PyG Data）"]
+    A --> DG["DataGraph——<br>概念性 backend 表示<br>（Phase 2 形态为 PyG Data）"]
     classDef nowrap white-space:nowrap
     class C,T,M,R,G,F,RG,A,DG nowrap
 ```

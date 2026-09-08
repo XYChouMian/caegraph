@@ -24,12 +24,12 @@ flowchart TD
     A["<b>CAE software</b> — <i>Fluent, Abaqus, OpenFOAM, gmsh</i>"]
     B["<b>Normalization / representation construction</b> — io loaders · representation builders (extension points)"]
     C["<b>CAEGraph</b> — graph-native canonical domain representation (ADR-015)"]
-    T["<b>Topology subsystem</b> — cell-based discretizations (Mesh); present for FEM/FVM, absent for mesh-free"]
-    D["<b>Dataset</b> — CAEDataset (backend-specific; PyG in Phase 2), transforms, splits"]
-    E["<b>Training</b> — user loop or Lightning; CAEGraph never replaces it"]
-    F["<b>Inference</b> — neural simulation: rollout harness → field reconstruction"]
-    G["<b>Assimilation</b> — optional observation correction (R4)"]
-    H["<b>Visualization</b> — <i>ParaView ecosystem</i>"]
+    T["<b>Topology subsystem</b><br>cell-based discretizations (Mesh);<br>present for FEM/FVM, absent for mesh-free"]
+    D["<b>Dataset</b><br>CAEDataset (backend-specific;<br>PyG in Phase 2), transforms, splits"]
+    E["<b>Training</b><br>user loop or Lightning; CAEGraph never replaces it"]
+    F["<b>Inference</b><br>neural simulation: rollout harness → field reconstruction"]
+    G["<b>Assimilation</b><br>optional observation correction (R4)"]
+    H["<b>Visualization</b><br><i>ParaView ecosystem</i>"]
 
     A -->|"io: loaders, registry"| B
     B -->|"entities + relations + fields"| C
@@ -83,16 +83,16 @@ The framework is organized around the canonical data flow:
 flowchart TD
     classDef nowrap white-space:nowrap
 
-    A["<b>CAD / CFD / FEM software</b> — raw solver/CAD data"]
-    B["<b>io loaders</b> — gmsh first; source normalization → canonical topology (topology subsystem)"]
-    C["<b>CAEGraph</b> — canonical domain representation: entities, relations, fields (ADR-015)"]
-    D["<b>geometry</b> — metrics, edge features, interpolation"]
-    E["<b>DataGraph adapter</b> — CAEGraph → DataGraph (PyG Data in Phase 2)"]
-    F["<b>transforms</b> — feature / physics / boundary-condition encoding"]
-    G["<b>Dataset</b> — CAEDataset (backend-specific; PyG in Phase 2), transforms, splits"]
-    H["<b>Training</b> — physics losses · Model interface · workflow utilities; <i>user loop / Lightning, CAEGraph adapts and never replaces</i>"]
-    I["<b>Inference</b> — neural-simulation harness: rollout, reconstruction"]
-    J["<b>Assimilation</b> — optional observation correction (R4)"]
+    A["<b>CAD / CFD / FEM software</b><br>raw solver/CAD data"]
+    B["<b>io loaders</b><br>gmsh first; source normalization → canonical topology (topology subsystem)"]
+    C["<b>CAEGraph</b><br>canonical domain representation: entities, relations, fields (ADR-015)"]
+    D["<b>geometry</b><br>metrics, edge features, interpolation"]
+    E["<b>DataGraph adapter</b><br>CAEGraph → DataGraph (PyG Data in Phase 2)"]
+    F["<b>transforms</b><br>feature / physics / boundary-condition encoding"]
+    G["<b>Dataset</b><br>CAEDataset (backend-specific; PyG in Phase 2),<br>transforms, splits"]
+    H["<b>Training</b><br>physics losses · Model interface · workflow utilities;<br><i>user loop / Lightning, CAEGraph adapts and never replaces</i>"]
+    I["<b>Inference</b><br>neural-simulation harness: rollout, reconstruction"]
+    J["<b>Assimilation</b><br>optional observation correction (R4)"]
     K["<b>io writers</b> — VTK"]
     L["<b>Visualization</b> — plotting; ParaView ecosystem"]
 
@@ -174,16 +174,16 @@ See `architecture/UML_GUIDE.md`. The two must be reconciled regularly; divergenc
 ### 3.5 Representation hierarchy (ADR-015)
 
 ```mermaid
-flowchart TD
-    C["<b>CAEGraph</b> — domain canonical representation"]
-    C --> T["topology subsystem (cell-based; ADR-014)"]
-    T --> M["Mesh topology (FEM / FVM)"]
-    C --> R["relation subsystem (SPH neighbor / FDM stencil relations)"]
+flowchart LR
+    C["<b>CAEGraph</b> —<br>domain canonical representation"]
+    C --> T["topology subsystem<br>(cell-based; ADR-014)"]
+    T --> M["Mesh topology<br>(FEM / FVM)"]
+    C --> R["relation subsystem<br>(SPH neighbor / FDM stencil relations)"]
     C --> G["geometry subsystem"]
     C --> F["field subsystem"]
     C --> RG["semantic regions"]
     C --> A["backend adapter (ADR-017)"]
-    A --> DG["DataGraph — conceptual backend representation (PyG Data in Phase 2)"]
+    A --> DG["DataGraph —<br>conceptual backend representation<br>(PyG Data in Phase 2)"]
     classDef nowrap white-space:nowrap
     class C,T,M,R,G,F,RG,A,DG nowrap
 ```

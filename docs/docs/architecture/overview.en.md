@@ -33,16 +33,16 @@ Representation construction belongs to `caegraph.graph`: representation builders
 ## Representation hierarchy
 
 ```mermaid
-flowchart TD
-    C["<b>CAEGraph</b> — domain canonical representation"]
-    C --> T["topology subsystem (cell-based; ADR-014)"]
-    T --> M["Mesh topology (FEM / FVM)"]
-    C --> R["relation subsystem (SPH neighbor / FDM stencil relations)"]
+flowchart LR
+    C["<b>CAEGraph</b> —<br>domain canonical representation"]
+    C --> T["topology subsystem<br>(cell-based; ADR-014)"]
+    T --> M["Mesh topology<br>(FEM / FVM)"]
+    C --> R["relation subsystem<br>(SPH neighbor / FDM stencil relations)"]
     C --> G["geometry subsystem"]
     C --> F["field subsystem"]
     C --> RG["semantic regions"]
     C --> A["backend adapter (ADR-017)"]
-    A --> DG["DataGraph — conceptual backend representation (PyG Data in Phase 2)"]
+    A --> DG["DataGraph —<br>conceptual backend representation<br>(PyG Data in Phase 2)"]
     classDef nowrap white-space:nowrap
     class C,T,M,R,G,F,RG,A,DG nowrap
 ```
