@@ -28,7 +28,7 @@
 | `caegraph.visualization` | 离散表示/场/图可视化 | core, graph, io |
 | `caegraph.utils` | 日志与可复现性工具 | — |
 
-表示构造由 `caegraph.graph` 的 representation builder 负责：任意 source discretization（mesh / grid / particles）→ CAEGraph（ADR-015）；构造契约见 ADR-016（proposed）。CAEGraph → 框架侧表示（Phase 2 形态为 PyG Data）由 backend adapter 完成（适配契约见 ADR-017，proposed；DataGraph 是概念性的 backend 表示层，非必须实现类），"Graph" 不是领域类，CAEGraph 也无 source-type 子类。topology subsystem（Mesh）不提供 `to_graph()`，core 永不 import graph；`CAEDataset` 与 `Model` 保持后端特定——PyG Dataset 与 torch.nn.Module 是 Phase 2 的实现选择，并非冻结契约（ADR-009，经 ADR-015 修订）。
+表示构造由 `caegraph.graph` 的 representation builder 负责：任意 source discretization（mesh / grid / particles）→ CAEGraph（ADR-015）；构造边界见 ADR-016（accepted）。CAEGraph → 框架侧表示（Phase 2 形态为 PyG Data）由 backend adapter 完成（适配边界见 ADR-017，accepted；DataGraph 是概念性的 backend 表示层，非必须实现类），"Graph" 不是领域类，CAEGraph 也无 source-type 子类。topology subsystem（Mesh）不提供 `to_graph()`，core 永不 import graph；`CAEDataset` 与 `Model` 保持后端特定——PyG Dataset 与 torch.nn.Module 是 Phase 2 的实现选择，并非冻结契约（ADR-009，经 ADR-015 修订）。
 
 ## 表示层级
 

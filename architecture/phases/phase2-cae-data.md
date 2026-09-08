@@ -56,8 +56,8 @@ src/caegraph/graph/         # representation construction + backend adapter laye
 │                           #   must never be imported by core (no core → graph)
 ├── builder.py              # representation builder (extension point, ADR-015):
 │                           #   source discretization → CAEGraph entities +
-│                           #   relations; construction contract: ADR-016
-│                           #   (proposed; API/registry/layout not frozen)
+│                           #   relations; construction boundary: ADR-016
+│                           #   (accepted; API/registry/layout not frozen)
 └── pyg.py                  # backend adapter: CAEGraph → framework-specific
                             #   representation, concretized as
                             #   torch_geometric.data.Data in Phase 2
@@ -80,8 +80,8 @@ src/caegraph/dataset/
 - `Mesh` / `CellType` — topology subsystem (ADR-014 narrowed): Mesh is a topology-rich discretization representation (FEM/FVM realization), no longer the top-level canonical object
 - `Field` / `BoundaryRegion` / `BoundarySpec` / `BoundaryManager` — field & semantic-region vocabulary (ADR-007 D6, ADR-010/011); `FieldFunction` deferred
 - `AbstractMeshLoader` + gmsh adapter — source loading pipeline (ADR-012; target object redefined by ADR-015 upon acceptance); meshio provisional engine (ADR-013)
-- representation builder — source discretization → CAEGraph entities + relations; extension point per ADR-015, construction boundary frozen by ADR-016 (proposed; API/naming/registry deferred to the coding dispatch); replaces the single `Mesh → GraphBuilder` contract
-- backend adapter — `CAEGraph → framework-specific representation` (PyG Data in Phase 2; adaptation boundary frozen by ADR-017, proposed — DataGraph is the conceptual backend representation layer, backend-side, owns no domain semantics, not a domain class)
+- representation builder — source discretization → CAEGraph entities + relations; extension point per ADR-015, construction boundary frozen by ADR-016 (accepted; API/naming/registry deferred to the coding dispatch); replaces the single `Mesh → GraphBuilder` contract
+- backend adapter — `CAEGraph → framework-specific representation` (PyG Data in Phase 2; adaptation boundary frozen by ADR-017, accepted — DataGraph is the conceptual backend representation layer, backend-side, owns no domain semantics, not a domain class)
 - Geometry / feature / physics transforms (PyG transform protocol)
 - `CAEDataset`; VTK writer
 

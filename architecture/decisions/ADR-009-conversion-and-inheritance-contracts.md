@@ -12,9 +12,9 @@ ADR-007/008 冻结了“工程真源框架无关、学习图表示 PyG 原生”
 
 ## 决策（Decision）
 
-**修订（2026-09-07，ADR-015 采纳）**：决策 1 的 `GraphBuilder.build(mesh)` 单一转换契约由 **representation builder**（source discretization → CAEGraph entities + relations，按源离散族特化）取代；决策 2/3 的继承契约扩展——BaseObject 家族新增顶层领域对象 **CAEGraph**（Mesh 归位 topology subsystem，仍为 BaseObject 家族），学习层原生继承不变，但 `torch_geometric.data.Data` 由 **backend adapter** 产出而非领域类 `Graph`；CAEDataset/Model 契约不变；「core 永不 import graph/PyG」方向不变。builder 与 adapter 的抽象、API、命名由后续 construction and backend adaptation ADR 冻结（ADR-015 scope exclusions）。
+**修订（2026-09-07，ADR-015 采纳）**：决策 1 的 `GraphBuilder.build(mesh)` 单一转换契约由 **representation builder**（source discretization → CAEGraph entities + relations，按源离散族特化）取代；决策 2/3 的继承契约扩展——BaseObject 家族新增顶层领域对象 **CAEGraph**（Mesh 归位 topology subsystem，仍为 BaseObject 家族），学习层原生继承不变，但 `torch_geometric.data.Data` 由 **backend adapter** 产出而非领域类 `Graph`；CAEDataset/Model 契约不变；「core 永不 import graph/PyG」方向不变。builder 与 adapter 的边界由 **ADR-016/017**（accepted）冻结（API、命名、registry 随 coding 派单定稿）。
 
-1. **【已取代——ADR-015：由 representation builder 取代，见上方修订注记】** Mesh→Graph 的公共转换入口是 `GraphBuilder.build(mesh, *, view="node" | "cell") -> Graph`。`GraphBuilder` 位于 `caegraph.graph`，可以消费 core.Mesh 与 geometry 服务；Mesh 不提供 `to_graph()`，core 永不 import graph。（现行契约：表示构造由 representation builder 承担，API 由后续 ADR 冻结；PyG Data 由 backend adapter 产出。）
+1. **【已取代——ADR-015：由 representation builder 取代，见上方修订注记】** Mesh→Graph 的公共转换入口是 `GraphBuilder.build(mesh, *, view="node" | "cell") -> Graph`。`GraphBuilder` 位于 `caegraph.graph`，可以消费 core.Mesh 与 geometry 服务；Mesh 不提供 `to_graph()`，core 永不 import graph。（现行契约：表示构造由 representation builder 承担，边界由 ADR-016 冻结；PyG Data 由 backend adapter 产出，边界由 ADR-017 冻结。）
 2. BaseObject 只服务于工程真源对象。Phase 2 的 Mesh 与 Field 继承 BaseObject；Graph、CAEDataset、Model 不继承 BaseObject。
 3. 学习层沿用生态原生继承：Graph 继承 `torch_geometric.data.Data`（ADR-015 修订：DataGraph 由 backend adapter 产出，领域类 Graph 取消），CAEDataset 继承 `torch_geometric.data.Dataset`，Model 继承 `torch.nn.Module`。共享元数据和校验通过组合或各原生类的协议实现，不通过多继承复用 BaseObject。
 4. `CAEDataset` 是公开类名，避免与 PyG 的 Dataset 混淆。

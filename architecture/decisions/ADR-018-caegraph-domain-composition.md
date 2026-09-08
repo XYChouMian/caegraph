@@ -3,7 +3,7 @@
 - 编号：ADR-018
 - 标题：冻结 CAEGraph 的语义组成与归属关系（semantic composition and semantic ownership）；范围排除见正文 scope exclusions
 - 日期：2026-09-08
-- 状态：**proposed（待 Architecture review）**
+- 状态：**accepted（2026-09-08 经 Architecture review 采纳，语义组成与归属原则冻结）**
 - 关联：ADR-015（父决策——本 ADR 归口其「后续设计决策」①②③ 的原则层）、ADR-014（topology subsystem 规范——仅引用，不重复立法）、ADR-016/017（downstream construction and backend adaptation contracts）、Phase 2、Design UML `class_diagram.puml`
 
 ## 背景（Context）
@@ -55,3 +55,4 @@ ADR-015 冻结 CAEGraph 为 canonical domain representation 并列出组成方�
 ## Revision history
 
 - 2026-09-08 v1：最小可行草案——冻结语义组成与归属原则；ID schema、存储布局、类层次、交互机制全部出清至后续 dedicated ADRs。
+- 2026-09-08：accepted（Architecture review 通过，语义组成与归属原则冻结）。

@@ -3,7 +3,7 @@
 - 编号：ADR-017
 - 标题：冻结「CAEGraph 如何被 ML 框架消费」的适配边界——CAEGraph → backend adapter → framework-specific graph representation（PyG Data 为 Phase 2 实现）；backend 替换仅在改变领域/backend 边界或依赖方向时需 architecture review
 - 日期：2026-09-08
-- 状态：**proposed（待 Architecture review）**
+- 状态：**accepted（2026-09-08 经 Architecture review 采纳，适配边界冻结）**
 - 关联：ADR-015（父决策：canonical representation）、ADR-007（D2：core 永不 import PyG；PyG 自 graph 层起可用）、ADR-008（无替代图后端）、ADR-009（学习层原生继承）、ADR-016（上游构造契约）、Phase 2、Design UML `class_diagram.puml`
 
 ## 背景（Context）
@@ -52,4 +52,5 @@ flowchart LR
 
 ## Revision history
 
-- 2026-09-08 v1：自 ADR-015 v4/v5 拆分而出——冻结适配边界；DataGraph 保持概念定位，schema / mapping / batching 不冻结，随 adapter 派单定稿。
+- 2026-09-08 v1：最小可行草案——冻结适配边界；DataGraph 保持概念定位，schema / mapping / batching 不冻结，随 adapter 派单定稿。
+- 2026-09-08：accepted（Architecture review 通过，适配边界冻结）。

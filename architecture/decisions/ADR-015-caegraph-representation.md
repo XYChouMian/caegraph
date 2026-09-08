@@ -4,7 +4,7 @@
 - 标题：冻结 CAEGraph 为 CAE 数据的 canonical domain representation——meshes / grids / particles 等离散化均作为 CAEGraph 构造的 source representation；其中 mesh-based sources additionally provide topology information for cell-based discretizations；构造契约见 ADR-016，backend 适配契约见 ADR-017；本 ADR 取代 ADR-007 D1/D3 与 ADR-009 的 Mesh→Graph 契约，收窄 ADR-014，修订 ADR-012 目标对象
 - 日期：2026-09-07
 - 状态：**accepted（2026-09-07 经 Architecture review 采纳；v1→v5 演进见 Revision history）**
-- 关联：ADR-007（D1/D3 已修订，D2 保留强化）、ADR-008（图后端冻结条款之澄清性 ADR 即本 ADR）、ADR-009（Mesh→Graph 契约已取代）、ADR-012（目标对象已修订）、ADR-013（不变：meshio=external IO engine）、ADR-014（cell-based topology 规范）、**ADR-016（construction contract，proposed）**、**ADR-017（backend adaptation contract，proposed）**、**ADR-018（domain composition，proposed）**、Phase 2、ROADMAP、Design UML `class_diagram.puml`
+- 关联：ADR-007（D1/D3 已修订，D2 保留强化）、ADR-008（图后端冻结条款之澄清性 ADR 即本 ADR）、ADR-009（Mesh→Graph 契约已取代）、ADR-012（目标对象已修订）、ADR-013（不变：meshio=external IO engine）、ADR-014（cell-based topology 规范）、**ADR-016（construction contract，accepted）**、**ADR-017（backend adaptation contract，accepted）**、**ADR-018（domain composition，accepted）**、Phase 2、ROADMAP、Design UML `class_diagram.puml`
 
 ## 背景（Context）
 
@@ -82,11 +82,11 @@ flowchart LR
 
 本 ADR 已 accepted；实现层设计问题按归属分发：
 
-1. 语义组成、stable identity 原则与 ownership——**ADR-018**（proposed）冻结原则层；canonical entities 的精确集合与 ID schema 归后续 dedicated ADRs / CAEGraph core 派单；
-2. connection 是否需要 entity-level treatment——**ADR-018**（proposed）冻结判定原则（承载领域语义或独立状态）；存储与容器形式不冻结；
-3. fields / geometry / regions / conditions 的挂载与归属语义——**ADR-018**（proposed）冻结；交互机制不冻结；
-4. 构造机制契约（builder 抽象、API、注册、落位）——**ADR-016**（proposed）；
-5. backend 适配契约（DataGraph 概念、PyG mapping、batching）——**ADR-017**（proposed）。
+1. 语义组成、stable identity 原则与 ownership——**ADR-018**（accepted）冻结原则层；canonical entities 的精确集合与 ID schema 归后续 dedicated ADRs / CAEGraph core 派单；
+2. connection 是否需要 entity-level treatment——**ADR-018**（accepted）冻结判定原则（承载领域语义或独立状态）；存储与容器形式不冻结；
+3. fields / geometry / regions / conditions 的挂载与归属语义——**ADR-018**（accepted）冻结；交互机制不冻结；
+4. 构造机制边界——**ADR-016**（accepted；API/类名/registry/落位随派单定稿）；
+5. backend 适配边界——**ADR-017**（accepted；DataGraph 细节/mapping/batching 随 adapter 派单定稿）。
 
 ## 影响（Consequences）
 

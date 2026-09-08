@@ -3,7 +3,7 @@
 - 编号：ADR-016
 - 标题：冻结「外部 CAE source 如何进入 CAEGraph」的构造边界——CAE source representation 经 source-specific construction 进入 CAEGraph；construction 是策略不是领域对象类型；不冻结 builder API、类名、registry 与 module layout
 - 日期：2026-09-08
-- 状态：**proposed（待 Architecture review）**
+- 状态：**accepted（2026-09-08 经 Architecture review 采纳，构造边界冻结）**
 - 关联：ADR-015（父决策：canonical representation）、ADR-012（io 层 source normalization 管线——本 ADR 的上游）、ADR-013（external IO engine）、ADR-014（cell-based topology 规范）、ADR-009（其 GraphBuilder 条款由本 ADR 承接细化）、Phase 2、Design UML `class_diagram.puml`
 
 ## 背景（Context）
@@ -57,3 +57,4 @@ flowchart LR
 ## Revision history
 
 - 2026-09-08 v1：自 ADR-015 v4/v5 拆分而出——冻结构造边界；API/类名/registry/module layout 不冻结，随 coding 派单定稿。
+- 2026-09-08：accepted（Architecture review 通过，构造边界冻结）。

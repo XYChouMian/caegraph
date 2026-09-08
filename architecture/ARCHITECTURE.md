@@ -45,7 +45,7 @@ flowchart TD
     class A,B,C,D,E,F,G,H,T nowrap
 ```
 
-Normalization is format-specific; representation construction covers cell-based meshes (FEM/FVM), grids (FDM), and particles (SPH) as source specializations (ADR-015) — construction contracts are defined in ADR-016 (proposed). The **topology subsystem is present for cell-based discretizations and absent for mesh-free ones** — its composition depends on the source discretization.
+Normalization is format-specific; representation construction covers cell-based meshes (FEM/FVM), grids (FDM), and particles (SPH) as source specializations (ADR-015) — construction boundaries are defined in ADR-016 (accepted). The **topology subsystem is present for cell-based discretizations and absent for mesh-free ones** — its composition depends on the source discretization.
 
 Long-term goals:
 
@@ -166,8 +166,8 @@ See `architecture/UML_GUIDE.md`. The two must be reconciled regularly; divergenc
 
 ### 3.4 Representation and inheritance contracts
 
-- Representation construction follows ADR-016 and is currently grouped in the graph layer for Phase 2 implementation; package ownership is not frozen. Representation builders map source discretizations (mesh / grid / particles) onto a `CAEGraph` (ADR-015). Mesh is one way to construct CAEGraph, not the definition of CAEGraph. Construction contracts are defined in ADR-016 (proposed); builder APIs, class names, registry, and module layout are deliberately not frozen. The topology subsystem (`Mesh`) does not provide a `to_graph()` conversion method because topology objects do not own representation construction logic — construction is handled by representation builders (ADR-016). The dependency rule remains that core never imports graph (ADR-007).
-- Backend conversion is owned by a backend adapter: `CAEGraph → framework-specific graph representation`, with PyG as one backend implementation (PyG Data in Phase 2). **DataGraph is the conceptual name of the backend representation layer** (ADR-017, proposed) — not a required class and not a domain object; it owns **no domain semantics** (no boundary semantics, CellType, physical regions, or mesh topology truth). `Graph` is **not** a domain class, and CAEGraph has **no source-type subclasses** (no MeshGraph/GridGraph/ParticleGraph — construction varies by strategy, not by type hierarchy).
+- Representation construction follows ADR-016 and is currently grouped in the graph layer for Phase 2 implementation; package ownership is not frozen. Representation builders map source discretizations (mesh / grid / particles) onto a `CAEGraph` (ADR-015). Mesh is one way to construct CAEGraph, not the definition of CAEGraph. Construction boundaries are defined in ADR-016 (accepted); builder APIs, class names, registry, and module layout are deliberately not frozen. The topology subsystem (`Mesh`) does not provide a `to_graph()` conversion method because topology objects do not own representation construction logic — construction is handled by representation builders (ADR-016). The dependency rule remains that core never imports graph (ADR-007).
+- Backend conversion is owned by a backend adapter: `CAEGraph → framework-specific graph representation`, with PyG as one backend implementation (PyG Data in Phase 2). **DataGraph is the conceptual name of the backend representation layer** (ADR-017, accepted) — not a required class and not a domain object; it owns **no domain semantics** (no boundary semantics, CellType, physical regions, or mesh topology truth). `Graph` is **not** a domain class, and CAEGraph has **no source-type subclasses** (no MeshGraph/GridGraph/ParticleGraph — construction varies by strategy, not by type hierarchy).
 - `BaseObject` is the common base for the domain object family — `CAEGraph`, topology objects (`Mesh`), and `Field`. It is not a base for learning-layer objects.
 - `CAEDataset` and `Model` remain **backend-specific**: they inherit `torch_geometric.data.Dataset` and `torch.nn.Module` respectively. These are the current Phase 2 implementation choices (PyG), not a frozen contract — the backend adapter layer is the seam for alternative backends, which require architecture review only when they change the domain/backend boundary or the dependency direction (ADR-017).
 - These contracts are binding under ADR-009 as amended by ADR-015.
@@ -294,6 +294,6 @@ Strategy layer: `ROADMAP.md` mirrors this table for users/contributors. Per-phas
 
 - Architecture changes: edit this file + design UML in the same PR, and record an Architecture Decision Record in `architecture/decisions/` (see `ADR-000-template.md`).
 - **Positioning freeze (ADR-008)**: no solver abstraction, no trainer abstraction, no alternative graph backend layer — without a new ADR.
-- **ADR status semantics**: accepted ADRs define frozen architecture. Proposed ADRs (currently ADR-016/017) describe reviewed design directions but are not frozen until accepted.
+- **ADR status semantics**: accepted ADRs (ADR-015/016/017/018) define frozen architecture; a proposed ADR is not frozen until accepted.
 - Every user-visible change: update `CHANGELOG.md`.
 - Versioning: [Semantic Versioning](https://semver.org). While `0.x`, minor releases may break APIs; from `1.0` the public API is frozen per policy.
