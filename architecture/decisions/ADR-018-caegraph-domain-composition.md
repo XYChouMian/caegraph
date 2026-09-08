@@ -1,7 +1,7 @@
 # ADR-018: CAEGraph domain composition and semantic ownership
 
 - 编号：ADR-018
-- 标题：冻结 CAEGraph 的语义组成与归属关系——六个领域概念 + 一个被引用的 optional topology subsystem；只冻结「有哪些语义组件、各回答什么问题、归属关系如何」，不冻结 ID schema、存储布局、类层次、API、serialization、edge container 与组件交互机制
+- 标题：冻结 CAEGraph 的语义组成与归属关系（semantic composition and semantic ownership）；范围排除见正文 scope exclusions
 - 日期：2026-09-08
 - 状态：**proposed（待 Architecture review）**
 - 关联：ADR-015（父决策——本 ADR 归口其「后续设计决策」①②③ 的原则层）、ADR-014（topology subsystem 规范——仅引用，不重复立法）、ADR-016/017（downstream construction and backend adaptation contracts）、Phase 2、Design UML `class_diagram.puml`
@@ -17,14 +17,14 @@ ADR-015 冻结 CAEGraph 为 canonical domain representation 并列出组成方�
 | 组件 | 回答的问题 | 冻结的原则 |
 | --- | --- | --- |
 | Entities | 有什么物理对象 | Entities require stable identity within their semantic scope.（身份原则；ID schema 不在本 ADR 冻结） |
-| Relations | 对象之间如何连接 | Relations are the primary abstraction for connectivity；relations may represent both explicit physical relationships and derived connectivity views（periodic pair、interface relation、cell-face relation、neighborhood relation 均属之）。A connection may require its own domain identity and data representation when it carries domain semantics or independent state. |
+| Relations | 对象之间如何连接 | Relations are the primary abstraction for connectivity；**some relations may be explicitly provided by the source representation, while others may be derived**。Relations may represent both explicit physical relationships and derived connectivity views（periodic pair、interface relation、cell-face relation、neighborhood relation 均属之）。A connection may require its own domain identity and data representation when it carries domain semantics or independent state. |
 | Geometry | 对象在哪里 | 空间位置与几何属性的语义职责；实现形态（含 service）开放 |
-| Fields | 对象有什么物理量 | Fields belong to entities, not directly to geometry or topology |
+| Fields | 对象有什么物理量 | **Fields are associated with entities**, not directly with geometry or topology |
 | Regions | 哪些对象属于同一物理区域 | boundary / interface / physical groups 统一为 semantic region；不单独建 BoundaryGraph |
-| Conditions | 如何施加物理约束 | 约束声明，引用 Region；initial conditions may reference field data representing an initial state（by reference，不与 Fields 融合） |
-| Topology subsystem（引用，非组成成员） | 离散结构如何定义 | optional semantic provider referenced by CAEGraph；cell-based topology semantics are provided by the topology subsystem defined in ADR-014 |
+| Conditions | 如何施加物理约束 | Conditions are constraint declarations that **may reference Regions and field data**；initial conditions may reference field data representing an initial state（约束 ≠ 状态；by reference，不与 Fields 融合） |
+| Topology subsystem | 离散结构如何定义 | optional semantic provider referenced by CAEGraph；cell-based topology semantics are provided by the topology subsystem defined in ADR-014 |
 
-**Ownership 总则**：Fields 归属 entities；Conditions 引用 Regions（可引用 field data）；topology subsystem 是被 CAEGraph 引用的 optional semantic provider——不是 CAEGraph 的内部对象，更不是继承体系。
+**Ownership 总则**：Fields **associated with** entities；Conditions may reference Regions and field data；the topology subsystem is **referenced by CAEGraph** rather than modeled as a domain concept owned by CAEGraph——它是 optional semantic provider，不是 CAEGraph 的内部对象，更不是继承体系。
 
 ## 不冻结的内容（scope exclusions）
 
