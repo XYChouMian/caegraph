@@ -57,7 +57,7 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
 
 - 结构变更前必须先更新 Design UML（`architecture/design/`）并记录 ADR（`architecture/decisions/`）
 - 合并前比对 Design UML 与 Generated UML（`diagrams/generated/`，仅工具生成，禁止手改）
-- Markdown 中需要表达架构、依赖、流程或状态转换的图，必须使用 Mermaid，不得以 ASCII / 纯文本箭头图替代；仅在图能比段落、列表或表格明显提升理解时使用，禁止为装饰而大量添加。纵向节点较多或节点标签较长的 Mermaid 流程图须定义并应用 `classDef nowrap white-space:nowrap`；节点标签以可读性为准：短标签优先单行（"标题 — 说明"式）；文本量大的长标签（TD/BT 纵向图尤甚）应用 `<br>` 分行控制横向宽度，避免渲染后整图过宽、字号过小。
+- Markdown 中需要表达架构、依赖、流程或状态转换的图，必须使用 Mermaid，不得以 ASCII / 纯文本箭头图替代；仅在图能比段落、列表或表格明显提升理解时使用，禁止为装饰而大量添加。所有 Mermaid 流程图必须定义并应用 `classDef nowrap white-space:nowrap`——`<br>` 是唯一受控换行手段，禁止依赖自动换行。排版一律以渲染效果为准：简单小图（如 TB 布局的少量节点）标签保持单行不换行；节点多、文字量大的复杂图应用 `<br>` 分行控制横向宽度，保证在 md 中渲染后整图不过宽、字号可读。图由 agent 创建，人类依据实际渲染效果修改。
 - 依赖分层：utils ← core ← {geometry, io} ← graph ← transforms ←dataset ← physics ← {models, assimilation} ← {workflow, inference} ←visualization，下层禁止依赖上层，同层禁止互依（兄弟层互不依赖）；PyG 自 graph 层起可用，core/geometry/io 永不 import PyG（ADR-007）；physics 可由 models、assimilation、workflow 消费，但不得反向依赖它们
 
 ---
