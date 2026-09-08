@@ -1,7 +1,7 @@
 # ADR-015: CAEGraph graph-native canonical domain representation
 
 - 编号：ADR-015
-- 标题：冻结 CAEGraph 为 CAE 数据的 canonical domain representation——meshes / grids / particles 等离散化均为 source representation；构造契约见 ADR-016，backend 适配契约见 ADR-017；本 ADR 取代 ADR-007 D1/D3 与 ADR-009 的 Mesh→Graph 契约，收窄 ADR-014，修订 ADR-012 目标对象
+- 标题：冻结 CAEGraph 为 CAE 数据的 canonical domain representation——meshes / grids / particles 等离散化均作为 CAEGraph 构造的 source representation；其中 mesh-based sources additionally provide topology information for cell-based discretizations；构造契约见 ADR-016，backend 适配契约见 ADR-017；本 ADR 取代 ADR-007 D1/D3 与 ADR-009 的 Mesh→Graph 契约，收窄 ADR-014，修订 ADR-012 目标对象
 - 日期：2026-09-07
 - 状态：**accepted（2026-09-07 经 Architecture review 采纳；v1→v5 演进见 Revision history）**
 - 关联：ADR-007（D1/D3 已修订，D2 保留强化）、ADR-008（图后端冻结条款之澄清性 ADR 即本 ADR）、ADR-009（Mesh→Graph 契约已取代）、ADR-012（目标对象已修订）、ADR-013（不变：meshio=external IO engine）、ADR-014（cell-based topology 规范）、**ADR-016（construction contract，proposed）**、**ADR-017（backend adaptation contract，proposed）**、Phase 2、ROADMAP、Design UML `class_diagram.puml`
@@ -47,8 +47,8 @@ flowchart LR
 
 1. **CAEGraph 是 canonical domain representation**：面向 physics AI 的 entity-centric 领域模型，组成包含 entities、relations、geometry、fields、regions、conditions（cell-based 方法下含 topology semantics）——具体字段设计随 CAEGraph core 派单定稿，本 ADR 不展开。CAEGraph 不是 lossy adjacency graph：仅 nodes + edges 会丢失 fields / geometry / regions / conditions / topology semantics。
 2. **Mesh 是一种 source/topology representation**：cell-based 离散（FEM/FVM）的结构化输入；不是 universal truth，不覆盖所有 CAE 方法（FDM 不需要 cell topology，SPH 无传统 mesh），也不再是顶层 canonical 对象。cell-based 的 topology 规范由 ADR-014 承载（topology subsystem：cell-based 方法下一等，mesh-free 方法下不存在）。
-3. **Different CAE sources are normalized into CAEGraph through source-specific construction mechanisms, whose contracts are defined in ADR-016.**（CAEGraph 独立于任何 source representation；「如何进入」不在本 ADR 冻结。）
-4. **backend framework 不属于 CAEGraph**：PyG 是 backend implementation，不是 domain representation；「CAEGraph 如何被 ML 框架消费」的适配契约由 ADR-017 定义。
+3. **Different CAE sources are transformed into CAEGraph through source-specific construction mechanisms, whose contracts are defined in ADR-016.**（CAEGraph 独立于任何 source representation；「如何进入」不在本 ADR 冻结。）
+4. **Backend frameworks are not part of CAEGraph**; PyG is the Phase 2 backend implementation。「CAEGraph 如何被 ML 框架消费」的适配契约由 ADR-017 定义。
 
 最终架构陈述（原句入 ADR）：
 
@@ -59,7 +59,7 @@ flowchart LR
 本 ADR 只冻结上述范式；以下问题由各自的 ADR 承载，本 ADR 不重复立法：
 
 - 构造契约（source-specific construction、builder 策略）——**ADR-016**；
-- backend 适配契约（adapter / DataGraph 概念 / PyG mapping）——**ADR-017**；
+- backend representation adaptation（including the DataGraph terminology and PyG mapping）——**ADR-017**；
 - cell-based topology 规范（CellType / connectivity / facet）——**ADR-014**。
 
 同时明确禁止：**CAEGraph 的 source-type 子类体系**（MeshGraph / GridGraph / ParticleGraph 之类）——不同数值方法是不同的构造方式，不是不同的领域对象。
@@ -90,7 +90,7 @@ flowchart LR
 
 ## 影响（Consequences）
 
-- **Coding 重启**：按 phase2 Coding gate 顺序执行（CAEGraph core 先行）；CellType 已落地并归位 topology subsystem（迁移随首个 topology 派单执行）。
+- **Coding 重启**：按 phase2 Coding gate 顺序执行（CAEGraph core 先行）；CellType has landed as part of the topology subsystem; remaining topology organization follows ADR-014 implementation。
 - 本 ADR 不引入新第三方依赖；不改变依赖分层方向（分层立法属 ADR-007）。
 - 架构解释图（representation hierarchy 等）由 ARCHITECTURE.md 与 docs overview 承载，不入本 ADR。
 

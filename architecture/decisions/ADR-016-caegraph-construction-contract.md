@@ -15,7 +15,7 @@
 ```mermaid
 flowchart LR
     A["gmsh file"] --> B["meshio (ADR-013)"]
-    B --> C["canonical topology (ADR-012/014)"]
+    B --> C["source-specific topology information (ADR-012)"]
     C --> D["construction (ADR-016)"]
     D --> E["CAEGraph (ADR-015)"]
     classDef nowrap white-space:nowrap
@@ -26,9 +26,9 @@ flowchart LR
 
 ## 决策（Decision）
 
-1. **构造边界（construction boundary）**：`CAE source representation → source-specific construction → CAEGraph`。构造发生在 graph 层；topology（core 对象）不提供 `to_graph()`，core 永不 import graph（ADR-007/009 方向不变）。
+1. **构造边界（construction boundary）**：`CAE source representation → source-specific construction → CAEGraph`。Representation construction is separated from IO and from domain/topology ownership, while consuming topology semantics defined by ADR-014. Topology objects do not provide `to_graph()` because representation construction is not their responsibility; the dependency direction remains governed by ADR-007.
 2. **construction 是策略，不是领域对象类型**：FEM ≠ FEMGraph、SPH ≠ SPHGraph——不同数值方法是不同的构造方式（策略变化点），不是不同的 CAEGraph 子类型（ADR-015 禁令在本层的落实）。
-3. **与 ADR-012 的交接**：mesh 类 source 先经 ADR-012 管线成为 canonical topology（ADR-014 规范），再经构造进入 CAEGraph；无 cell topology 的 source（grid / particles）不经 ADR-014 拓扑，直接构造 + 邻接生成。
+3. **与 ADR-012 的交接**：mesh-based sources are parsed and normalized by ADR-012/013 into source-specific topology information（cell topology 语义 per ADR-014），then constructed into CAEGraph；无 cell topology 的 source（grid / particles）不经 cell 拓扑，直接构造 + 邻接生成。
 
 ## 不冻结的内容
 
@@ -45,7 +45,7 @@ flowchart LR
 | --- | --- | --- |
 | Mesh→Graph 单一转换路径（GraphBuilder，ADR-009 原案） | 否决 | 锁死构造路径；FDM/SPH 强制伪 mesh（ADR-015 方案 B 论证） |
 | source-type 子类体系（FEMGraph / SPHGraph） | 否决 | 分类学复辟；继承不承载构造差异（ADR-015 禁令） |
-| IO 层直出 CAEGraph（loader 直接构造） | 否决 | 混淆 io/graph 层职责；构造策略被锁进 IO，违反 ADR-012 边界 |
+| IO 层拥有 CAEGraph 构造逻辑（IO owns construction logic） | 否决 | 构造逻辑所有权不得归 IO——loader 可内部委托 builder，但 ownership 留在构造侧（ADR-012 边界不破坏） |
 | source-specific construction 策略层（本决策） | 采纳 | 边界统一、策略开放；API 留待 coding 派单 |
 
 ## 影响（Consequences）
