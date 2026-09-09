@@ -104,7 +104,7 @@ package "caegraph.core (domain truth: CAEGraph + topology subsystem; torch-only,
     (t, pos) -> tensors, shape self-validation
   }
 
-  package "caegraph.core.topology (topology subsystem - optional semantic provider, first-class for cell-based discretizations, ADR-014/018)" {
+  package "topology (topology subsystem - optional semantic provider, first-class for cell-based discretizations, ADR-014/018)" {
     class Mesh {
       Topology-rich discretization
       representation (ADR-015): one
