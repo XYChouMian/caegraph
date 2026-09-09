@@ -38,12 +38,14 @@ package "caegraph.core (domain truth: CAEGraph + topology subsystem; torch-only,
     Semantic composition (ADR-018):
     entities, relations, geometry,
     fields, regions, conditions;
-    topology subsystem referenced
-    optionally - present for
-    cell-based, absent for mesh-free
-    (ADR-014). Semantic composition,
-    not class members. Never imports
-    PyG - PyG / networkx / igraph are
+    topology subsystem is an optional
+    semantic provider referenced by
+    CAEGraph - present for cell-based,
+    absent for mesh-free (ADR-014).
+    Semantic composition does not
+    define class members or storage
+    layout. Never imports PyG -
+    PyG / networkx / igraph are
     backends or analysis engines,
     never the domain model
   }
@@ -76,14 +78,17 @@ package "caegraph.core (domain truth: CAEGraph + topology subsystem; torch-only,
     topology, does not own it
   }
   class BoundaryRegion {
-    dim == topo dim - 1 boundary position;
-    canonical membership = global facet IDs,
-    node set is a derived view, never the
-    source of truth (ADR-014); references
-    topology, does not own it; targetable by
-    BoundarySpec by name; carries software
-    naming metadata per ADR-010;
-    BaseObject domain-truth family
+    Semantic region (ADR-018): membership
+    is represented according to the
+    source discretization; cell-based:
+    dim == topo_dim - 1, membership =
+    canonical topology identifiers
+    (global facet IDs, node sets as
+    derived views, ADR-014); references
+    topology, does not own it; targetable
+    by BoundarySpec by name; carries
+    software naming metadata per
+    ADR-010; BaseObject domain-truth family
   }
   class BoundarySpec {
     User-facing boundary declaration: type, value,
@@ -98,32 +103,32 @@ package "caegraph.core (domain truth: CAEGraph + topology subsystem; torch-only,
     Callable analytic boundary/initial value:
     (t, pos) -> tensors, shape self-validation
   }
-}
 
-package "caegraph.core.topology (topology subsystem - optional semantic provider, first-class for cell-based discretizations, ADR-014/018)" {
-  class Mesh {
-    Topology-rich discretization
-    representation (ADR-015): one
-    cell-based topology representation
-    supported by the topology subsystem
-    (FEM/FVM); nodes (n,3) + topo_dim;
-    cells CSR (int-coded cell_types /
-    connectivity / offsets, single truth,
-    type views derived only); explicit
-    facets CSR + validated ragged
-    facet_cells (winding-free); domain
-    groups (plain global-cell-id data);
-    structure frozen after validate
-    (ADR-014)
-  }
-  enum CellType {
-    LINE2 / TRI3 / QUAD4 / TET4 / PYR5 /
-    WEDGE6 / HEX8 (POINT + higher-order =
-    future); explicit stable integer codes,
-    never enum-declaration order; dim,
-    node_count, CAEGraph local-node
-    convention + codim-1 face templates
-    (frozen with implementation, ADR-014)
+  package "caegraph.core.topology (topology subsystem - optional semantic provider, first-class for cell-based discretizations, ADR-014/018)" {
+    class Mesh {
+      Topology-rich discretization
+      representation (ADR-015): one
+      cell-based topology representation
+      supported by the topology subsystem
+      (FEM/FVM); nodes (n,3) + topo_dim;
+      cells CSR (int-coded cell_types /
+      connectivity / offsets, single truth,
+      type views derived only); explicit
+      facets CSR + validated ragged
+      facet_cells (winding-free); domain
+      groups (plain global-cell-id data);
+      structure frozen after validate
+      (ADR-014)
+    }
+    enum CellType {
+      LINE2 / TRI3 / QUAD4 / TET4 / PYR5 /
+      WEDGE6 / HEX8 (POINT + higher-order =
+      future); explicit stable integer codes,
+      never enum-declaration order; dim,
+      node_count, CAEGraph local-node
+      convention + codim-1 face templates
+      (frozen with implementation, ADR-014)
+    }
   }
 }
 
@@ -141,14 +146,15 @@ package "caegraph.io" {
     (ADR-012): __call__(path) -> Mesh is
     stable; per-format protected hooks are
     implementation details, not frozen;
-    source-specific normalization, then
-    canonical Mesh build per ADR-014
-    (incl. explicit facets + validated
+    parse source format, then produce
+    topology input per ADR-014 (incl.
+    explicit facets + validated
     facet-cell adjacency); source named
     groups classified by dim vs topo dim
-    into domain cell groups and explicit
-    boundary/interface facet groups
-    (lower-dim groups -> diagnostics);
+    into domain / boundary-interface
+    group metadata (ADR-012 - preserved
+    for downstream region construction;
+    lower-dim groups -> diagnostics);
     IO never infers BoundaryType - math
     categories come from user specs only
   }
@@ -174,9 +180,11 @@ package "caegraph.graph (representation construction + backend adapter)" {
     entities + relations (ADR-015);
     extension point (ADR-016) -
     specializations per source
-    discretization family; API/class
-    names/registry/layout not frozen;
-    replaces the single
+    discretization family (mesh /
+    grid / particles follow separate
+    construction strategies);
+    API/class names/registry/layout
+    not frozen; replaces the single
     Mesh -> GraphBuilder contract (ADR-009)
   }
   class BackendAdapter {
@@ -196,12 +204,14 @@ package "caegraph.transforms" {
     Coordinate / feature normalization
   }
   class FeatureTransform {
-    CAE feature engineering on Graph
+    CAE feature engineering on
+    backend graph representation
   }
   class PhysicsTransform {
     Boundary-condition encoding:
     data.x[data.inlet_mask] = value pattern
-    (BC application lives HERE, not on Graph)
+    (BC application lives HERE,
+    not on the domain object)
   }
 }
 
@@ -251,8 +261,10 @@ package "caegraph.workflow (training utilities, no fit loop)" {
 
 package "caegraph.inference (neural simulation harness)" {
   class Simulator {
-    mesh + pretrained model -> fields:
-    graph -> forward -> field reconstruction
+    CAEGraph (any discretization) +
+    pretrained model -> fields;
+    backend data -> forward ->
+    field reconstruction
   }
   class Rollout {
     Transient rollout LOOP harness;
@@ -283,11 +295,11 @@ CAEGraph ..> NodeCategory : entity annotation
 
 MeshLoader ..> Mesh : produces topology input
 MeshWriter ..> Mesh : consumes
-RepresentationBuilder ..> Mesh : FEM/FVM source example (ADR-016)
+RepresentationBuilder ..> Mesh : cell-based source example (ADR-016)
 RepresentationBuilder ..> GeometryProcessor : uses features
 RepresentationBuilder ..> CAEGraph : produces
 BackendAdapter ..> CAEGraph : consumes
-BackendAdapter ..> PyGData : produces (Phase 2)
+BackendAdapter ..> PyGData : Phase 2 backend example (produces)
 GeometryTransform ..> PyGData : operates on
 FeatureTransform ..> PyGData : operates on
 PhysicsTransform ..> PyGData : operates on
@@ -306,10 +318,11 @@ note right of BackendAdapter
   Positioning (ADR-008, clarified by
   ADR-015/017): no solver abstraction,
   no trainer abstraction; backend
-  adapters are allowed - no alternative
-  backend without architecture review:
-  backend changes must preserve the
-  CAEGraph domain boundary (ADR-017).
+  adapters are allowed - backend
+  replacement requires architecture
+  review confirming the CAEGraph
+  domain boundary and dependency
+  direction remain unchanged (ADR-017).
 end note
 
 @enduml
