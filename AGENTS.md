@@ -58,7 +58,7 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
 - 结构变更前必须先更新 Design UML（`architecture/design/`）并记录 ADR（`architecture/decisions/`）
 - 合并前比对 Design UML 与 Generated UML（`diagrams/generated/`，仅工具生成，禁止手改）
 - Markdown 中需要表达架构、依赖、流程或状态转换的图，必须使用 Mermaid，不得以 ASCII / 纯文本箭头图替代；仅在图能比段落、列表或表格明显提升理解时使用，禁止为装饰而大量添加。所有 Mermaid 流程图必须定义并应用 `classDef nowrap white-space:nowrap`——`<br>` 是唯一受控换行手段，禁止依赖自动换行。排版以渲染效果为准：TB（纵向）排版的小图标签保持单行、禁止换行；LR（横向）排版下应控制每个块的横向宽度——标签按内容适度 `<br>` 换行，横向块数多时（长链）尽量多次换行，保证在 md 中渲染后整图不过宽、字号可读。图由 agent 创建，人类依据实际渲染效果修改。
-- 依赖分层：utils ← core ← {geometry, io} ← graph ← transforms ←dataset ← physics ← {models, assimilation} ← {workflow, inference} ←visualization，下层禁止依赖上层，同层禁止互依（兄弟层互不依赖）；PyG 自 graph 层起可用，core/geometry/io 永不 import PyG（ADR-007）；physics 可由 models、assimilation、workflow 消费，但不得反向依赖它们
+- 依赖分层：utils ← core ← {geometry, io} ← graph ← transforms ← dataset ← physics ← {models, assimilation} ← {workflow, inference} ←visualization，下层禁止依赖上层，同层禁止互依（兄弟层互不依赖）；PyG 自 graph 层起可用，core/geometry/io 永不 import PyG（ADR-007）；physics 可由 models、assimilation、workflow 消费，但不得反向依赖它们
 
 ---
 
@@ -70,7 +70,7 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
 - 工作流：读架构 → 查 UML → 改设计 → 再编码 → 同步文档与测试
 - 禁止在无设计依据时创建新抽象、新文件、新依赖
 - 所有源码位于 `src/caegraph/`，禁止根目录 Python 文件
-- 依赖分层：utils ← core ← {geometry, io} ← graph ← transforms ←dataset ← physics ← {models, assimilation} ← {workflow, inference} ←visualization，下层禁止依赖上层，同层禁止互依；PyG 自 graph 层起可用，core/geometry/io 永不 import PyG（ADR-007）
+- 依赖分层：utils ← core ← {geometry, io} ← graph ← transforms ← dataset ← physics ← {models, assimilation} ← {workflow, inference} ←visualization，下层禁止依赖上层，同层禁止互依；PyG 自 graph 层起可用，core/geometry/io 永不 import PyG（ADR-007）
 
 ---
 
