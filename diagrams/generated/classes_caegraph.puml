@@ -6,8 +6,57 @@ class "BaseObject" as caegraph.core.base.BaseObject {
   update_metadata() -> None
   {abstract}validate() -> None
 }
+class "BoundaryManager" as caegraph.core.boundary.manager.BoundaryManager {
+  regions : tuple[BoundaryRegion, ...]
+  specs : tuple[BoundarySpec, ...]
+  bind(spec: BoundarySpec) -> None
+  multi_region_members() -> dict[int, tuple[BoundaryRegion, ...]]
+  region(name: str) -> BoundaryRegion
+  regions_containing(member_id: int) -> tuple[BoundaryRegion, ...]
+  register(region: BoundaryRegion) -> BoundaryRegion
+  specs_for(region_name: str) -> tuple[BoundarySpec, ...]
+}
+class "BoundaryRegion" as caegraph.core.boundary.region.BoundaryRegion {
+  membership : frozenset[int]
+  validate() -> None
+}
+class "BoundarySpec" as caegraph.core.boundary.spec.BoundarySpec {
+  boundary_type : BoundaryType
+  paired_region : str | None
+  paired_target : BoundaryRegion | None
+  parameters : dict[str, float] | None
+  region : str
+  space_dependent : bool
+  target : BoundaryRegion | None
+  time_dependent : bool
+  value : float | None
+  weight : float | None
+  validate() -> None
+}
 class "BoundaryType" as caegraph.core.enums.BoundaryType {
   name
+}
+class "CAEGraph" as caegraph.core.caegraph.CAEGraph {
+  associated_fields : tuple[Field, ...]
+  boundaries : BoundaryManager
+  topology : BaseObject | None
+  associate_field(field: Field) -> None
+  validate() -> None
+}
+class "CellType" as caegraph.core.celltype.CellType {
+  code : int
+  dim : int
+  faces : tuple[tuple[int, ...], ...]
+  name
+  node_count : int
+  from_code(code: int) -> CellType
+}
+class "Field" as caegraph.core.field.Field {
+  association : str | None
+  timestep : float | None
+  unit : str | None
+  values : Any
+  validate() -> None
 }
 class "NodeCategory" as caegraph.core.enums.NodeCategory {
   name
@@ -20,4 +69,13 @@ class "Registry" as caegraph.core.registry.Registry {
   register(name: str, factory: Callable[..., T] | None) -> Callable[..., T] | Callable[[Callable[..., T]], Callable[..., T]]
   unregister(name: str) -> None
 }
+class "_CellSpec" as caegraph.core.celltype._CellSpec {
+  code : int
+  dim : int
+  faces : tuple[tuple[int, ...], ...]
+  node_count : int
+}
+caegraph.core.boundary.region.BoundaryRegion --|> caegraph.core.base.BaseObject
+caegraph.core.caegraph.CAEGraph --|> caegraph.core.base.BaseObject
+caegraph.core.field.Field --|> caegraph.core.base.BaseObject
 @enduml
