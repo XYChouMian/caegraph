@@ -36,10 +36,13 @@ class CAEGraph(BaseObject):
 
     Args:
         name: Non-empty name of the representation instance.
-        topology: Optional topology provider — the cell-based ``Mesh``
-            of the topology subsystem once implemented (construction
-            gate 3). ``None`` denotes a mesh-free representation or a
-            provider not yet attached.
+        topology: Optional topology subsystem provider referenced by
+            this representation. Only objects belonging to the
+            topology subsystem qualify as providers. The Phase 2
+            cell-based implementation is provided by ``Mesh``
+            (introduced in the topology construction gate). ``None``
+            denotes a mesh-free representation or a provider not yet
+            attached.
         metadata: Optional free-form annotations.
 
     Raises:
@@ -81,7 +84,7 @@ class CAEGraph(BaseObject):
 
     @property
     def topology(self) -> BaseObject | None:
-        """Referenced topology provider (cell-based ``Mesh``); ``None`` if absent."""
+        """Referenced topology subsystem provider; ``None`` if absent."""
         return self._topology
 
     @property

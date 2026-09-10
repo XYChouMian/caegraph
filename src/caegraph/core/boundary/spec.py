@@ -175,12 +175,20 @@ class BoundarySpec:
 
     @property
     def target(self) -> BoundaryRegion | None:
-        """Resolved target region, once bound by the BoundaryManager."""
+        """Resolved target region, once bound by the BoundaryManager.
+
+        The resolved object reference is a binding-time cache; the
+        region name remains the canonical reference.
+        """
         return self._target
 
     @property
     def paired_target(self) -> BoundaryRegion | None:
-        """Resolved paired region, once bound (PERIODIC / INTERFACE)."""
+        """Resolved paired region, once bound (PERIODIC / INTERFACE).
+
+        The resolved object reference is a binding-time cache; the
+        paired region name remains the canonical reference.
+        """
         return self._paired_target
 
     def validate(self) -> None:

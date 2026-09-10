@@ -123,8 +123,9 @@ class BoundaryManager:
         """Bind ``spec`` by resolving its region names to objects.
 
         The spec's ``region`` (and ``paired_region`` when declared) is
-        resolved against the registry; resolution results are stored
-        on the spec (``target`` / ``paired_target``).
+        resolved against the registry; the resolution result is cached
+        on the spec at binding time (``target`` / ``paired_target``)
+        while the region names remain the canonical references.
 
         Args:
             spec: The boundary declaration to bind.
