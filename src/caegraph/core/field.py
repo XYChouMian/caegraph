@@ -21,6 +21,10 @@ class Field(BaseObject):
     :class:`~caegraph.core.CAEGraph` keeps association hooks only
     (ADR-018).
 
+    Concrete entity binding and identifier mapping are defined by
+    representation construction (ADR-016) and future entity model
+    decisions, not by ``Field`` itself (ADR-018).
+
     Values are stored backend-agnostically (NumPy arrays, torch
     tensors, nested sequences, ...). Shape and entity-count consistency
     is the responsibility of representation construction and backend
@@ -32,11 +36,13 @@ class Field(BaseObject):
             field without data is a declaration, not a field.
         unit: Optional physical unit label, for example ``"Pa"``.
         timestep: Optional temporal index or label of the sample.
-        association: Optional entity scope the values attach to —
-            ``"node"`` or ``"cell"`` for cell-based sources; other
-            source discretizations may use their own labels. Kept as a
-            free label (no closed vocabulary) because entity identity
-            schemas are deliberately not frozen (ADR-018).
+        association: Optional entity scope label identifying the
+            entity family the values attach to — for example
+            ``"node"``, ``"cell"`` or ``"particle"``. Labels denote
+            entity families, never topology positions or semantic
+            regions. The vocabulary is intentionally open because
+            entity identity schemas are deliberately not frozen
+            (ADR-018).
         metadata: Optional free-form key/value annotations.
 
     Raises:
