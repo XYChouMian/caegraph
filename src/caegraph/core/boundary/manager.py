@@ -87,8 +87,10 @@ class BoundaryManager:
         """Return the regions whose membership contains ``member_id``.
 
         Args:
-            member_id: Canonical member identifier (a global facet ID
-                for cell-based sources, ADR-014).
+            member_id: Canonical region membership identifier.
+                Cell-based sources use global facet IDs per
+                ADR-014; other discretizations may use their own
+                entity identifiers.
 
         Returns:
             Matching regions, ordered by name.
