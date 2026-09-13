@@ -103,9 +103,13 @@ class BoundaryManager:
         """Return member identifiers belonging to more than one region.
 
         Linear scan over total membership — intended for batch corner
-        derivation, not hot loops. An inverted member-to-regions index
-        may be introduced later without API change (ADR-018 defers
-        storage and indexing decisions).
+        derivation, not hot loops. Known performance concern for
+        large graphs: every call re-scans all region memberships,
+        O(total members) time and memory, which is prohibitive at CAE
+        scale (millions of facets). TODO: optimize with an inverted
+        member-to-regions index (lazy cache) once hot consumers
+        appear — ADR-018 defers storage and indexing decisions, so
+        the optimization requires no API change.
 
         Returns:
             Mapping ``member_id -> regions`` (ordered by name) for
