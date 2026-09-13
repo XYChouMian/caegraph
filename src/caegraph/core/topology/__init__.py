@@ -9,5 +9,6 @@ the canonical cell-based topology model
 """
 
 from caegraph.core.topology.celltype import CellType
+from caegraph.core.topology.mesh import Mesh, canonical_facet_nodes
 
-__all__ = ["CellType"]
+__all__ = ["CellType", "Mesh", "canonical_facet_nodes"]

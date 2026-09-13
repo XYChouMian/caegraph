@@ -21,7 +21,7 @@ from caegraph.core.caegraph import CAEGraph
 from caegraph.core.enums import BoundaryType, NodeCategory
 from caegraph.core.field import Field
 from caegraph.core.registry import Registry
-from caegraph.core.topology import CellType
+from caegraph.core.topology import CellType, Mesh
 
 __all__ = [
     "BaseObject",
@@ -32,6 +32,7 @@ __all__ = [
     "CAEGraph",
     "CellType",
     "Field",
+    "Mesh",
     "NodeCategory",
     "Registry",
 ]
