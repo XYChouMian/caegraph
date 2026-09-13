@@ -102,6 +102,11 @@ class BoundaryManager:
     def multi_region_members(self) -> dict[int, tuple[BoundaryRegion, ...]]:
         """Return member identifiers belonging to more than one region.
 
+        Linear scan over total membership — intended for batch corner
+        derivation, not hot loops. An inverted member-to-regions index
+        may be introduced later without API change (ADR-018 defers
+        storage and indexing decisions).
+
         Returns:
             Mapping ``member_id -> regions`` (ordered by name) for
             every canonical identifier with multi-region membership.
