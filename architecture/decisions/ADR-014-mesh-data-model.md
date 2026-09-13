@@ -8,6 +8,8 @@
 
 **范围收窄（2026-09-07，ADR-015 已采纳，生效）**：本 ADR 的范围是 **cell-based 离散（FEM/FVM）的 canonical topology model**——*ADR-014 defines the canonical topology model used by cell-based discretizations. It does not define the complete CAEGraph representation.* 顶层 canonical 对象由 ADR-015 冻结为 CAEGraph（graph-native canonical domain representation）；本 ADR 全部内容（stable IDs / CellType / connectivity normalization / facet 语义 / topology validation / 校验分层）归位其 topology subsystem，效力不变；已落地的 `core/celltype.py` 随采纳迁移至 `core/topology/celltype.py`。
 
+**组成修订（2026-09-13，ADR-018 已采纳，生效）**：决策 7 组成清单中的 `BoundaryManager` 与 `fields / add_field` 两项归位表示层——ADR-018 冻结 fields associated with entities 的关联钩点与语义区域/条件注册表于 CAEGraph（Phase 2 Slice 1 已落地：`CAEGraph.associate_field` 与 `CAEGraph.boundaries`）；Mesh 作为 topology subsystem 仅承载拓扑事实（nodes / cells / facets / facet_cells）与 domain_groups。8a 末项「场值长度与关联（node/cell）匹配」随之不在 Mesh 上实现，由表示构造层（ADR-016 builder 与 CAEGraph 场关联）执行。决策 1–6 与决策 8 其余各项效力不变。
+
 ## 背景（Context）
 
 Phase 2 开工纠偏（先设计 Mesh、后写 IO）后经七轮架构评审收敛。要解决的核心问题：CAEGraph Mesh 必须是**面向 CAE→Graph/Physics AI 的 canonical representation**，而非 meshio/Gmsh 内部结构的包装。外部世界的数据（block 布局、physical tag 表示、cell 局部编号、facet 源绕向）必须在进入 `core.Mesh` 之前被 IO normalization 完全消化。
