@@ -8,7 +8,21 @@ package "caegraph.core" as caegraph.core {
 }
 package "caegraph.core.base" as caegraph.core.base {
 }
+package "caegraph.core.boundary" as caegraph.core.boundary {
+}
+package "caegraph.core.boundary.manager" as caegraph.core.boundary.manager {
+}
+package "caegraph.core.boundary.region" as caegraph.core.boundary.region {
+}
+package "caegraph.core.boundary.spec" as caegraph.core.boundary.spec {
+}
+package "caegraph.core.caegraph" as caegraph.core.caegraph {
+}
+package "caegraph.core.celltype" as caegraph.core.celltype {
+}
 package "caegraph.core.enums" as caegraph.core.enums {
+}
+package "caegraph.core.field" as caegraph.core.field {
 }
 package "caegraph.core.registry" as caegraph.core.registry {
 }
@@ -37,7 +51,23 @@ package "caegraph.visualization" as caegraph.visualization {
 package "caegraph.workflow" as caegraph.workflow {
 }
 caegraph.core --> caegraph.core.base
+caegraph.core --> caegraph.core.boundary
+caegraph.core --> caegraph.core.caegraph
+caegraph.core --> caegraph.core.celltype
 caegraph.core --> caegraph.core.enums
+caegraph.core --> caegraph.core.field
 caegraph.core --> caegraph.core.registry
+caegraph.core.boundary --> caegraph.core.boundary.manager
+caegraph.core.boundary --> caegraph.core.boundary.region
+caegraph.core.boundary --> caegraph.core.boundary.spec
+caegraph.core.boundary.manager --> caegraph.core.boundary.region
+caegraph.core.boundary.manager --> caegraph.core.boundary.spec
+caegraph.core.boundary.region --> caegraph.core.base
+caegraph.core.boundary.spec --> caegraph.core.boundary.region
+caegraph.core.boundary.spec --> caegraph.core.enums
+caegraph.core.caegraph --> caegraph.core.base
+caegraph.core.caegraph --> caegraph.core.boundary.manager
+caegraph.core.caegraph --> caegraph.core.field
+caegraph.core.field --> caegraph.core.base
 caegraph.utils --> caegraph.utils.logging
 @enduml
