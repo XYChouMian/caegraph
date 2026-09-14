@@ -1,12 +1,12 @@
 # Phase 2 — CAE Data Pipeline
 
-Status: In progress — ADR-015/016/017/018 accepted (graph-native canonical representation, construction / adaptation boundaries, domain composition); coding follows the Coding-gate order below (CAEGraph core first); CellType (topology subsystem member) has landed and is unaffected by any outcome.
+Status: In progress — ADR-015/016/017/018 accepted; coding gates 1–3 landed (CAEGraph domain core, Field/boundary vocabulary, topology subsystem: Mesh + CellType migrated into `core/topology/`); next: backend adapter (gate 4) and the data band.
 
 Goal: implement **R1** — the CAE → GNN data band (ADR-007/008): the domain-core objects plus geometry / io / graph / transforms / dataset.
 
 ## New modules (planned)
 
-The tree below reflects the ADR-015 representation hierarchy; the already-landed `core/celltype.py` migrates into `core/topology/` (ADR-015 accepted).
+The tree below reflects the ADR-015 representation hierarchy; the already-landed `core/celltype.py` has migrated into `core/topology/` (ADR-015 accepted).
 
 ```
 src/caegraph/core/          # domain canonical representation (ADR-015)
