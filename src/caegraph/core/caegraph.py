@@ -8,6 +8,7 @@ from typing import Any
 from caegraph.core.base import BaseObject
 from caegraph.core.boundary.manager import BoundaryManager
 from caegraph.core.field import Field
+from caegraph.core.topology.mesh import Mesh
 
 __all__ = ["CAEGraph"]
 
@@ -38,17 +39,19 @@ class CAEGraph(BaseObject):
         name: Non-empty name of the representation instance.
         topology: Optional topology subsystem provider referenced by
             this representation. Only objects belonging to the
-            topology subsystem qualify as providers. The Phase 2
-            cell-based implementation is provided by ``Mesh``
-            (introduced in the topology construction gate). ``None``
-            denotes a mesh-free representation or a provider not yet
-            attached.
+            topology subsystem qualify as providers — enforced as a
+            :class:`~caegraph.core.topology.Mesh` membership check in
+            Phase 2 (the current and only cell-based provider,
+            ADR-014); future topology-subsystem members require an
+            ADR and widen this check. ``None`` denotes a mesh-free
+            representation or a provider not yet attached.
         metadata: Optional free-form annotations.
 
     Raises:
         TypeError: If ``topology`` is neither ``None`` nor a
-            :class:`~caegraph.core.BaseObject` (topology providers
-            belong to the domain-truth family).
+            :class:`~caegraph.core.topology.Mesh` (topology providers
+            belong to the topology subsystem, never to other
+            domain-truth families such as fields or regions).
 
     Examples:
         >>> graph = CAEGraph("channel_flow")
@@ -63,27 +66,28 @@ class CAEGraph(BaseObject):
         self,
         name: str,
         *,
-        topology: BaseObject | None = None,
+        topology: Mesh | None = None,
         metadata: Mapping[str, Any] | None = None,
     ) -> None:
         """Initialize association hooks, then validate.
 
         Raises:
             TypeError: If ``topology`` is neither ``None`` nor a
-                :class:`~caegraph.core.BaseObject`.
+                :class:`~caegraph.core.topology.Mesh`.
         """
-        if topology is not None and not isinstance(topology, BaseObject):
+        if topology is not None and not isinstance(topology, Mesh):
             raise TypeError(
-                "topology must be a BaseObject provider of the topology "
-                "subsystem or None (referenced provider, never a framework object)"
+                "topology must be a Mesh provider of the topology "
+                "subsystem or None (referenced provider, never a framework "
+                "object or another domain-truth family)"
             )
-        self._topology = topology
+        self._topology: Mesh | None = topology
         self._fields: dict[str, Field] = {}
         self._boundaries = BoundaryManager()
         super().__init__(name, metadata)
 
     @property
-    def topology(self) -> BaseObject | None:
+    def topology(self) -> Mesh | None:
         """Referenced topology subsystem provider; ``None`` if absent."""
         return self._topology
 
@@ -122,12 +126,13 @@ class CAEGraph(BaseObject):
     def validate(self) -> None:
         """Raise if the representation is in an invalid state.
 
-        The topology provider must remain a domain-truth object (or
-        absent), and associated entries must remain fields.
+        The topology provider must remain a topology-subsystem
+        :class:`~caegraph.core.topology.Mesh` (or absent), and
+        associated entries must remain fields.
         """
-        if self._topology is not None and not isinstance(self._topology, BaseObject):
+        if self._topology is not None and not isinstance(self._topology, Mesh):
             raise TypeError(
-                "topology must be a BaseObject provider of the topology subsystem or None"
+                "topology must be a Mesh provider of the topology subsystem or None"
             )
         for field in self._fields.values():
             if not isinstance(field, Field):
