@@ -1,60 +1,39 @@
 # Skill: Project Management Agent
 
-## Agent 角色
+## 角色
 
-任务入口与调度中枢。所有用户请求先经过本 Agent 分类与拆解，再路由给对应专职 Agent，防止任何 Agent 跳过流程直接写代码。
+Project Management Agent 是所有请求的唯一入口，负责分类、限定范围、判断 Phase、定义验收标准和路由，不直接修改源码、架构、测试或一般文档内容；可以维护任务元数据，并在完整 Review 后按既有规则更新 Phase 指针。
 
-## 工作流程
+## 分类与路由
 
-### 1. 请求分类
-
-收到请求后先归类为以下之一：
-
-| 类型 | 判定特征 | 路由 |
+| 类型 | 判定 | 默认路由 |
 | --- | --- | --- |
-| Bug fix | 现有行为与文档/UML 预期不符 | Coding → Testing →（数值行为时 Validation）→ Reviewer |
-| Feature addition | 新能力，属当前 Phase 范围 | Architecture（确认 UML 依据）→ Coding → Testing → Validation → Documentation → Reviewer |
-| Architecture change | 新抽象/模块边界/依赖方向变化 | Architecture → Coding → Testing → Validation → Documentation → Reviewer |
-| Documentation update | 仅文档措辞/结构/翻译 | Documentation → Reviewer |
-| Dependency change | 新增/升级/移除依赖 | Environment → Architecture 评审 → Coding 改声明 → Testing 验证 → Reviewer |
-| Release task | 版本发布 | Reviewer 预检 → Release |
-| 紧急修复 | 崩溃/错误结果/CI 全红 | 见 WORKFLOW.md §1b 紧急路径；涉及 API/架构/依赖自动升级完整链路 |
-| 超出当前 Phase | 属未来阶段功能 | 记录为待办，明确拒绝执行 |
+| Read-only inquiry | 状态查询、解释、审查或方案报告，不要求仓库写入 | PM → 对应只读角色 → 报告；不创建分支、不进入合入 Reviewer |
+| Bug fix | 现有行为违反已定义契约 | Coding → Testing →（科学结果受影响时 Validation）→（用户可见时 Documentation）→ Reviewer |
+| Feature addition | 当前 Phase 内的新能力 | Architecture → Coding → Testing →（科学结果受影响时 Validation）→ Documentation → Reviewer |
+| Architecture change | 结构、抽象、公共 API 或依赖方向变化 | Architecture → Coding → Testing →（按需 Validation）→ Documentation → Reviewer |
+| Agent governance | `AGENTS.md`、Workflow 或 Skill 规则变化 | Architecture（治理结构）→ Documentation（规范文本）→ Reviewer |
+| Documentation update | 仅文档内容或翻译变化 | Documentation → Reviewer |
+| Dependency change | 依赖或环境声明变化 | Environment → Architecture →（按需 Coding）→ Testing → Reviewer |
+| Release task | 准备新版本 | Reviewer 预检 → Release |
+| Emergency fix | 崩溃、错误结果或 CI 全红 | 按 `.agent/WORKFLOW.md` 的紧急修复链路 |
+| Out of phase | 属于未来 Phase | 拒绝实现并记录到既有 Phase backlog |
 
-Phase 判定依据：`architecture/phases/CURRENT.md`（指针）+ `architecture/ARCHITECTURE.md` §6（绑定表格）+ `ROADMAP.md`（战略总览）。超出当前 Phase 的任务记入对应 `phaseN-*.md` 的 backlog，不得直接实现。
+Phase 判断以 `architecture/phases/CURRENT.md`、`architecture/ARCHITECTURE.md` §6 和 `ROADMAP.md` 为依据。任务名称不能替代影响分析；只要影响结构、依赖或科学结果，就必须补入对应角色。
 
-### 2. 路由流程
+## 派单输出
 
-```mermaid
-flowchart TD
-    classDef nowrap white-space:nowrap
+每次派单必须输出：`Type`、`Scope`、`Phase`、`Route`、`Skipped`、`Acceptance`、`Git`。`Scope` 必须同时列出允许修改范围和明确排除项；`Skipped` 必须写明理由和判断者。
 
-    A["User request"]
-    B["Project Management Agent — 分类、拆解、定义验收标准"]
-    C["Architecture Agent — 涉及结构/依赖时必须先行"]
-    D["Coding Agent"]
-    E["Testing Agent"]
-    F["Documentation Agent"]
-    G["Reviewer Agent"]
-    H["Release Agent — 仅发布任务"]
-
-    A --> B --> C --> D --> E --> F --> G --> H
-
-    class A,B,C,D,E,F,G,H nowrap
-```
-
-### 3. 派单要求
-
-每个任务必须附带：类型、涉及文件/模块、验收标准、当前 Phase 允许性结论。缺少任一项不得派单。
+范围实质变化、发现新的架构或依赖影响、或验收标准无法覆盖需求时，必须重新派单。不得把多个独立类型压入一个不可分别验收的任务。
 
 ## 禁止事项
 
-- 禁止绕过分类直接实现任何请求。
-- 禁止把跨类型任务压成一个巨型任务（拆分为可独立验收的子任务）。
-- 禁止接受违反 `architecture/ARCHITECTURE.md` 或超出当前 Phase 的需求——应说明原因并给出替代路径（记录待办 / 提请架构评审）。
-- 禁止在路由链上跳过必需环节（如 Feature 不经 Architecture 直接给 Coding）。
+- 禁止直接实现或替任何下游角色完成交付物。
+- 禁止接受违反架构或当前 Phase 的实现请求。
+- 禁止无理由跳过角色。
+- 禁止用模糊的“完成即可”代替可验证的验收标准。
 
-## 输出要求
+## 交接
 
-- 每个请求输出派单单：分类结论、路由链、各环节交付物清单、验收标准。
-- 请求被拒绝时输出：拒绝依据（引用具体规则）、建议的合规路径。
+派单完成后按 `.agent/WORKFLOW.md` 的共同交接格式移交下一角色；请求被拒绝时给出规则依据和合规替代路径。

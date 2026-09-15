@@ -55,22 +55,23 @@ which python          # 应指向 .../envs/caegraph-dev/bin/python
 Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ Release
 ```
 
-- 结构变更前必须先更新 Design UML（`architecture/design/`）并记录 ADR（`architecture/decisions/`）
+- 产品代码的结构变更前必须先更新 Design UML（`architecture/design/`）并记录 ADR（`architecture/decisions/`）；仅修改 Agent 治理结构且不影响产品架构时，不得连带修改产品 UML 或 ADR
 - 合并前比对 Design UML 与 Generated UML（`diagrams/generated/`，仅工具生成，禁止手改）
 - Markdown 中需要表达架构、依赖、流程或状态转换的图，必须使用 Mermaid，不得以 ASCII / 纯文本箭头图替代；仅在图能比段落、列表或表格明显提升理解时使用，禁止为装饰而大量添加。所有 Mermaid 流程图必须定义并应用 `classDef nowrap white-space:nowrap`——`<br>` 是唯一受控换行手段，禁止依赖自动换行。排版以渲染效果为准：TB（纵向）排版的小图标签保持单行、禁止换行；LR（横向）排版下应控制每个块的横向宽度——标签按内容适度 `<br>` 换行，横向块数多时（长链）尽量多次换行，保证在 md 中渲染后整图不过宽、字号可读。图由 agent 创建，人类依据实际渲染效果修改。
-- 依赖分层：utils ← core ← {geometry, io} ← graph ← transforms ← dataset ← physics ← {models, assimilation} ← {workflow, inference} ←visualization，下层禁止依赖上层，同层禁止互依（兄弟层互不依赖）；PyG 自 graph 层起可用，core/geometry/io 永不 import PyG（ADR-007）；physics 可由 models、assimilation、workflow 消费，但不得反向依赖它们
+- 依赖分层：utils ← core ← {geometry, io} ← graph ← transforms ← dataset ← physics ← {models, assimilation} ← {workflow, inference} ← visualization，下层禁止依赖上层，同层禁止互依（兄弟层互不依赖）；PyG 自 graph 层起可用，core/geometry/io 永不 import PyG（ADR-007）；physics 可由 models、assimilation、workflow 消费，但不得反向依赖它们
 
 ---
 
 ## 5. Agent 约束（不自由编码）
 
-- 全局协作流程见 `.agent/WORKFLOW.md`：任何请求先经 Project Management Agent 分类路由，再进入架构 → 编码 → 测试 → 文档 → 审查链路
+- 全局协作流程见 `.agent/WORKFLOW.md`：任何请求先经 Project Management Agent 分类，再按任务影响范围进入 Architecture、Environment、Coding、Testing、Validation、Documentation 等必要角色，最后由独立 Reviewer 审查；禁止把所有任务机械套入同一条线性链路
 - 各 Agent 角色规则见 `.agent/skills/*/SKILL.md`
 - Git 是所有 Agent 共享的基础工程能力，所有 Git 操作必须遵守 `.agent/skills/git/SKILL.md`
-- 工作流：读架构 → 查 UML → 改设计 → 再编码 → 同步文档与测试
+- 同一 Agent 实现可以在一次任务中依次承担多个执行角色，但必须显式交接并遵守每个角色的职责边界；任务作者可以自检，不得对自己的变更给出最终 `Approve`
+- 工作流：完成开工门禁与 PM 派单后，按 `.agent/WORKFLOW.md` 的 `Route` 依次执行必要角色；只有产品结构受影响时才走 Design UML / ADR 先行链路
 - 禁止在无设计依据时创建新抽象、新文件、新依赖
 - 所有源码位于 `src/caegraph/`，禁止根目录 Python 文件
-- 依赖分层：utils ← core ← {geometry, io} ← graph ← transforms ← dataset ← physics ← {models, assimilation} ← {workflow, inference} ←visualization，下层禁止依赖上层，同层禁止互依；PyG 自 graph 层起可用，core/geometry/io 永不 import PyG（ADR-007）
+- 依赖分层：utils ← core ← {geometry, io} ← graph ← transforms ← dataset ← physics ← {models, assimilation} ← {workflow, inference} ← visualization，下层禁止依赖上层，同层禁止互依；PyG 自 graph 层起可用，core/geometry/io 永不 import PyG（ADR-007）
 
 ---
 
@@ -82,6 +83,7 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
 - 格式化 / 检查：`black`、`ruff`、`mypy`
 - 提交前钩子：`pre-commit install` 后自动执行 black / ruff / pytest
 - 文档：`mkdocs`（Material + mkdocstrings），提交前 `mkdocs build --strict`
+- **Agent 规范语言**：`AGENTS.md`、`.agent/WORKFLOW.md` 与 `.agent/skills/*/SKILL.md` 以中文为主要说明语言；命令、路径、代码符号、API 名称、Git 提交格式及 `Approve` / `Request Changes` / `Reject`、`blocking` / `non-blocking` 等机器可识别状态保持英文
 - **文本换行约定**：Markdown 是自适应文本（自动换行），段落、列表项、引用块**禁止人工强制换行**——一个逻辑单元（一个段落/一条列表项/一条引用）必须写成一行；仅在代码类文件（`.py`、`.puml` 等）或 Markdown 代码块内部结构行中才允许按宽度折行。mermaid 流程图另遵守 §4 图示规范。
 - CI：`.github/workflows/test.yml`（安装 → pytest → 构建 MkDocs）
 - 环境可复现描述：根目录 `environment.yml`

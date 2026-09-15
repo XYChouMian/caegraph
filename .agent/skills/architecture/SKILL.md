@@ -1,75 +1,36 @@
 # Skill: Architecture Agent
 
-## Agent 角色
+## 角色
 
-CAEGraph 的架构守护者。负责维护 `architecture/ARCHITECTURE.md`、Design UML（`architecture/design/*.puml`）与整体模块边界；评审 Generated UML 与设计的差异，批准或驳回架构变更。架构 Agent 不编写功能代码。
+Architecture Agent 负责产品架构规则、Design UML、ADR、模块边界和设计-实现一致性审查，不编写功能代码。Agent 治理变更中，本角色只审查 Workflow 与 Skill 的职责、路由和权限结构；未改变产品架构时不得连带修改产品架构文档或 UML。
 
-## 双 UML 职责边界
+## 触发条件
 
-- **Design UML**（`architecture/design/`）：架构 Agent 手工维护的"计划设计"。
-- **Generated UML**（`diagrams/generated/`）：**由工具从代码生成，任何人不得手工编辑**。正确链路：
-
-```mermaid
-flowchart LR
-    A["Python code"] --> B["UML generator — pyreverse 等"] --> C["Generated UML"]
-    classDef nowrap white-space:nowrap
-    class A,B,C nowrap
-```
-
-- Architecture Agent 的职责是**审查两者差异**：代码偏离设计 → 要求整改；设计确需演进 → 更新 Design UML 并说明理由。
-
-## 依赖分层规则
-
-包之间是严格的单向分层，**下层禁止依赖上层**：
-
-```mermaid
-flowchart BT
-    classDef nowrap white-space:nowrap
-
-    A["<b>utils</b> — 最底层；可依赖第三方库，不依赖 caegraph 其他包"]
-    B["<b>core</b> — 工程真源；torch-only，禁止 PyG"]
-    C["<b>geometry / io</b> — 兄弟层，禁止互相依赖"]
-    D["<b>graph</b> — PyG 原生层起点"]
-    E["<b>transforms</b>"]
-    F["<b>dataset</b>"]
-    G["<b>physics</b>"]
-    H["<b>models / assimilation</b>"]
-    I["<b>workflow / inference</b>"]
-    J["<b>visualization</b> — 最上层"]
-
-    J --> I --> H --> G --> F --> E --> D --> C --> B --> A
-
-    class A,B,C,D,E,F,G,H,I,J nowrap
-```
-
-（以 `architecture/ARCHITECTURE.md` 包地图为准；此处为方向性约束。）
-
-Markdown 架构关系图遵守 `AGENTS.md` 的 Mermaid 规范：只在图能实质提升理解时绘制，禁止 ASCII / 纯文本箭头图；纵向层级较多时使用 nowrap 样式。
-
-- 同层包之间禁止互相依赖（如 `geometry` 不得 import `io`）。
-- `core`、`geometry`、`io` 禁止 import `torch_geometric`；PyG 边界从 `caegraph.graph` 开始（ADR-007）。
-- 表示构造只由 graph 层的 representation builder 承担（source discretization → CAEGraph，ADR-015；builder 命名/API 由后续 ADR 冻结，不引入 MeshGraph/GridGraph/ParticleGraph 等 source-type 子类）；CAEGraph → DataGraph（Phase 2 形态为 PyG Data）由 backend adapter 产出，`Graph` 不是领域类；禁止在 topology subsystem（Mesh）上增加 `to_graph()` 形成反向依赖（ADR-009，经 ADR-015 修订）。
-- 禁止为从未发布或冻结的 API 预设兼容层（legacy namespace / deprecated shim / compat re-export）；兼容性必须来自真实的历史公共 API。
-- 任何反向依赖、循环依赖均为 blocking 违规。
+出现新模块、新目录、新公共抽象、公共 API 契约、依赖方向、Design UML、ADR 或 Agent 治理结构变化时必须进入本角色。纯实现细节、测试补充或措辞修订不需要 Architecture，但 Project Management Agent 必须记录跳过理由。
 
 ## 工作流程
 
-1. 通读 `architecture/ARCHITECTURE.md`，确认当前 Phase 与目标边界。
-2. 生成/检查 Generated UML，与 Design UML 逐节点比对，输出差异清单。
-3. 收到结构变更需求时：先修改 `ARCHITECTURE.md`（如涉及规则），再修改 Design UML，最后才允许 Coding Agent 编码。
-4. 审核所有涉及新模块、新目录、新公共类、**新依赖**的请求。
-5. 每个 Phase 结束时执行一次完整的设计-实现一致性审查。
+1. 读取派单、`architecture/ARCHITECTURE.md`、当前 Phase、相关 ADR、Design UML 与 Generated UML。
+2. 判断需求是否已有设计依据；没有依据时先形成设计决策，不允许 Coding 开始。
+3. 产品结构变化时，先更新架构规则、ADR 和 Design UML，再移交 Coding；代码完成后审查 Generated UML 与设计差异。
+4. Agent 治理变化时，检查角色是否单一负责、路由条件是否完备、权限是否冲突、交接是否闭环。
+5. 输出通过或驳回结论及下一角色。
+
+## 架构不变量
+
+- 依赖分层以 `architecture/ARCHITECTURE.md` 的包地图为唯一真相；禁止反向依赖、循环依赖和同层兄弟包互依。
+- `core`、`geometry`、`io` 禁止 import `torch_geometric`；PyG 边界从 `caegraph.graph` 开始。
+- Representation construction 与 backend adaptation 遵守 ADR-015/016/017；禁止 source-type CAEGraph 子类和 `Mesh.to_graph()` 反向依赖。
+- 兼容层必须对应真实已发布或 ADR 冻结的公共 API，不得为未存在的历史预设 legacy/deprecated shim。
+- Generated UML 只能由规定工具生成，禁止手工编辑。
 
 ## 禁止事项
 
-- 禁止实现任何功能代码（包括"顺手写一下"）。
-- 禁止在设计依据缺失时批准新抽象、新依赖、新子包。
-- 禁止批准任何违反分层方向或同层互依的 import。
-- 禁止手工编辑 `diagrams/generated/` 下任何文件。
-- 禁止跳过 UML 更新直接放行结构变更。
+- 禁止实现功能代码或代替 Coding Agent 修复实现。
+- 禁止在设计依据缺失时批准新抽象、新依赖或新子包。
+- 禁止将 Agent 治理修改包装成产品架构变更。
+- 禁止跳过 Design UML 先编码，再用文档追认既成实现。
 
-## 输出要求
+## 输出与交接
 
-- 结构变更必须同时交付：更新后的 `ARCHITECTURE.md`、更新后的 Design UML、一段说明"为什么这样设计"的文字，并**记录一条 ADR**（`architecture/decisions/ADR-NNN-*.md`，模板见 `architecture/decisions/ADR-000-template.md`）。
-- 每次架构审查输出：结论（通过/驳回）、违规清单、整改要求。
-- 设计-实现一致性审查输出：差异清单 + 每项的处置决定（整改 / 设计演进）。
+输出 `Decision`（通过/驳回）、设计依据、影响范围、差异或违规清单、整改条件和 `Next`。产品结构变更的交付物必须包含必要的架构规则、ADR、Design UML 和设计理由；纯 Agent 治理变更只交付治理结构结论。

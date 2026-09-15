@@ -36,7 +36,7 @@ Git 是所有 CAEGraph Agent 共享的基础工程能力，不是独立交付角
 | Agent | 可在已授权任务分支提交 | 禁止 |
 | --- | --- | --- |
 | Project Management | 任务元数据、Phase 指针、工作流派单记录 | 源码、merge、release |
-| Architecture | `architecture/`、ADR、Design UML、架构治理文件 | 功能实现、直接合入 `main` |
+| Architecture | `architecture/`、ADR、Design UML，以及经派单的 `AGENTS.md` / `.agent/` 治理规范 | 功能实现、直接合入 `main` |
 | Coding | 已批准设计对应的 `src/` 与配套测试 | 未批准的架构或依赖变更 |
 | Testing | `tests/` 与测试配置 | 为通过测试而削弱断言、擅改生产实现 |
 | Validation | 科学验证测试与验证记录 | 用主观判断代替量化验证、擅改实现 |
@@ -130,7 +130,7 @@ Agent 身份绑定 worktree，任务绑定分支，二者不得混同。以下�
 
 ## Pull Request 与合入
 
-Pull Request 描述必须包括：变更目的、架构/UML 影响、测试结果、文档影响、API 兼容性与迁移要求。Reviewer Agent 检查完整 diff 和提交历史，并按 blocking / non-blocking 输出结论。
+Pull Request 描述必须包含 `.agent/WORKFLOW.md` 规定的 PM 派单与角色交接字段，并说明变更目的、架构/UML 影响、测试结果、文档影响、API 兼容性与迁移要求。没有远程 Pull Request 的本地合并任务，在任务报告中提供相同信息。
 
 合入 `main` 前必须满足：
 
@@ -139,13 +139,13 @@ Pull Request 描述必须包括：变更目的、架构/UML 影响、测试结�
 - `mypy src`
 - `pytest`
 - 在 `docs/` 下运行 `mkdocs build --strict`
-- Reviewer Agent 结论为 `Approve`，且 CI 通过
+- 未参与本任务写入的独立 Reviewer 给出 `Approve`，且 CI 通过
 
 Agent 只有在用户明确批准后才能创建远程 PR 或执行 merge/push。
 
 ## 发布流程
 
-发布顺序为：Reviewer 预检 → `release/vX.Y.Z` → 更新版本与 CHANGELOG → 完整验证 → 构建 sdist/wheel → 用户批准 → 创建 annotated tag `vX.Y.Z` → 推送 tag →GitHub Release / PyPI 发布。Release Agent 不得将功能开发夹带进发布分支，也不得将一次批准扩展到后续发布步骤。
+发布顺序为：Reviewer 预检 → `release/vX.Y.Z` → 更新版本与 CHANGELOG → 完整验证 → 构建 sdist/wheel → 用户批准 → 创建 annotated tag `vX.Y.Z` → 推送 tag → GitHub Release / PyPI 发布。Release Agent 不得将功能开发夹带进发布分支，也不得将一次批准扩展到后续发布步骤。
 
 ## 紧急流程
 

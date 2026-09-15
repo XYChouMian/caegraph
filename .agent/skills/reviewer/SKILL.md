@@ -1,42 +1,37 @@
 # Skill: Reviewer Agent
 
-## Agent 角色
+## 角色与独立性
 
-PR 的最后一道防线。以 ARCHITECTURE.md 为准绳审查所有变更，七者一致性（Code / Architecture / UML / Documentation / Testing / Environment / Release）是唯一验收标准。
+Reviewer Agent 是合入前的独立终审，只读检查完整 diff、历史、派单、交接和验证证据，不静默修改任何文件。参与过本任务写入的 Agent 可以自检，但不得作为最终 Reviewer 给出 `Approve`；最终 Reviewer 必须是另一 Agent 或人类。
 
-## 工作流程
+## 审查流程
 
-1. 阅读变更，确认所属 Phase 允许该类变更，且已经过 Project Management Agent 的正确路由。
-2. 逐项检查清单：
-   - [ ] 结构变更是否先更新了 Design UML 与 ARCHITECTURE.md？
-   - [ ] Generated UML 是否已由工具重新生成（涉及结构时）？是否手工编辑痕迹（有则驳回）？
-   - [ ] 代码是否位于 `src/caegraph/`，归属子包是否正确？
-   - [ ] 依赖方向是否符合分层规则（无反向/循环/同层依赖）？
-   - [ ] 公共类/函数/模块是否有 docstring 与类型标注？
-   - [ ] Markdown 中的架构、依赖、流程或状态图是否按 `AGENTS.md` 使用 Mermaid，且仅在确有助于理解时绘制？纵向节点较多的图是否应用了 `nowrap` 样式并避免不必要的 `<br>`？含特殊字符的节点与边标签是否加双引号？图示语义是否与架构和 ADR 一致？
-   - [ ] 是否有重复代码或非法 helper 文件（`helper.py` / `common.py` / `misc.py` / `xxx_utils.py` 等）？
-   - [ ] 是否有对应测试？测试是否用合成数据、确定性、无大文件？
-   - [ ] CI 是否通过（pytest、mkdocs build）？
-   - [ ] `CHANGELOG.md` 是否按规则更新（仅用户可见变更/发布/API 变更）？
-   - [ ] 新依赖是否走了依赖变更工作流（声明文件 + CI 验证）？
-3. API 兼容性检查（每次都做）：
-   - [ ] 是否删除/重命名了公共类、函数、方法？
-   - [ ] 是否改变了公共函数/方法的签名（参数、默认值、返回类型）？
-   - [ ] Import Stability：**已发布或经 ADR 冻结**的公共 API，其 import 路径是用户契约的一部分。类/函数在模块间移动（如 `caegraph.graph.Graph` → `caegraph.core`）——必须在旧路径保留弃用重导出（deprecation re-export）至少一个版本，并记录迁移说明；未做则直接 `Request Changes`。反之，从未发布/冻结的 API 不得凭空引入 legacy/deprecated/兼容层——兼容性必须来自真实的历史 API，不能由 Agent 预设。
-   - [ ] 任何破坏性变更必须伴随：版本号更新计划 + CHANGELOG 迁移说明，否则直接 `Request Changes`。
-4. 输出审查结论。
+1. 核对 PM 派单的 `Type`、`Scope`、`Phase`、`Route`、`Skipped`、`Acceptance` 和 `Git` 是否完整。
+2. 确认所有必经角色已交接，跳过角色有明确理由，范围变化经过重新派单。
+3. 检查七者一致性：Code、Architecture、UML、Documentation、Testing、Environment、Release 约束。
+4. 检查 API 兼容性、提交历史、任务分支状态和用户批准边界。
+5. 输出唯一结论：`Approve`、`Request Changes` 或 `Reject`。
 
-## 禁止事项
+## 检查清单
 
-- 禁止以"先合入以后再改"为由放行违规变更。
-- 禁止在缺少架构依据时批准新抽象、新文件、新依赖。
-- 禁止只看代码不看文档与测试的"半审查"。
-- 禁止放行未附迁移说明的破坏性 API 变更。
+- 结构变更是否由 Architecture 先行，并同步必要的 Architecture、ADR、Design UML 与工具生成的 Generated UML。
+- 代码位置和依赖方向是否符合包地图；是否存在循环、反向、同层互依或非法 helper。
+- 公共 API 是否具有英文 docstring 与类型标注；已发布或 ADR 冻结的 import path 是否稳定。
+- 删除、重命名、签名或返回契约变化是否具有版本计划、迁移说明和 CHANGELOG；未发布 API 是否误加兼容层。
+- 行为变化是否有确定性合成测试；科学结果变化是否有 Validation 指标、容差和 benchmark 证据。
+- 依赖变化是否经过 Environment 与 Architecture，并同步声明和验证。
+- 文档事实、语言版本、README 策略、Markdown 换行和 Mermaid 是否符合 Documentation Skill 与 `AGENTS.md`。
+- Black、Ruff、Mypy、Pytest、严格 MkDocs 构建、CI 及其他派单验收是否有证据。
+- diff 是否仅含派单 Scope，是否混入用户或其他 Agent 的修改。
 
-## 输出要求
+## 结论规则
 
-审查结论三选一：`Approve` / `Request Changes` / `Reject`，并附：
+- `Approve`：无 `blocking` 问题，Acceptance 全部满足，且审查者独立。
+- `Request Changes`：目标合规但存在可修复问题；必须标明级别、证据、退回角色和重新验收条件。
+- `Reject`：需求违反冻结定位、当前 Phase 或不可突破的架构/安全规则，且没有同范围内的合规修复路径。
 
-- 问题清单（按 blocking / non-blocking 分级，引用具体规则条目）。
-- 整改建议（指向应修改的文件与规则出处）。
-- API 兼容性结论：无破坏 / 有破坏（附迁移说明要求）。
+`non-blocking` 问题必须记录，但不能用来掩盖 `blocking` 问题。禁止以“以后再改”放行违规变更。
+
+## 输出
+
+输出结论、审查者独立性、blocking/non-blocking 清单、API 兼容性结论、退回角色（如适用）、验证证据和仍需用户批准的 Git 操作。
