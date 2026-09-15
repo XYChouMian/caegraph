@@ -84,6 +84,12 @@ class Mesh(BaseObject):
     plain domain-group data; fields and semantic regions live on the
     representation layer (ADR-018).
 
+    Mesh does not construct CAEGraph relations or backend graph
+    objects — representation construction belongs to representation
+    builders (ADR-016; the topology subsystem deliberately provides
+    no ``to_graph()``-style conversion). Exposed arrays are read-only
+    views of the frozen storage, never defensive copies.
+
     Storage follows the canonical contracts of ADR-014:
 
     - **Canonical identity**: entity IDs refer to canonical storage —
@@ -128,8 +134,11 @@ class Mesh(BaseObject):
             facet (``len >= 1``; ``== 1`` exterior candidates,
             ``== 2`` internal/interface, ``>= 3`` non-manifold).
         domain_groups: Optional mapping of group name to global cell
-            IDs (plain data; coverage/partition semantics are
-            caller-declared, ADR-014 8b — never mesh invariants).
+            IDs — plain cell-ID grouping metadata, not semantic
+            regions (boundary/interface groups become
+            ``BoundaryRegion`` objects downstream, ADR-012/018);
+            coverage/partition semantics are caller-declared
+            (ADR-014 8b — never mesh invariants).
         metadata: Optional free-form annotations.
 
     Raises:
@@ -300,7 +309,10 @@ class Mesh(BaseObject):
 
     @property
     def facet_cells(self) -> tuple[tuple[int, ...], ...]:
-        """Validated ragged cell adjacency, one tuple of cell IDs per facet."""
+        """Validated ragged cell adjacency, one tuple of cell IDs per facet.
+
+        Stored as an immutable ragged structure (tuple of tuples).
+        """
         return self._facet_cells
 
     @property
