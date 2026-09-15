@@ -5,20 +5,26 @@ from __future__ import annotations
 import pytest
 
 from caegraph.core import (
-    BaseObject,
     BoundaryRegion,
     BoundarySpec,
     BoundaryType,
     CAEGraph,
     Field,
+    Mesh,
 )
+from caegraph.core.topology.celltype import CellType
 
 
-class _TopologyProbe(BaseObject):
-    """Minimal stand-in for the cell-based Mesh provider (gate 3)."""
-
-    def validate(self) -> None:
-        return None
+def _tiny_mesh() -> Mesh:
+    """Minimal valid cell-based topology provider (single TRI3)."""
+    return Mesh(
+        "tri_mesh",
+        nodes=[[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
+        topo_dim=2,
+        cell_types=[CellType.TRI3.code],
+        cells=[0, 1, 2],
+        cell_offsets=[0, 3],
+    )
 
 
 def test_construction_without_topology_is_the_mesh_free_state():
@@ -28,14 +34,29 @@ def test_construction_without_topology_is_the_mesh_free_state():
 
 
 def test_topology_provider_is_referenced_not_required():
-    provider = _TopologyProbe("tri_mesh")
+    provider = _tiny_mesh()
     graph = CAEGraph("channel_flow", topology=provider)
     assert graph.topology is provider
 
 
-def test_non_base_object_topology_is_rejected():
+def test_non_mesh_topology_is_rejected():
     with pytest.raises(TypeError, match="topology"):
         CAEGraph("channel_flow", topology=object())  # type: ignore[arg-type]
+
+
+def test_field_cannot_impersonate_a_topology_provider():
+    # ADR-018: only topology-subsystem objects qualify as providers;
+    # a Field is domain-truth but belongs to a different family.
+    with pytest.raises(TypeError, match="topology"):
+        CAEGraph("channel_flow", topology=Field("pressure", [1.0]))  # type: ignore[arg-type]
+
+
+def test_regions_cannot_impersonate_a_topology_provider():
+    with pytest.raises(TypeError, match="topology"):
+        CAEGraph(
+            "channel_flow",
+            topology=BoundaryRegion("fluid_wall", [1]),  # type: ignore[arg-type]
+        )
 
 
 def test_empty_name_is_rejected():

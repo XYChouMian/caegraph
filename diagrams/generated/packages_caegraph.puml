@@ -18,13 +18,17 @@ package "caegraph.core.boundary.spec" as caegraph.core.boundary.spec {
 }
 package "caegraph.core.caegraph" as caegraph.core.caegraph {
 }
-package "caegraph.core.celltype" as caegraph.core.celltype {
-}
 package "caegraph.core.enums" as caegraph.core.enums {
 }
 package "caegraph.core.field" as caegraph.core.field {
 }
 package "caegraph.core.registry" as caegraph.core.registry {
+}
+package "caegraph.core.topology" as caegraph.core.topology {
+}
+package "caegraph.core.topology.celltype" as caegraph.core.topology.celltype {
+}
+package "caegraph.core.topology.mesh" as caegraph.core.topology.mesh {
 }
 package "caegraph.dataset" as caegraph.dataset {
 }
@@ -53,10 +57,10 @@ package "caegraph.workflow" as caegraph.workflow {
 caegraph.core --> caegraph.core.base
 caegraph.core --> caegraph.core.boundary
 caegraph.core --> caegraph.core.caegraph
-caegraph.core --> caegraph.core.celltype
 caegraph.core --> caegraph.core.enums
 caegraph.core --> caegraph.core.field
 caegraph.core --> caegraph.core.registry
+caegraph.core --> caegraph.core.topology
 caegraph.core.boundary --> caegraph.core.boundary.manager
 caegraph.core.boundary --> caegraph.core.boundary.region
 caegraph.core.boundary --> caegraph.core.boundary.spec
@@ -68,6 +72,11 @@ caegraph.core.boundary.spec --> caegraph.core.enums
 caegraph.core.caegraph --> caegraph.core.base
 caegraph.core.caegraph --> caegraph.core.boundary.manager
 caegraph.core.caegraph --> caegraph.core.field
+caegraph.core.caegraph --> caegraph.core.topology.mesh
 caegraph.core.field --> caegraph.core.base
+caegraph.core.topology --> caegraph.core.topology.celltype
+caegraph.core.topology --> caegraph.core.topology.mesh
+caegraph.core.topology.mesh --> caegraph.core.base
+caegraph.core.topology.mesh --> caegraph.core.topology.celltype
 caegraph.utils --> caegraph.utils.logging
 @enduml

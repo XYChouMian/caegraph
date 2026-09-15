@@ -39,11 +39,11 @@ class "BoundaryType" as caegraph.core.enums.BoundaryType {
 class "CAEGraph" as caegraph.core.caegraph.CAEGraph {
   associated_fields : tuple[Field, ...]
   boundaries : BoundaryManager
-  topology : BaseObject | None
+  topology : Mesh | None
   associate_field(field: Field) -> None
   validate() -> None
 }
-class "CellType" as caegraph.core.celltype.CellType {
+class "CellType" as caegraph.core.topology.celltype.CellType {
   code : int
   dim : int
   faces : tuple[tuple[int, ...], ...]
@@ -58,6 +58,26 @@ class "Field" as caegraph.core.field.Field {
   values : Any
   validate() -> None
 }
+class "Mesh" as caegraph.core.topology.mesh.Mesh {
+  cell_offsets : np.ndarray
+  cell_types : np.ndarray
+  cells : np.ndarray
+  domain_groups : Mapping[str, np.ndarray]
+  facet_cells : tuple[tuple[int, ...], ...]
+  facet_offsets : np.ndarray
+  facet_types : np.ndarray
+  facets : np.ndarray
+  n_cells : int
+  n_facets : int
+  n_nodes : int
+  nodes : np.ndarray
+  topo_dim : int
+  cell_nodes(index: int) -> np.ndarray
+  cell_type(index: int) -> CellType
+  facet_adjacent_cells(index: int) -> tuple[int, ...]
+  facet_nodes(index: int) -> np.ndarray
+  validate() -> None
+}
 class "NodeCategory" as caegraph.core.enums.NodeCategory {
   name
 }
@@ -69,7 +89,7 @@ class "Registry" as caegraph.core.registry.Registry {
   register(name: str, factory: Callable[..., T] | None) -> Callable[..., T] | Callable[[Callable[..., T]], Callable[..., T]]
   unregister(name: str) -> None
 }
-class "_CellSpec" as caegraph.core.celltype._CellSpec {
+class "_CellSpec" as caegraph.core.topology.celltype._CellSpec {
   code : int
   dim : int
   faces : tuple[tuple[int, ...], ...]
@@ -78,4 +98,5 @@ class "_CellSpec" as caegraph.core.celltype._CellSpec {
 caegraph.core.boundary.region.BoundaryRegion --|> caegraph.core.base.BaseObject
 caegraph.core.caegraph.CAEGraph --|> caegraph.core.base.BaseObject
 caegraph.core.field.Field --|> caegraph.core.base.BaseObject
+caegraph.core.topology.mesh.Mesh --|> caegraph.core.base.BaseObject
 @enduml

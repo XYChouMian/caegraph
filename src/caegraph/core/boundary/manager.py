@@ -155,8 +155,7 @@ class BoundaryManager:
         paired_target = (
             self.region(spec.paired_region) if spec.paired_region is not None else None
         )
-        spec._target = target
-        spec._paired_target = paired_target
+        spec._bind(target, paired_target)
         self._specs.append(spec)
 
     def specs_for(self, region_name: str) -> tuple[BoundarySpec, ...]:

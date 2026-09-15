@@ -191,6 +191,19 @@ class BoundarySpec:
         """
         return self._paired_target
 
+    def _bind(
+        self, target: BoundaryRegion, paired_target: BoundaryRegion | None
+    ) -> None:
+        """Record the binding resolution (manager-internal).
+
+        Called exclusively by
+        :meth:`caegraph.core.BoundaryManager.bind`; the resolved
+        references are owned by the manager lifecycle and external
+        mutation of spec internals is outside the API contract.
+        """
+        self._target = target
+        self._paired_target = paired_target
+
     def validate(self) -> None:
         """Enforce the per-type slot-coherence matrix (ADR-011), fail-fast.
 

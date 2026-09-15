@@ -18,10 +18,10 @@ starts at :mod:`caegraph.graph` (ADR-007 D2).
 from caegraph.core.base import BaseObject
 from caegraph.core.boundary import BoundaryManager, BoundaryRegion, BoundarySpec
 from caegraph.core.caegraph import CAEGraph
-from caegraph.core.celltype import CellType
 from caegraph.core.enums import BoundaryType, NodeCategory
 from caegraph.core.field import Field
 from caegraph.core.registry import Registry
+from caegraph.core.topology import CellType, Mesh
 
 __all__ = [
     "BaseObject",
@@ -32,6 +32,7 @@ __all__ = [
     "CAEGraph",
     "CellType",
     "Field",
+    "Mesh",
     "NodeCategory",
     "Registry",
 ]
