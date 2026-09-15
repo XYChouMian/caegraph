@@ -32,28 +32,36 @@ def canonical_facet_nodes(nodes: Sequence[int]) -> tuple[int, ...]:
     Returns:
         The canonical (winding-free) node tuple.
 
+    Raises:
+        ValueError: If ``nodes`` is empty — every facet must carry at
+            least one node identifier.
+
     Examples:
         >>> canonical_facet_nodes([5, 8, 3])
         (3, 5, 8)
         >>> canonical_facet_nodes([3, 8, 5]) == canonical_facet_nodes([5, 8, 3])
         True
     """
-    best: tuple[int, ...] | None = None
-    for order in (tuple(nodes), tuple(reversed(nodes))):
-        for start in range(len(order)):
-            rotation = order[start:] + order[:start]
-            if best is None or rotation < best:
-                best = rotation
-    assert best is not None
-    return best
+    if len(nodes) == 0:
+        raise ValueError("facet connectivity must contain at least one node identifier")
+    return min(
+        order[start:] + order[:start]
+        for order in (tuple(nodes), tuple(reversed(nodes)))
+        for start in range(len(order))
+    )
 
 
 def _as_int_array(values: Iterable[int], label: str) -> np.ndarray:
     """Coerce ``values`` to an integer ndarray, rejecting other dtypes.
 
+    Boolean identifiers are rejected (``True == 1`` makes silent
+    bool-to-int coercion a classic pitfall), as are 0-dimensional
+    scalar inputs.
+
     Raises:
         TypeError: If the input does not consist of integers (floats
-            are never silently truncated).
+            are never silently truncated), is boolean, or is not
+            one-dimensional.
     """
     array = np.asarray(values)
     if array.ndim != 1:
@@ -101,8 +109,8 @@ class Mesh(BaseObject):
     Args:
         name: Non-empty mesh name.
         nodes: Coordinates as a 2D array-like of shape
-            ``(n_nodes, 3)`` and dtype float64 (canonical 3D storage:
-            2D meshes also store three coordinate columns —
+            ``(n_nodes, 3)`` and dtype float64 (canonical 3D
+            storage: 2D meshes also store three coordinate columns —
             ``topo_dim`` never travels via the column count).
         topo_dim: Common topological dimension of all canonical
             cells (1, 2 or 3).
@@ -129,7 +137,8 @@ class Mesh(BaseObject):
             dtypes, CSR consistency, index bounds, dimension
             hierarchy, facet adjacency completeness or facet↔cell
             template matching).
-        TypeError: If integer tables receive non-integer input or
+        TypeError: If integer tables receive non-integer input,
+            ``topo_dim`` is not an integer (bools rejected), or
             ``facet_cells`` entries contain non-integers.
 
     Examples:
@@ -167,7 +176,17 @@ class Mesh(BaseObject):
         domain_groups: Mapping[str, Iterable[int]] | None = None,
         metadata: Mapping[str, Any] | None = None,
     ) -> None:
-        """Coerce, canonicalize and freeze the topology, then validate."""
+        """Coerce, canonicalize and freeze the topology, then validate.
+
+        Raises:
+            TypeError: If ``topo_dim`` is not an integer (bools are
+                rejected despite being int subclasses).
+        """
+        if not isinstance(topo_dim, int) or isinstance(topo_dim, bool):
+            raise TypeError(
+                f"topo_dim must be an integer (1, 2 or 3), "
+                f"got {type(topo_dim).__name__}"
+            )
         self._nodes = np.array(nodes, dtype=np.float64)
         self._topo_dim = int(topo_dim)
         self._cell_types = _as_int_array(cell_types, "cell_types")
