@@ -25,6 +25,9 @@ def _two_triangle_mesh(**overrides) -> Mesh:
         cells=[0, 1, 2, 1, 3, 2],
         cell_offsets=[0, 3, 6],
         facet_types=[CellType.LINE2.code] * 5,
+        # explicit facets (given order; canonicalized on construction):
+        #   (1,0)->cell0  (2,0)->cell0  (1,2)->cells 0+1 (shared edge)
+        #   (1,3)->cell1  (3,2)->cell1
         facets=[1, 0, 2, 0, 1, 2, 1, 3, 3, 2],
         facet_offsets=[0, 2, 4, 6, 8, 10],
         facet_cells=[[0], [0], [0, 1], [1], [1]],
@@ -150,6 +153,11 @@ def test_same_facet_through_different_windings_collapses():
     np.testing.assert_array_equal(mesh_a.facets, mesh_b.facets)
 
 
+def test_empty_facet_nodes_are_rejected():
+    with pytest.raises(ValueError, match="at least one node"):
+        canonical_facet_nodes([])
+
+
 # --- 8a failure matrix ------------------------------------------------------
 
 
@@ -175,6 +183,12 @@ def test_invalid_topo_dim_is_rejected():
         _two_triangle_mesh(topo_dim=0)
 
 
+@pytest.mark.parametrize("bad_dim", [True, 2.5, "2"])
+def test_topo_dim_requires_integer(bad_dim):
+    with pytest.raises(TypeError, match="topo_dim"):
+        _two_triangle_mesh(topo_dim=bad_dim)  # type: ignore[arg-type]
+
+
 def test_unknown_cell_code_is_rejected():
     with pytest.raises(ValueError, match="unknown CellType code"):
         _two_triangle_mesh(cell_types=[99, CellType.TRI3.code])
@@ -198,6 +212,14 @@ def test_cell_offsets_wrong_length_is_rejected():
 def test_cell_offsets_must_start_at_zero():
     with pytest.raises(ValueError, match="start at 0"):
         _two_triangle_mesh(cell_offsets=[1, 3, 6], cells=[0, 2, 1, 2, 3])
+
+
+def test_cell_offsets_must_be_monotonic():
+    # [0, 4, 6] keeps length/start/end valid; the diff vector [4, 2]
+    # mismatches the TRI3 node counts [3, 3] — this count equality is
+    # what airtightly enforces CSR monotonicity in validate()
+    with pytest.raises(ValueError, match="node counts"):
+        _two_triangle_mesh(cell_offsets=[0, 4, 6])
 
 
 def test_cell_connectivity_size_mismatch_is_rejected():
@@ -230,6 +252,19 @@ def test_facet_connectivity_size_mismatch_is_rejected():
             facets=[0, 1, 2, 1, 3, 3, 2, 1, 2],
             facet_cells=[[0], [0], [0, 1], [1], [1]],
         )
+
+
+def test_facet_offsets_must_be_monotonic():
+    with pytest.raises(ValueError, match="not a valid CSR"):
+        _two_triangle_mesh(facet_offsets=[0, 2, 1, 6, 8, 10])
+
+
+def test_zero_length_facet_slice_is_rejected_cleanly():
+    # diff contains 0 (passes the monotonic guard) but the empty
+    # slice must fail cleanly at the canonicalization guard instead
+    # of tripping an assertion
+    with pytest.raises(ValueError, match="at least one node"):
+        _two_triangle_mesh(facet_offsets=[0, 2, 2, 6, 8, 10])
 
 
 def test_facet_without_adjacent_cell_is_rejected():
@@ -296,6 +331,15 @@ def test_exposed_arrays_are_read_only():
         assert not array.flags.writeable
     with pytest.raises(ValueError, match="read-only"):
         mesh.nodes[0, 0] = 99.0
+    with pytest.raises(ValueError, match="read-only"):
+        mesh.cells[0] = 9
+
+
+def test_domain_group_arrays_are_read_only():
+    mesh = _two_triangle_mesh()
+    assert not mesh.domain_groups["fluid"].flags.writeable
+    with pytest.raises(ValueError):
+        mesh.domain_groups["fluid"][0] = 99
 
 
 def test_input_arrays_are_decoupled_from_mesh_storage():
@@ -305,6 +349,17 @@ def test_input_arrays_are_decoupled_from_mesh_storage():
     assert not mesh.nodes.flags.writeable
     assert nodes.flags.writeable
     assert cell_types.flags.writeable
+
+
+def test_connectivity_inputs_are_decoupled_from_mesh_storage():
+    cells = np.array([0, 1, 2, 1, 3, 2])
+    cell_offsets = np.array([0, 3, 6])
+    mesh = _two_triangle_mesh(cells=cells, cell_offsets=cell_offsets)
+    assert cells.flags.writeable
+    assert cell_offsets.flags.writeable
+    assert not mesh.cells.flags.writeable
+    assert not np.shares_memory(cells, mesh.cells)
+    assert not np.shares_memory(cell_offsets, mesh.cell_offsets)
 
 
 def test_repr_reports_structure():
@@ -319,3 +374,24 @@ def test_base_object_contract_still_applies():
         _two_triangle_mesh(name="   ")
     mesh = _two_triangle_mesh(metadata={"source": "synthetic"})
     assert mesh.metadata == {"source": "synthetic"}
+
+
+# --- architecture boundary ---------------------------------------------------
+
+
+def test_mesh_architecture_boundary():
+    # Mesh owns topology facts only: no graph construction API
+    # (representation construction belongs to representation builders,
+    # ARCHITECTURE §3.4 / ADR-016) and no field/region ownership
+    # (representation layer, ADR-014 as amended / ADR-018)
+    assert not hasattr(Mesh, "to_graph")
+    assert not hasattr(Mesh, "edge_index")
+    mesh = _two_triangle_mesh()
+    assert not hasattr(mesh, "fields")
+    assert not hasattr(mesh, "regions")
+
+
+def test_mesh_is_base_object():
+    mesh = _two_triangle_mesh()
+    assert mesh.name == "two_tri"
+    assert mesh.metadata == {}
