@@ -4,7 +4,7 @@ A CAE-to-Physics-AI workflow framework built for the PyG ecosystem.
 
 CAEGraph connects **CAE data → canonical graph representation → GNN training → neural simulation across different discretizations → experimental-data assimilation**. It normalizes heterogeneous CAE sources into **CAEGraph**, the graph-native canonical domain representation (ADR-015), and reaches learning backends — PyTorch Geometric today — through backend adapters, keeping the engineering truth framework-independent.
 
-> **Status: Pre-Alpha (Phase 2 — CAE Data Pipeline, in progress).** The Phase 1 core vocabulary (`BaseObject`, registry, shared enums, logging) is complete. The architecture has adopted ADR-015 (CAEGraph as the canonical domain representation; Mesh repositioned as a topology subsystem); the topology vocabulary `CellType` has landed, and the CAEGraph core plus the data band follow its design. GNN training utilities remain planned.
+> **Status: Pre-Alpha (Phase 2 — CAE Data Pipeline, in progress).** Phase 0 (foundation) and Phase 1 (core vocabulary: `BaseObject`, registry, shared enums, logging) are complete. The architecture baseline is ADR-015~018 (CAEGraph as the canonical domain representation; topology subsystem, construction, backend-adaptation, and domain-composition contracts). Coding gates 1–3 have landed: the CAEGraph domain core (`CAEGraph`, `Field`, boundary vocabulary) and the topology subsystem (`Mesh`, `CellType`). The data band (loaders, representation builder, backend adapter, transforms, dataset) is in progress; GNN training utilities remain planned.
 
 ## Features (planned)
 
