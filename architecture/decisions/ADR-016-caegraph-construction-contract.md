@@ -54,7 +54,7 @@ flowchart LR
 - 正面：新增 source 族（新格式、新离散方法）不需要新 ADR，除非改变本 ADR 冻结的边界。
 - 不改变依赖分层与 PyG 边界（ADR-007/015）。
 
-## Revision history
+## 修订历史（Revision history）
 
 - 2026-09-08 v1：自 ADR-015 v4/v5 拆分而出——冻结构造边界；API/类名/registry/module layout 不冻结，随 coding 派单定稿。
 - 2026-09-08：accepted（Architecture review 通过，构造边界冻结）。

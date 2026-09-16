@@ -50,7 +50,7 @@ flowchart LR
 - transforms / dataset 消费的是 framework representation（PyG Data），不是 CAEGraph——层间数据面以此为准。
 - 不改变 ADR-008 冻结（PyG 仍是当前唯一图学习 backend）。
 
-## Revision history
+## 修订历史（Revision history）
 
 - 2026-09-08 v1：最小可行草案——冻结适配边界；DataGraph 保持概念定位，schema / mapping / batching 不冻结，随 adapter 派单定稿。
 - 2026-09-08：accepted（Architecture review 通过，适配边界冻结）。

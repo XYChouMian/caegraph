@@ -3,7 +3,7 @@
 - 编号：ADR-015
 - 标题：冻结 CAEGraph 为 CAE 数据的 canonical domain representation——meshes / grids / particles 等离散化均作为 CAEGraph 构造的 source representation；其中 mesh-based sources additionally provide topology information for cell-based discretizations；构造契约见 ADR-016，backend 适配契约见 ADR-017；本 ADR 取代 ADR-007 D1/D3 与 ADR-009 的 Mesh→Graph 契约，收窄 ADR-014，修订 ADR-012 目标对象
 - 日期：2026-09-07
-- 状态：**accepted（2026-09-07 经 Architecture review 采纳；v1→v5 演进见 Revision history）**
+- 状态：**accepted（2026-09-07 经 Architecture review 采纳；v1→v5 演进见修订历史）**
 - 关联：ADR-007（D1/D3 已修订，D2 保留强化）、ADR-008（图后端冻结条款之澄清性 ADR 即本 ADR）、ADR-009（Mesh→Graph 契约已取代）、ADR-012（目标对象已修订）、ADR-013（不变：meshio=external IO engine）、ADR-014（cell-based topology 规范）、**ADR-016（construction contract，accepted）**、**ADR-017（backend adaptation contract，accepted）**、**ADR-018（domain composition，accepted）**、Phase 2、ROADMAP、Design UML `class_diagram.puml`
 
 ## 背景（Context）
@@ -94,7 +94,7 @@ flowchart LR
 - 本 ADR 不引入新第三方依赖；不改变依赖分层方向（分层立法属 ADR-007）。
 - 架构解释图（representation hierarchy 等）由 ARCHITECTURE.md 与 docs overview 承载，不入本 ADR。
 
-## Revision history
+## 修订历史（Revision history）
 
 - 2026-09-07 v1：以「graph-first vs mesh-first」为框（含 A/B/C 三案）。
 - 2026-09-07 v2：问题边界重定义为「异构 CAE 源与 GNN 之间的 canonical representation」；A/B/C 重塑；补 FEM/FVM/FDM/SPH 范式表与备选方案。

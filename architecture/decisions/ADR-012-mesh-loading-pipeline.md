@@ -80,7 +80,7 @@ source_group_dim < topo_dim − 1   → 不入 canonical topology → warning / 
 
 加载管线的职责终点是产出 canonical Mesh、domain groups 以及命名 boundary/interface regions；数学 BoundaryType 只能来自用户声明的 BoundarySpec。禁止任何 `名称 → 数学类别` 映射表进入 io 层——同名在不同问题中可为不同数学类别（ADR-010 背景论据；Spec 槽位一致性见 ADR-011）。
 
-### Revision history
+## 修订历史（Revision history）
 
 - 2026-09-06 初版：Region 抽象继承树提案 → 评审否决（见 Options）。
 - 2026-09-06 返工：改为转换管线 + 物理组维度分类（当时含 block 存储、node-set 边界成员、唯一 `_read` 钩子等过渡表述）。
