@@ -38,6 +38,18 @@ def _two_region_manager() -> BoundaryManager:
     return manager
 
 
+def _beam_mesh() -> Mesh:
+    """1D source: three nodes connected by two LINE2 cells."""
+    return Mesh(
+        "beam",
+        nodes=[[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [2.0, 0.0, 0.0]],
+        topo_dim=1,
+        cell_types=[CellType.LINE2.code, CellType.LINE2.code],
+        cells=[0, 1, 1, 2],
+        cell_offsets=[0, 2, 4],
+    )
+
+
 def test_node_and_edge_structure_of_two_triangle_mesh():
     graph = MeshRepresentationBuilder()(_two_triangle_mesh())
     assert graph.n_entities == 4
@@ -45,6 +57,32 @@ def test_node_and_edge_structure_of_two_triangle_mesh():
     assert graph.edges == ((0, 1), (0, 2), (1, 2), (1, 3), (2, 3))
     assert graph.topology is not None
     assert graph.topology.name == "two_tri"
+
+
+def test_1d_line2_cells_contribute_their_node_pairs_as_edges():
+    graph = MeshRepresentationBuilder()(_beam_mesh())
+    assert graph.n_entities == 3
+    assert graph.edges == ((0, 1), (1, 2))
+    assert graph.node_categories == (NodeCategory.INTERIOR,) * 3
+
+
+def test_1d_mesh_has_no_facets_so_regions_are_rejected():
+    manager = BoundaryManager()
+    manager.register(BoundaryRegion("end", [0]))
+    with pytest.raises(ValueError, match="unknown facet"):
+        MeshRepresentationBuilder()(_beam_mesh(), manager)
+
+
+def test_duplicate_field_names_are_rejected():
+    mesh = _two_triangle_mesh()
+    with pytest.raises(ValueError, match="already associated"):
+        MeshRepresentationBuilder()(
+            mesh,
+            fields=[
+                Field("p", [1.0, 2.0, 3.0, 4.0], association="node"),
+                Field("p", [1.0, 2.0, 3.0, 4.0], association="node"),
+            ],
+        )
 
 
 def test_hex8_cube_edge_count():

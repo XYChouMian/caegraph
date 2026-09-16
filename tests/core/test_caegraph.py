@@ -172,6 +172,11 @@ def test_out_of_range_edges_are_rejected():
         CAEGraph("g", n_entities=2, edges=[(0, 5)])
 
 
+def test_malformed_edge_pairs_are_rejected():
+    with pytest.raises(ValueError, match=r"\(int, int\) pairs"):
+        CAEGraph("g", n_entities=2, edges=[(0, 1, 2)])  # type: ignore[list-item]
+
+
 def test_node_categories_length_must_match():
     with pytest.raises(ValueError, match="match n_entities"):
         CAEGraph("g", n_entities=3, node_categories=[NodeCategory.INTERIOR])

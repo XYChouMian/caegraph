@@ -19,8 +19,11 @@ class MeshRepresentationBuilder:
     Phase 2 cell-based construction strategy (ADR-016 boundary,
     ADR-019 semantics): entities are the mesh nodes; relations are
     undirected node pairs expanded from every cell's codim-1 face
-    templates (canonical ``(min, max)``, globally deduplicated);
-    per-node :class:`~caegraph.core.NodeCategory` annotations are
+    templates (canonical ``(min, max)``, globally deduplicated). For
+    1D sources (``topo_dim == 1``) each LINE2 cell contributes its
+    own node pair as an edge, because dimension-0 facets are absent
+    from the canonical topology (ADR-014/019). Per-node
+    :class:`~caegraph.core.NodeCategory` annotations are
     derived from the semantic regions registered on the caller's
     :class:`~caegraph.core.BoundaryManager` — INTERIOR (no region),
     BOUNDARY (exactly one), CORNER (two or more). Nodes on boundary
@@ -61,7 +64,7 @@ class MeshRepresentationBuilder:
                 (length-validated for node/cell associations).
 
         Returns:
-            The fully populated CAEGraph.
+            The fully populated CAEGraph, named after the mesh.
 
         Raises:
             TypeError: If ``mesh`` is not a
@@ -123,16 +126,24 @@ class MeshRepresentationBuilder:
         return tuple(categories)
 
     def _expand_edges(self, mesh: Mesh) -> tuple[tuple[int, int], ...]:
-        """Expand every cell's codim-1 faces into deduplicated node pairs.
+        """Expand every cell into its deduplicated node-pair edges.
 
-        Consecutive node pairs of each face template (closed ring)
-        form candidate edges; each is canonicalized to ``(min, max)``
-        and deduplicated globally (ADR-019 D2).
+        For cells of dimension >= 2, consecutive node pairs of each
+        codim-1 face template (closed ring) form candidate edges. A
+        1D cell (LINE2) is itself an edge and contributes its own
+        node pair — its codim-1 faces are dimension-0 points, absent
+        from the canonical topology (ADR-014/019 D2). Every candidate
+        is canonicalized to ``(min, max)`` and deduplicated globally.
         """
         edges: set[tuple[int, int]] = set()
         for cell_id in range(mesh.n_cells):
+            cell_type = mesh.cell_type(cell_id)
             nodes = mesh.cell_nodes(cell_id).tolist()
-            for face in mesh.cell_type(cell_id).faces:
+            if cell_type.dim == 1:
+                first, second = nodes
+                edges.add((min(first, second), max(first, second)))
+                continue
+            for face in cell_type.faces:
                 ring = [nodes[local] for local in face]
                 for index in range(len(ring)):
                     first = ring[index]

@@ -51,7 +51,12 @@ class CAEGraph(BaseObject):
             representation or a provider not yet attached.
         n_entities: Optional entity count of the construction-time
             entity model (ADR-019). Required when any graph data is
-            provided; omitted for semantic-only representations.
+            provided; omitted for semantic-only representations. The
+            representation builder derives it from the topology
+            (``Mesh.n_nodes``); direct construction is deliberately
+            not cross-checked against ``topology`` (future
+            multi-graph construction may legitimately differ,
+            ADR-019 D6).
         edges: Optional node-pair relations. Each pair is normalized
             to ``(min, max)``, self-loops are rejected, indices are
             bounds-checked against ``n_entities`` and the stored set
@@ -124,7 +129,13 @@ class CAEGraph(BaseObject):
 
         if edges is not None:
             normalized: set[tuple[int, int]] = set()
-            for first, second in edges:
+            for pair in edges:
+                try:
+                    first, second = pair
+                except (TypeError, ValueError) as error:
+                    raise ValueError(
+                        f"edges must be (int, int) pairs, got {pair!r}"
+                    ) from error
                 low, high = (first, second) if first <= second else (second, first)
                 if low == high:
                     raise ValueError(
