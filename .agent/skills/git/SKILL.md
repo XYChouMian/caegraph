@@ -1,6 +1,6 @@
 # Skill: Git Workflow
 
-## Agent 角色
+## 角色
 
 Git 是所有 CAEGraph Agent 共享的基础工程能力，不是独立交付角色。它保存代码历史、架构演化、协作边界与发布追溯。所有 Agent 使用 Git 时都必须遵守本规则，同时不得突破各自角色的文件和职责边界。
 

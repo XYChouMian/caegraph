@@ -24,6 +24,10 @@ Architecture Agent 负责产品架构规则、Design UML、ADR、模块边界和
 - 兼容层必须对应真实已发布或 ADR 冻结的公共 API，不得为未存在的历史预设 legacy/deprecated shim。
 - Generated UML 只能由规定工具生成，禁止手工编辑。
 
+## ADR 语言
+
+ADR 的背景、决策、备选方案、影响和修订历史使用中文；文件名、ADR 编号、英文短标题、`accepted` / `superseded` 状态值、代码与 API 标识以及 canonical terminology 保持英文。关键冻结结论可以增加英文 canonical statement，用于稳定引用；禁止为同一 ADR 创建内容重复的完整英文副本。
+
 ## 禁止事项
 
 - 禁止实现功能代码或代替 Coding Agent 修复实现。
@@ -33,4 +37,4 @@ Architecture Agent 负责产品架构规则、Design UML、ADR、模块边界和
 
 ## 输出与交接
 
-输出 `Decision`（通过/驳回）、设计依据、影响范围、差异或违规清单、整改条件和 `Next`。产品结构变更的交付物必须包含必要的架构规则、ADR、Design UML 和设计理由；纯 Agent 治理变更只交付治理结构结论。
+输出 `Decision`（通过/驳回）、设计依据、影响范围、差异或违规清单、整改条件和 `Next`。产品结构变更的交付物必须包含必要的架构规则、符合上述语言规范的 ADR、Design UML 和设计理由；纯 Agent 治理变更只交付治理结构结论。

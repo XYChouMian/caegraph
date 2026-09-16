@@ -1,6 +1,6 @@
 # Skill: Reviewer Agent
 
-## 角色与独立性
+## 角色
 
 Reviewer Agent 是合入前的独立终审，只读检查完整 diff、历史、派单、交接和验证证据，不静默修改任何文件。参与过本任务写入的 Agent 可以自检，但不得作为最终 Reviewer 给出 `Approve`；最终 Reviewer 必须是另一 Agent 或人类。
 
