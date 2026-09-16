@@ -13,7 +13,7 @@ flowchart LR
 
 !!! note "项目状态"
 
-    CAEGraph 已进入 **Phase 2（CAE 数据管线）**。Phase 0 的包骨架、架构规范、UML 体系、文档与 CI，以及 Phase 1 的核心共享词汇（`BaseObject`、注册表、共享枚举）均已完成。架构已采纳 ADR-015（CAEGraph 为顶层 canonical 领域表示，Mesh 归位 topology subsystem）：topology 词汇 `CellType` 已落地，CAEGraph core 与数据带实现中；GNN 训练能力仍为规划功能。
+    CAEGraph 已进入 **Phase 2（CAE 数据管线）**。Phase 0 的包骨架、架构规范、UML 体系、文档与 CI，以及 Phase 1 的核心共享词汇（`BaseObject`、注册表、共享枚举）均已完成。架构基线为 ADR-015~018（CAEGraph 为 canonical 领域表示；topology subsystem、构造、后端适配与领域组成契约）。Coding gate 1–3 已落地——CAEGraph 领域核心（`CAEGraph`、`Field`、boundary 词汇）与 topology subsystem（`Mesh`、`CellType`）；数据带（loaders、representation builder、backend adapter、transforms、dataset）实现中；GNN 训练能力仍为规划功能。
 
 ## 快速开始
 
