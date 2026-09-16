@@ -175,17 +175,20 @@ package "caegraph.io" {
 }
 
 package "caegraph.graph (representation construction + backend adapter)" {
-  abstract class RepresentationBuilder {
-    Source discretization -> CAEGraph
-    entities + relations (ADR-015);
-    extension point (ADR-016) -
-    specializations per source
-    discretization family (mesh /
-    grid / particles follow separate
-    construction strategies);
-    API/class names/registry/layout
-    not frozen; replaces the single
-    Mesh -> GraphBuilder contract (ADR-009)
+  class MeshRepresentationBuilder {
+    Phase 2 cell-based realization
+    (ADR-016/019): entities = mesh
+    nodes, relations = deduplicated
+    (min, max) node pairs expanded
+    from cell codim-1 faces (1D cells
+    contribute their own node pair),
+    NodeCategory derived from regions;
+    construction is a strategy layer -
+    further source families extend it
+    per ADR-016 (no frozen hierarchy,
+    registry or naming; replaces the
+    single Mesh -> GraphBuilder
+    contract, ADR-009)
   }
   class BackendAdapter {
     CAEGraph -> framework-specific
@@ -295,9 +298,9 @@ CAEGraph ..> NodeCategory : entity annotation
 
 MeshLoader ..> Mesh : produces topology input
 MeshWriter ..> Mesh : consumes
-RepresentationBuilder ..> Mesh : cell-based source example (ADR-016)
-RepresentationBuilder ..> GeometryProcessor : uses features
-RepresentationBuilder ..> CAEGraph : produces
+MeshRepresentationBuilder ..> Mesh : cell-based source example (ADR-016)
+MeshRepresentationBuilder ..> GeometryProcessor : uses features (deferred, ADR-019 D6)
+MeshRepresentationBuilder ..> CAEGraph : produces
 BackendAdapter ..> CAEGraph : consumes
 BackendAdapter ..> PyGData : Phase 2 backend example (produces)
 GeometryTransform ..> PyGData : operates on

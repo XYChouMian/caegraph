@@ -2,8 +2,8 @@
 
 - 编号：ADR-019
 - 标题：冻结 Phase 2 的 CAEGraph 实体与关系最小数据模型（node graph）、cell-based 构造语义（face 展开去重、region 驱动 NodeCategory）与构造期 field 长度校验；多图构造、几何特征挂载与序列化继续出清
-- 日期：2026-09-16
-- 状态：accepted（2026-09-16 经 Slice 3a 派单预审采纳，D1–D6 决策冻结）
+- 日期：2026-09-17
+- 状态：accepted（2026-09-17 经 Slice 3a 派单预审采纳，D1–D6 决策冻结）
 - 关联：ADR-015（canonical 表示）、ADR-016（构造契约——本 ADR 为其"随派单定稿"的构造语义提供数据模型依据）、ADR-017（后端适配，下游）、ADR-018（领域组成——本 ADR 即其出清的 entity identity 与 relation 存储的 dedicated ADR）、ADR-014（cell-based 拓扑规范）、Phase 2、Design UML `class_diagram.puml`
 
 ## 背景（Context）
@@ -13,7 +13,7 @@ ADR-018 将实体身份（ID schema）与 relation 存储形式（含 edge conta
 ## 决策（Decision）
 
 1. **实体模型（Phase 2 cell-based）**：实体 = mesh 节点；实体 ID = canonical 全局节点 ID（即 Mesh 节点存储索引，positional）；身份范围为单 CAEGraph 实例内。多命名空间 ID、跨实例/序列化/分布式身份继续出清（ADR-018 出清项不回收）。
-2. **关系模型（node graph）**：无向节点对关系，由全部 canonical cells 的 codim-1 face 模板展开生成——每个 face 的连续节点对（含环回）即一条候选边（TRI3 face → 1 条、QUAD4 face → 4 条）；全局规范化为 `(min, max)`、去重、排序。cell-center 图记录为未来扩展，不在 Phase 2 实现。
+2. **关系模型（node graph）**：无向节点对关系，由全部 canonical cells 的 codim-1 face 模板展开生成——每个 face 的连续节点对（含环回）即一条候选边（TRI3 face → 1 条、QUAD4 face → 4 条）；全局规范化为 `(min, max)`、去重、排序。**1D 特例**：`topo_dim == 1` 时 cell（LINE2）本身即边，贡献其节点对（其 codim-1 faces 为维度 0 的点，不入 canonical topology，ADR-014）。cell-center 图记录为未来扩展，不在 Phase 2 实现。
 3. **存储语义**：关系以规范化去重的无序对集合语义存储于 CAEGraph；每实体携带 NodeCategory 注解。容器实现形式（tuple 对列表 vs CSR）为实现细节，不冻结；序列化与 batching 继续出清。
 4. **NodeCategory 推导（region 驱动）**：构造期由语义区域推导——节点不属于任何 region → INTERIOR；恰属 1 个 → BOUNDARY；≥2 个 → CORNER。region 成员（canonical facet ID）经 Mesh 展开为节点集；未声明于任何 region 的边界节点保持 INTERIOR（显式语义限制，非缺陷）。
 5. **构造签名语义**：输入 = Mesh + 显式传入的 BoundaryManager（region 所有权留在调用方）+ 可选 Fields；输出 = 完整填充的 CAEGraph（引用该 Mesh 为 topology provider）。构造期执行 field 长度校验：`association == "node"` ↔ `len(values) == n_nodes`、`association == "cell"` ↔ `len(values) == n_cells`（ADR-014 组成修订的落点）；其他 association 标签不做长度校验。
@@ -38,5 +38,5 @@ ADR-018 将实体身份（ID schema）与 relation 存储形式（含 edge conta
 
 ## 修订历史（Revision history）
 
-- 2026-09-16 v1：最小可行决策——D1–D6 冻结，出清项显式记录。
-- 2026-09-16：accepted（Slice 3a 派单预审通过）。
+- 2026-09-17 v1：最小可行决策——D1–D6 冻结，出清项显式记录。
+- 2026-09-17 v2：补 1D 构造特例（LINE2 cell 贡献其节点对）——Slice 3a 复核发现 1D 空边集缺陷；accepted。
