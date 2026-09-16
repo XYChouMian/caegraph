@@ -35,7 +35,7 @@ AbstractMeshLoader.__call__(path) -> Mesh
   5. return Mesh — topology representation consumed by RepresentationBuilder → CAEGraph (ADR-015)
 ```
 
-> `__call__` pipeline is stable; the number and naming of protected format-specific hooks are implementation details and are not frozen by this ADR.
+> `__call__` 管线稳定；protected 钩子的数量与命名是实现细节，不由本 ADR 冻结。
 
 分类、构造、校验规则不按格式复制（步骤 2 之后共享 ADR-014 的 build 语义）。IO 引擎（meshio，ADR-013 provisional）只存在于步骤 1–2 的实现细节，可整体替换。
 
@@ -80,7 +80,7 @@ source_group_dim < topo_dim − 1   → 不入 canonical topology → warning / 
 
 加载管线的职责终点是产出 canonical Mesh、domain groups 以及命名 boundary/interface regions；数学 BoundaryType 只能来自用户声明的 BoundarySpec。禁止任何 `名称 → 数学类别` 映射表进入 io 层——同名在不同问题中可为不同数学类别（ADR-010 背景论据；Spec 槽位一致性见 ADR-011）。
 
-### Revision history
+## 修订历史（Revision history）
 
 - 2026-09-06 初版：Region 抽象继承树提案 → 评审否决（见 Options）。
 - 2026-09-06 返工：改为转换管线 + 物理组维度分类（当时含 block 存储、node-set 边界成员、唯一 `_read` 钩子等过渡表述）。

@@ -1,5 +1,7 @@
 # CAEGraph
 
+English | [简体中文](README.zh-CN.md)
+
 A CAE-to-Physics-AI workflow framework built for the PyG ecosystem.
 
 CAEGraph connects **CAE data → canonical graph representation → GNN training → neural simulation across different discretizations → experimental-data assimilation**. It normalizes heterogeneous CAE sources into **CAEGraph**, the graph-native canonical domain representation (ADR-015), and reaches learning backends — PyTorch Geometric today — through backend adapters, keeping the engineering truth framework-independent.

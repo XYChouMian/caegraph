@@ -52,7 +52,7 @@ ADR-015 冻结 CAEGraph 为 canonical domain representation 并列出组成方�
 - CAEGraph core 派单的语义依据 = ADR-015 + 本 ADR；API 细节在派单中定稿。
 - 不引入新依赖、不改变分层方向。
 
-## Revision history
+## 修订历史（Revision history）
 
 - 2026-09-08 v1：最小可行草案——冻结语义组成与归属原则；ID schema、存储布局、类层次、交互机制全部出清至后续 dedicated ADRs。
 - 2026-09-08：accepted（Architecture review 通过，语义组成与归属原则冻结）。

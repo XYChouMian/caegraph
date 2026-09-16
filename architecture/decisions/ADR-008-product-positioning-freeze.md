@@ -22,8 +22,6 @@ CAEGraph 的定位经历四轮演进（数据基础设施 ⇄ solver 框架 ⇄ 
 **一句话定位**：
 
 > CAEGraph 连接 CAE 仿真与 Physics AI，提供 **CAE 数据 → 图表示 → GNN 训练 → 新网格神经仿真 → 实验数据同化** 的完整工作流。
->
-> CAEGraph bridges CAE simulation and physics AI through a **CAE → GNN → AI workflow**: converting CAE data into graph representations, enabling GNN training on engineering problems, running neural simulation on new meshes with pretrained models, and correcting predictions with experimental observations.
 
 措辞纪律：不自称"训练框架"（避免 Lightning/PhysicsNeMo 误读），不自称 "数据基础设施"（避免 meshio 误读）；与 PyG 的关系是 **extends the PyG ecosystem for computational engineering**。
 

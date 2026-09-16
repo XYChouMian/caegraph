@@ -3,7 +3,7 @@
 - 编号：ADR-015
 - 标题：冻结 CAEGraph 为 CAE 数据的 canonical domain representation——meshes / grids / particles 等离散化均作为 CAEGraph 构造的 source representation；其中 mesh-based sources additionally provide topology information for cell-based discretizations；构造契约见 ADR-016，backend 适配契约见 ADR-017；本 ADR 取代 ADR-007 D1/D3 与 ADR-009 的 Mesh→Graph 契约，收窄 ADR-014，修订 ADR-012 目标对象
 - 日期：2026-09-07
-- 状态：**accepted（2026-09-07 经 Architecture review 采纳；v1→v5 演进见 Revision history）**
+- 状态：**accepted（2026-09-07 经 Architecture review 采纳；v1→v5 演进见修订历史）**
 - 关联：ADR-007（D1/D3 已修订，D2 保留强化）、ADR-008（图后端冻结条款之澄清性 ADR 即本 ADR）、ADR-009（Mesh→Graph 契约已取代）、ADR-012（目标对象已修订）、ADR-013（不变：meshio=external IO engine）、ADR-014（cell-based topology 规范）、**ADR-016（construction contract，accepted）**、**ADR-017（backend adaptation contract，accepted）**、**ADR-018（domain composition，accepted）**、Phase 2、ROADMAP、Design UML `class_diagram.puml`
 
 ## 背景（Context）
@@ -35,7 +35,7 @@ CAE data → Mesh → Graph → GNN
 
 ## 决策（Decision）
 
-> **CAEGraph is the canonical graph-native representation of CAE data. Meshes, grids, particles, and other discretizations are source representations used to construct CAEGraph.**
+> **CAEGraph 是 CAE 数据的 canonical graph-native 表示；网格、粒子及其他离散形态都是用于构造 CAEGraph 的 source representation。**
 
 ```mermaid
 flowchart LR
@@ -47,19 +47,19 @@ flowchart LR
 
 1. **CAEGraph 是 canonical domain representation**：面向 physics AI 的 entity-centric 领域模型，组成包含 entities、relations、geometry、fields、regions、conditions（cell-based 方法下含 topology semantics）——具体字段设计随 CAEGraph core 派单定稿，本 ADR 不展开。CAEGraph 不是 lossy adjacency graph：仅 nodes + edges 会丢失 fields / geometry / regions / conditions / topology semantics。
 2. **Mesh 是一种 source/topology representation**：cell-based 离散（FEM/FVM）的结构化输入；不是 universal truth，不覆盖所有 CAE 方法（FDM 不需要 cell topology，SPH 无传统 mesh），也不再是顶层 canonical 对象。cell-based 的 topology 规范由 ADR-014 承载（topology subsystem：cell-based 方法下一等，mesh-free 方法下不存在）。
-3. **Different CAE sources are transformed into CAEGraph through source-specific construction mechanisms, whose contracts are defined in ADR-016.**（CAEGraph 独立于任何 source representation；「如何进入」不在本 ADR 冻结。）
-4. **Backend frameworks are not part of CAEGraph**; PyG is the Phase 2 backend implementation。「CAEGraph 如何被 ML 框架消费」的适配契约由 ADR-017 定义。
+3. **不同 CAE source 经由各自的构造机制转换进入 CAEGraph，其契约由 ADR-016 冻结**（CAEGraph 独立于任何 source representation；「如何进入」不在本 ADR 冻结。）
+4. **Backend 框架不属于 CAEGraph**——PyG 是 Phase 2 的 backend 实现。「CAEGraph 如何被 ML 框架消费」的适配契约由 ADR-017 定义。
 
-最终架构陈述（原句入 ADR）：
+最终架构陈述：
 
-> CAEGraph does not model meshes and then convert them into graphs. It normalizes heterogeneous CAE data sources into a canonical graph representation for physics AI. Meshes are one possible source representation used to construct graph topology, while PyG is one possible backend for graph learning.
+> CAEGraph 不先建模 mesh 再转换为图；它将异构 CAE 数据源直接规范化为面向 physics AI 的 canonical graph 表示。Mesh 只是用于构造图拓扑的一种 source representation，PyG 只是图学习的一种可选 backend。
 
 ## 边界（Scope）
 
 本 ADR 只冻结上述范式；以下问题由各自的 ADR 承载，本 ADR 不重复立法：
 
 - 构造契约（source-specific construction、builder 策略）——**ADR-016**；
-- backend representation adaptation（including the DataGraph terminology and PyG mapping）——**ADR-017**；
+- 后端表示适配（含 DataGraph 术语与 PyG 映射）——**ADR-017**；
 - cell-based topology 规范（CellType / connectivity / facet）——**ADR-014**。
 
 同时明确禁止：**CAEGraph 的 source-type 子类体系**（MeshGraph / GridGraph / ParticleGraph 之类）——不同数值方法是不同的构造方式，不是不同的领域对象。
@@ -90,14 +90,14 @@ flowchart LR
 
 ## 影响（Consequences）
 
-- **Coding 重启**：按 phase2 Coding gate 顺序执行（CAEGraph core 先行）；CellType has landed as part of the topology subsystem; remaining topology organization follows ADR-014 implementation。
+- **Coding 重启**：按 phase2 Coding gate 顺序执行（CAEGraph core 先行）；CellType 已随 topology subsystem 落地，其余 topology 组织遵循 ADR-014 实现。
 - 本 ADR 不引入新第三方依赖；不改变依赖分层方向（分层立法属 ADR-007）。
 - 架构解释图（representation hierarchy 等）由 ARCHITECTURE.md 与 docs overview 承载，不入本 ADR。
 
-## Revision history
+## 修订历史（Revision history）
 
 - 2026-09-07 v1：以「graph-first vs mesh-first」为框（含 A/B/C 三案）。
 - 2026-09-07 v2：问题边界重定义为「异构 CAE 源与 GNN 之间的 canonical representation」；A/B/C 重塑；补 FEM/FVM/FDM/SPH 范式表与备选方案。
 - 2026-09-07 v3：CAEGraph 定为 graph-native canonical domain representation；Mesh 归位 topology subsystem（cell-based 一等组件）；PyG 仅为 backend adapter。
 - 2026-09-07 v4：accepted 后架构澄清——DataGraph 边界、builder/adapter 契约移出冻结范围（scope exclusions）、禁止 source-type 子类。
-- 2026-09-08 v5：Accepted architecture refined: implementation-level construction and backend adaptation decisions were separated into ADR-016 and ADR-017. ADR-015 scope reduced to the canonical representation decision (four decisions); the dependency-direction legislation returned to ADR-007/017; detailed architecture diagrams migrated to ARCHITECTURE.md / docs.
+- 2026-09-08 v5：accepted 架构精化——实现层的构造与后端适配决策拆分为 ADR-016 与 ADR-017；ADR-015 范围收缩至 canonical 表示决策（四项决策）；依赖方向立法回归 ADR-007/017；详细架构图迁移至 ARCHITECTURE.md / docs。

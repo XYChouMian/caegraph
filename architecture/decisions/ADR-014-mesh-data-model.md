@@ -28,9 +28,9 @@ cells:  cell_types（显式整数编码 ndarray） + 扁平 connectivity + offse
 - 按类型分组的二维矩阵块只能是**派生视图/缓存**（如 cells_of_type 风格），不具独立身份，永不构成第二套编址体系；
 - 复杂度表述（严谨版）：**O(1) 定位**某 cell/facet 的 connectivity **切片**；读取为 O(k)，k 为该单元节点数（小常数）。
 
-**不变量（原句冻结）**：
+**不变量（冻结）**：
 
-> CAEGraph entity IDs refer to canonical Mesh storage — nodes, cells, facets — never to loader/backend block-local indices.
+> CAEGraph 的实体 ID 指向 canonical Mesh 存储（nodes / cells / facets），永远不指向 loader/backend 的 block-local 索引。
 
 ### 2. Canonical explicit facet topology（平行 canonical 表）
 
@@ -45,14 +45,14 @@ facets: facet_types + fconn + foffsets + facet_cells(ragged 邻接)
 - **维度边界**：canonical topology 只容纳 dim == topo_dim 的 canonical cells 与 dim == topo_dim − 1 的 canonical facets；dim < topo_dim − 1 的 source entities（角点/曲线标记等）当前版本**不进入** canonical topology。本 contract 面向**单一拓扑维度网格**；真正的 mixed-dimensional mesh（3D solid + 2D shell + 1D beam）留待未来 ADR 扩展。
 - interface 能力注记：邻接 + 域分组 → 界面 facet 检测（如 fluid|solid 共享 facet），为未来 INTERFACE/PERIODIC 供数据基础。
 
-### 3. Connectivity 语义（双语冻结）
+### 3. Connectivity 语义（冻结）
 
 ```
 facet：winding-free——canonicalization 同时考虑原序与反序的全部 cyclic rotations，选择唯一确定性表示（如字典序最小者）；不承诺 intrinsic normal；法向始终相对于指定 adjacent cell 定义；signed cell-facet incidence 作为未来性能演进。
 cell ：保留有向局部拓扑语义，但不保留 backend-specific 节点编号——IO normalization 必须将各来源的单元局部编号映射为 CAEGraph CellType 的 local-node convention。
 ```
 
-> Facet connectivity is winding-free. Cell connectivity retains oriented local-topology semantics, but backend-specific local node ordering must not leak into core.
+> facet connectivity 为 winding-free；cell connectivity 保留有向局部拓扑语义，但 backend 特定的局部节点编号不得泄漏进 core。
 
 **CAEGraph local-node convention**：具体 per-type 局部编号表不进本 ADR，**随 CellType 实现冻结**（docstring 表 + 测试，一经发布即稳定），列为 Coding gate 的具名交付物。
 
@@ -66,7 +66,7 @@ LINE2 / TRI3 / QUAD4 / TET4 / PYR5 / WEDGE6 / HEX8
 - str-Enum 序列化面（"tri3" 等，与 BoundaryType 同风格）；
 - **显式稳定整数内部编码**（概念上 LINE2↔1、TRI3↔2…），映射由 CAEGraph 显式定义并测试：
 
-> Integer encoding is explicit and stable; it must not derive implicitly from enum declaration order.
+> 整数编码显式且稳定；不得从 enum 声明顺序隐式推导。
 
 - 每类型携带：`dim`、`node_count`、local-node convention、**codim-1 face templates**（topology 校验与 geometry 推导的共用依据）。
 
