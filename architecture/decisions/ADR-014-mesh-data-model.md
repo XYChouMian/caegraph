@@ -32,6 +32,8 @@ cells:  cell_types（显式整数编码 ndarray） + 扁平 connectivity + offse
 
 > CAEGraph entity IDs refer to canonical Mesh storage — nodes, cells, facets — never to loader/backend block-local indices.
 
+译：CAEGraph 的实体 ID 指向 canonical Mesh 存储（nodes / cells / facets），永远不指向 loader/backend 的 block-local 索引。
+
 ### 2. Canonical explicit facet topology（平行 canonical 表）
 
 facet（dim == topo_dim − 1 的边界/界面实体：2D 网格为 edge，3D 为 face）拥有与 cell 平行的 canonical 表与**独立稳定的全局索引空间**：
@@ -54,6 +56,8 @@ cell ：保留有向局部拓扑语义，但不保留 backend-specific 节点编
 
 > Facet connectivity is winding-free. Cell connectivity retains oriented local-topology semantics, but backend-specific local node ordering must not leak into core.
 
+译：facet connectivity 为 winding-free；cell connectivity 保留有向局部拓扑语义，但 backend 特定的局部节点编号不得泄漏进 core。
+
 **CAEGraph local-node convention**：具体 per-type 局部编号表不进本 ADR，**随 CellType 实现冻结**（docstring 表 + 测试，一经发布即稳定），列为 Coding gate 的具名交付物。
 
 ### 4. CellType 词汇与编码
@@ -67,6 +71,8 @@ LINE2 / TRI3 / QUAD4 / TET4 / PYR5 / WEDGE6 / HEX8
 - **显式稳定整数内部编码**（概念上 LINE2↔1、TRI3↔2…），映射由 CAEGraph 显式定义并测试：
 
 > Integer encoding is explicit and stable; it must not derive implicitly from enum declaration order.
+
+译：整数编码显式且稳定；不得从 enum 声明顺序隐式推导。
 
 - 每类型携带：`dim`、`node_count`、local-node convention、**codim-1 face templates**（topology 校验与 geometry 推导的共用依据）。
 
