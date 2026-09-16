@@ -52,6 +52,8 @@ facet：winding-free——canonicalization 同时考虑原序与反序的全部 
 cell ：保留有向局部拓扑语义，但不保留 backend-specific 节点编号——IO normalization 必须将各来源的单元局部编号映射为 CAEGraph CellType 的 local-node convention。
 ```
 
+> facet connectivity 为 winding-free；cell connectivity 保留有向局部拓扑语义，但 backend 特定的局部节点编号不得泄漏进 core。
+
 **CAEGraph local-node convention**：具体 per-type 局部编号表不进本 ADR，**随 CellType 实现冻结**（docstring 表 + 测试，一经发布即稳定），列为 Coding gate 的具名交付物。
 
 ### 4. CellType 词汇与编码
