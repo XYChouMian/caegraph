@@ -1,9 +1,10 @@
-"""Graph layer of CAEGraph — the PyG-native neural representation.
+"""Representation construction and backend adaptation layer (ADR-016/017).
 
-Planned (ADR-007, Phase 2): `Graph(torch_geometric.data.Data)` — adds
-CAE fields + validate(), never operations — plus node-graph / cell-graph
-builders. This is where the PyG boundary starts: core/geometry/io stay
-PyG-free.
-
-No implementation yet.
+Phase 2 provides the cell-based mesh construction strategy
+(:class:`~caegraph.graph.MeshRepresentationBuilder`, ADR-019); the
+backend adapter lands with the adaptation slice (ADR-017).
 """
+
+from caegraph.graph.builder import MeshRepresentationBuilder
+
+__all__ = ["MeshRepresentationBuilder"]
