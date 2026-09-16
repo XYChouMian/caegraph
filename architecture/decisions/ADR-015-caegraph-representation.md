@@ -36,8 +36,6 @@ CAE data → Mesh → Graph → GNN
 ## 决策（Decision）
 
 > **CAEGraph 是 CAE 数据的 canonical graph-native 表示；网格、粒子及其他离散形态都是用于构造 CAEGraph 的 source representation。**
->
-> **CAEGraph is the canonical graph-native representation of CAE data. Meshes, grids, particles, and other discretizations are source representations used to construct CAEGraph.**
 
 ```mermaid
 flowchart LR
@@ -49,14 +47,12 @@ flowchart LR
 
 1. **CAEGraph 是 canonical domain representation**：面向 physics AI 的 entity-centric 领域模型，组成包含 entities、relations、geometry、fields、regions、conditions（cell-based 方法下含 topology semantics）——具体字段设计随 CAEGraph core 派单定稿，本 ADR 不展开。CAEGraph 不是 lossy adjacency graph：仅 nodes + edges 会丢失 fields / geometry / regions / conditions / topology semantics。
 2. **Mesh 是一种 source/topology representation**：cell-based 离散（FEM/FVM）的结构化输入；不是 universal truth，不覆盖所有 CAE 方法（FDM 不需要 cell topology，SPH 无传统 mesh），也不再是顶层 canonical 对象。cell-based 的 topology 规范由 ADR-014 承载（topology subsystem：cell-based 方法下一等，mesh-free 方法下不存在）。
-3. **不同 CAE source 经由各自的构造机制转换进入 CAEGraph，其契约由 ADR-016 冻结**——原句：*Different CAE sources are transformed into CAEGraph through source-specific construction mechanisms, whose contracts are defined in ADR-016.*（CAEGraph 独立于任何 source representation；「如何进入」不在本 ADR 冻结。）
-4. **Backend 框架不属于 CAEGraph**——PyG 是 Phase 2 的 backend 实现（原句：*Backend frameworks are not part of CAEGraph; PyG is the Phase 2 backend implementation.*）。「CAEGraph 如何被 ML 框架消费」的适配契约由 ADR-017 定义。
+3. **不同 CAE source 经由各自的构造机制转换进入 CAEGraph，其契约由 ADR-016 冻结**（CAEGraph 独立于任何 source representation；「如何进入」不在本 ADR 冻结。）
+4. **Backend 框架不属于 CAEGraph**——PyG 是 Phase 2 的 backend 实现。「CAEGraph 如何被 ML 框架消费」的适配契约由 ADR-017 定义。
 
-最终架构陈述（原句入 ADR）：
+最终架构陈述：
 
-> CAEGraph does not model meshes and then convert them into graphs. It normalizes heterogeneous CAE data sources into a canonical graph representation for physics AI. Meshes are one possible source representation used to construct graph topology, while PyG is one possible backend for graph learning.
-
-译：CAEGraph 不先建模 mesh 再转换为图；它将异构 CAE 数据源直接规范化为面向 physics AI 的 canonical graph 表示。Mesh 只是用于构造图拓扑的一种 source representation，PyG 只是图学习的一种可选 backend。
+> CAEGraph 不先建模 mesh 再转换为图；它将异构 CAE 数据源直接规范化为面向 physics AI 的 canonical graph 表示。Mesh 只是用于构造图拓扑的一种 source representation，PyG 只是图学习的一种可选 backend。
 
 ## 边界（Scope）
 

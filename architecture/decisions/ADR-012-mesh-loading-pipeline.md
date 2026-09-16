@@ -36,8 +36,6 @@ AbstractMeshLoader.__call__(path) -> Mesh
 ```
 
 > `__call__` 管线稳定；protected 钩子的数量与命名是实现细节，不由本 ADR 冻结。
->
-> `__call__` pipeline is stable; the number and naming of protected format-specific hooks are implementation details and are not frozen by this ADR.
 
 分类、构造、校验规则不按格式复制（步骤 2 之后共享 ADR-014 的 build 语义）。IO 引擎（meshio，ADR-013 provisional）只存在于步骤 1–2 的实现细节，可整体替换。
 
