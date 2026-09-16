@@ -1,6 +1,6 @@
 # Phase 2 — CAE Data Pipeline
 
-Status: In progress — ADR-015/016/017/018 accepted; coding gates 1–3 landed (CAEGraph domain core, Field/boundary vocabulary, topology subsystem: Mesh + CellType migrated into `core/topology/`); next: backend adapter (gate 4) and the data band.
+Status: In progress — ADR-015~019 accepted; coding gates 1–3 plus the mesh representation builder landed (gate 4a: CAEGraph domain core, Field/boundary vocabulary, topology subsystem `Mesh`+`CellType`, node-graph construction per ADR-019); next: backend adapter (gate 4b) and the remaining data band.
 
 Goal: implement **R1** — the CAE → GNN data band (ADR-007/008): the domain-core objects plus geometry / io / graph / transforms / dataset.
 

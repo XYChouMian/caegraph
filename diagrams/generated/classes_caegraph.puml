@@ -39,6 +39,9 @@ class "BoundaryType" as caegraph.core.enums.BoundaryType {
 class "CAEGraph" as caegraph.core.caegraph.CAEGraph {
   associated_fields : tuple[Field, ...]
   boundaries : BoundaryManager
+  edges : tuple[tuple[int, int], ...]
+  n_entities : int
+  node_categories : tuple[NodeCategory, ...]
   topology : Mesh | None
   associate_field(field: Field) -> None
   validate() -> None
@@ -77,6 +80,8 @@ class "Mesh" as caegraph.core.topology.mesh.Mesh {
   facet_adjacent_cells(index: int) -> tuple[int, ...]
   facet_nodes(index: int) -> np.ndarray
   validate() -> None
+}
+class "MeshRepresentationBuilder" as caegraph.graph.builder.MeshRepresentationBuilder {
 }
 class "NodeCategory" as caegraph.core.enums.NodeCategory {
   name
