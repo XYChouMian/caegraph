@@ -26,10 +26,10 @@ CAE data → Mesh → Graph → GNN
 
 | 方法 | 物理实体 | 自然图构造 | Mesh 是否必需 |
 | --- | --- | --- | --- |
-| FEM | nodes / elements / facets | node graph（节点=mesh nodes，边=单元连接）或 cell graph（节点=elements，边=共享 facets）——**图构造需要策略选择** | 是 |
-| FVM | control volumes / faces / flux connections | cell centers=节点，shared faces=边（与 FEM node graph 本质不同） | 是 |
-| FDM | grid points / stencil | stencil 邻居=边（通常无单元拓扑） | 否 |
-| SPH / 粒子 | particles | neighbor search=边（无 mesh） | 否 |
+| FEM | nodes / elements / facets | node graph（节点为 mesh nodes，边为单元连接）或 cell graph（节点为 elements，边为共享 facets）——**图构造需要策略选择** | 是 |
+| FVM | control volumes / faces / flux connections | cell centers 为节点，shared faces 为边（与 FEM node graph 本质不同） | 是 |
+| FDM | grid points / stencil | stencil 邻居为边（通常无单元拓扑） | 否 |
+| SPH / 粒子 | particles | 通过 neighbor search 生成边（无 mesh） | 否 |
 
 结论：**Mesh 无法作为普适根抽象**；不同数值方法需要不同的「CAE source → graph 构造策略」。
 
@@ -45,8 +45,8 @@ flowchart LR
     class A,B,C nowrap
 ```
 
-1. **CAEGraph 是 canonical domain representation**：面向 physics AI 的 entity-centric 领域模型，组成包含 entities、relations、geometry、fields、regions、conditions（cell-based 方法下含 topology semantics）——具体字段设计随 CAEGraph core 派单定稿，本 ADR 不展开。CAEGraph 不是 lossy adjacency graph：仅 nodes + edges 会丢失 fields / geometry / regions / conditions / topology semantics。
-2. **Mesh 是一种 source/topology representation**：cell-based 离散（FEM/FVM）的结构化输入；不是 universal truth，不覆盖所有 CAE 方法（FDM 不需要 cell topology，SPH 无传统 mesh），也不再是顶层 canonical 对象。cell-based 的 topology 规范由 ADR-014 承载（topology subsystem：cell-based 方法下一等，mesh-free 方法下不存在）。
+1. **CAEGraph 是 canonical domain representation**：它是面向 physics AI、以 entity 为中心的领域模型，组成包含 entities、relations、geometry、fields、regions、conditions（cell-based 方法下含 topology semantics）——具体字段设计随 CAEGraph core 派单定稿，本 ADR 不展开。CAEGraph 不是会丢失信息的 adjacency graph：仅有 nodes + edges 会丢失 fields / geometry / regions / conditions / topology semantics。
+2. **Mesh 是一种 source/topology representation**：它是 cell-based 离散（FEM/FVM）的结构化输入；不是 universal truth，不覆盖所有 CAE 方法（FDM 不需要 cell topology，SPH 无传统 mesh），也不再是顶层 canonical 对象。cell-based 的 topology 规范由 ADR-014 承载（topology subsystem 在 cell-based 方法下是一等组件，在 mesh-free 方法下不存在）。
 3. **不同 CAE source 经由各自的构造机制转换进入 CAEGraph，其契约由 ADR-016 冻结**（CAEGraph 独立于任何 source representation；「如何进入」不在本 ADR 冻结。）
 4. **Backend 框架不属于 CAEGraph**——PyG 是 Phase 2 的 backend 实现。「CAEGraph 如何被 ML 框架消费」的适配契约由 ADR-017 定义。
 
@@ -58,8 +58,8 @@ flowchart LR
 
 本 ADR 只冻结上述范式；以下问题由各自的 ADR 承载，本 ADR 不重复立法：
 
-- 构造契约（source-specific construction、builder 策略）——**ADR-016**；
-- 后端表示适配（含 DataGraph 术语与 PyG 映射）——**ADR-017**；
+- 构造契约（按 source 特化的 construction、builder 策略）——**ADR-016**；
+- 后端表示适配（含 DataGraph 术语与 PyG mapping）——**ADR-017**；
 - cell-based topology 规范（CellType / connectivity / facet）——**ADR-014**。
 
 同时明确禁止：**CAEGraph 的 source-type 子类体系**（MeshGraph / GridGraph / ParticleGraph 之类）——不同数值方法是不同的构造方式，不是不同的领域对象。
@@ -82,7 +82,7 @@ flowchart LR
 
 本 ADR 已 accepted；实现层设计问题按归属分发：
 
-1. 语义组成、stable identity 原则与 ownership——**ADR-018**（accepted）冻结原则层；canonical entities 的精确集合与 ID schema 归后续 dedicated ADRs / CAEGraph core 派单；
+1. 语义组成、stable identity 原则与 ownership——**ADR-018**（accepted）冻结原则层；canonical entities 的精确集合与 ID schema 留待后续专门的 ADR 或 CAEGraph core 派单；
 2. connection 是否需要 entity-level treatment——**ADR-018**（accepted）冻结判定原则（承载领域语义或独立状态）；存储与容器形式不冻结；
 3. fields / geometry / regions / conditions 的挂载与归属语义——**ADR-018**（accepted）冻结；交互机制不冻结；
 4. 构造机制边界——**ADR-016**（accepted；API/类名/registry/落位随派单定稿）；

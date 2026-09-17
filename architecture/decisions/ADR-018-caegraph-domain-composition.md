@@ -12,23 +12,23 @@ ADR-015 冻结 CAEGraph 为 canonical domain representation 并列出组成方�
 
 ## 决策（Decision）
 
-**CAEGraph semantic composition consists of six domain concepts and one referenced topology subsystem.** 这是语义层面的组成声明，不是 class/member 设计——各组件的实现形态保持开放（Geometry 可为 service、Relations 可为 view、Conditions 可为 constraint registry）。
+**CAEGraph 的语义组成由六个领域概念和一个被引用的 topology subsystem 构成。** 这是语义层面的组成声明，不是 class/member 设计——各组件的实现形态保持开放（Geometry 可为 service、Relations 可为 view、Conditions 可为 constraint registry）。
 
 | 组件 | 回答的问题 | 冻结的原则 |
 | --- | --- | --- |
-| Entities | 有什么物理对象 | Entities require stable identity within their semantic scope.（身份原则；ID schema 不在本 ADR 冻结） |
-| Relations | 对象之间如何连接 | Relations are the primary abstraction for connectivity；**some relations may be explicitly provided by the source representation, while others may be derived**。Relations may represent both explicit physical relationships and derived connectivity views（periodic pair、interface relation、cell-face relation、neighborhood relation 均属之）。A connection may require its own domain identity and data representation when it carries domain semantics or independent state. |
+| Entities | 有什么物理对象 | Entities 在各自的 semantic scope 内必须具有 stable identity。（身份原则；ID schema 不在本 ADR 冻结） |
+| Relations | 对象之间如何连接 | Relations 是表达 connectivity 的主要抽象；**有些 relations 可由 source representation 显式提供，另一些则可推导得出**。Relations 既可表示显式 physical relationships，也可表示 derived connectivity views（periodic pair、interface relation、cell-face relation、neighborhood relation 均属之）。当 connection 承载领域语义或独立状态时，可能需要自身的 domain identity 与 data representation。 |
 | Geometry | 对象在哪里 | 空间位置与几何属性的语义职责；实现形态（含 service）开放 |
-| Fields | 对象有什么物理量 | **Fields are associated with entities**, not directly with geometry or topology |
+| Fields | 对象有什么物理量 | **Fields 与 entities 关联**，而不直接与 geometry 或 topology 关联 |
 | Regions | 哪些对象属于同一物理区域 | boundary / interface / physical groups 统一为 semantic region；不单独建 BoundaryGraph |
-| Conditions | 如何施加物理约束 | Conditions are constraint declarations that **may reference Regions and field data**；initial conditions may reference field data representing an initial state（约束 ≠ 状态；by reference，不与 Fields 融合） |
-| Topology subsystem | 离散结构如何定义 | optional semantic provider referenced by CAEGraph；cell-based topology semantics are provided by the topology subsystem defined in ADR-014 |
+| Conditions | 如何施加物理约束 | Conditions 是 constraint declarations，**可以引用 Regions 和 field data**；initial conditions 可以引用表示 initial state 的 field data（约束 ≠ 状态；by reference，不与 Fields 融合） |
+| Topology subsystem | 离散结构如何定义 | CAEGraph 引用的 optional semantic provider；cell-based topology semantics 由 ADR-014 定义的 topology subsystem 提供 |
 
-**Ownership 总则**：Fields **associated with** entities；Conditions may reference Regions and field data；the topology subsystem is **referenced by CAEGraph** rather than modeled as a domain concept owned by CAEGraph——它是 optional semantic provider，不是 CAEGraph 的内部对象，更不是继承体系。
+**Ownership 总则**：Fields **associated with** entities；Conditions 可以引用 Regions 和 field data；topology subsystem 是 **referenced by CAEGraph**，而非由 CAEGraph 拥有的 domain concept——它是 optional semantic provider，不是 CAEGraph 的内部对象，更不是继承体系。
 
 ## 不冻结的内容（scope exclusions）
 
-以下均为 implementation / data-model 细节，移交后续 **dedicated ADRs for entity identity and relation/topology modeling**（不预占数量与标题）：
+以下均为 implementation / data-model 细节，移交后续专门处理 entity identity 与 relation/topology modeling 的 ADR（不预占数量与标题）：
 
 - **ID schema**（多命名空间 / 全局 / 混合——影响 serialization、distributed graph、dataset batching、backend mapping，证据未齐）；
 - **storage layout 与 relation 存储形式**（含 edge container）；
@@ -48,7 +48,7 @@ ADR-015 冻结 CAEGraph 为 canonical domain representation 并列出组成方�
 
 ## 影响（Consequences）
 
-- 关闭 ADR-015「后续设计决策」①②③ 的原则层；数据模型细节归后续 dedicated ADRs。
+- 关闭 ADR-015「后续设计决策」①②③ 的原则层；数据模型细节归后续专门 ADR。
 - CAEGraph core 派单的语义依据 = ADR-015 + 本 ADR；API 细节在派单中定稿。
 - 不引入新依赖、不改变分层方向。
 

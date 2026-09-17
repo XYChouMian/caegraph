@@ -22,9 +22,9 @@ flowchart LR
 ```
 
 1. **适配链冻结**：`CAEGraph → backend adapter → framework-specific graph representation`，PyG Data 为 Phase 2 实现。
-2. **DataGraph 是概念名（backend representation layer）**：指 adapter 产出的框架侧数据表示整体，**不是必须实现的类**，更不是领域对象——不拥有 boundary semantics、CellType、physical regions、mesh topology truth；领域语义止于 CAEGraph（ADR-015）。**DataGraph does not introduce an additional mandatory conversion stage**——它是 adapter 产出的 representation layer 的称呼，不是链上第四个节点。DataGraph is retained as terminology for discussing backend representation layers：≠ class、≠ 转换阶段、= 概念层名。
-3. **依赖方向**：core 永不 import PyG（ADR-007 D2）；the adapter belongs to the backend adaptation layer defined in this ADR（package ownership 不冻结）；DataGraph / PyG Data 只是 backend 侧对象。
-4. **换 backend 的门槛**：替换或新增 backend adapter 本身不需要新 ADR——**unless the replacement changes the CAEGraph domain model or dependency direction**；此时需 architecture review（必要时新 ADR）。
+2. **DataGraph 是概念名（backend representation layer）**：指 adapter 产出的框架侧数据表示整体，**不是必须实现的类**，更不是领域对象——不拥有 boundary semantics、CellType、physical regions、mesh topology truth；领域语义止于 CAEGraph（ADR-015）。**DataGraph 不引入额外的强制转换阶段**——它是 adapter 产出的 representation layer 的称呼，不是链上第四个节点。DataGraph 保留为讨论 backend representation layers 的术语：≠ class、≠ 转换阶段、= 概念层名。
+3. **依赖方向**：core 永不 import PyG（ADR-007 D2）；adapter 属于本 ADR 定义的 backend adaptation layer（package ownership 不冻结）；DataGraph / PyG Data 只是 backend 侧对象。
+4. **换 backend 的门槛**：替换或新增 backend adapter 本身不需要新 ADR——**除非该替换改变了 CAEGraph domain model 或 dependency direction**；此时需 architecture review（必要时新 ADR）。
 
 ## 不冻结的内容
 
