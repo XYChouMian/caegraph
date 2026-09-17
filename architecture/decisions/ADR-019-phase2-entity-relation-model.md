@@ -17,7 +17,7 @@ ADR-018 将实体身份（ID schema）与 relation 存储形式（含 edge conta
 3. **存储语义**：关系以规范化去重的无序对集合语义存储于 CAEGraph；每实体携带 NodeCategory 注解。容器实现形式（tuple 对列表 vs CSR）为实现细节，不冻结；序列化与 batching 继续出清。
 4. **NodeCategory 推导（region 驱动）**：构造期由语义区域推导——节点不属于任何 region → INTERIOR；恰属 1 个 → BOUNDARY；≥2 个 → CORNER。region 成员（canonical facet ID）经 Mesh 展开为节点集；未声明于任何 region 的边界节点保持 INTERIOR（显式语义限制，非缺陷）。
 5. **构造签名语义**：输入 = Mesh + 显式传入的 BoundaryManager（region 所有权留在调用方）+ 可选 Fields；输出 = 完整填充的 CAEGraph（引用该 Mesh 为 topology provider）。构造期执行 field 长度校验：`association == "node"` ↔ `len(values) == n_nodes`、`association == "cell"` ↔ `len(values) == n_cells`（ADR-014 组成修订的落点）；其他 association 标签不做长度校验。
-6. **出清项**：多图构造并存（node + cell-center）、几何特征挂载（geometry slice 兑现 Design UML 的 `RepresentationBuilder ..> GeometryProcessor`）、增量更新、跨实例 ID、builder registry（单一 builder，第二 source 族出现再议）。
+6. **出清项**：多图构造并存（node + cell-center）、几何特征挂载（geometry slice 兑现 Design UML 的 `MeshRepresentationBuilder ..> GeometryProcessor`）、增量更新、跨实例 ID、builder registry（单一 builder，第二 source 族出现再议）。
 
 ## 备选方案（Options considered）
 
