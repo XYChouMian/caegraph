@@ -71,12 +71,15 @@ class CAEGraph(BaseObject):
         TypeError: If ``topology`` is neither ``None`` nor a
             :class:`~caegraph.core.topology.Mesh` (topology providers
             belong to the topology subsystem, never to other
-            domain-truth families such as fields or regions), or
-            ``n_entities`` is not an integer, or category entries are
-            not NodeCategory members.
+            domain-truth families such as fields or regions),
+            ``n_entities`` is not an integer, edge endpoints are not
+            integers (bools are rejected despite being int
+            subclasses), or category entries are not NodeCategory
+            members.
         ValueError: If graph data is inconsistent (missing or
-            non-positive ``n_entities``, self-loop or out-of-range
-            edges, category-length mismatch).
+            non-positive ``n_entities``, malformed edge pairs,
+            self-loop or out-of-range edges, category-length
+            mismatch).
 
     Examples:
         >>> graph = CAEGraph("channel_flow")
@@ -136,6 +139,14 @@ class CAEGraph(BaseObject):
                     raise ValueError(
                         f"edges must be (int, int) pairs, got {pair!r}"
                     ) from error
+                if any(
+                    not isinstance(endpoint, int) or isinstance(endpoint, bool)
+                    for endpoint in (first, second)
+                ):
+                    raise TypeError(
+                        f"edge endpoints must be integers, got {pair!r} "
+                        "(entity IDs are canonical node indices, ADR-019)"
+                    )
                 low, high = (first, second) if first <= second else (second, first)
                 if low == high:
                     raise ValueError(

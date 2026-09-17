@@ -177,6 +177,14 @@ def test_malformed_edge_pairs_are_rejected():
         CAEGraph("g", n_entities=2, edges=[(0, 1, 2)])  # type: ignore[list-item]
 
 
+@pytest.mark.parametrize("bad_edge", [(0.5, 1), ("0", 1), (0, True), (False, 0)])
+def test_non_integer_edge_endpoints_are_rejected(bad_edge):
+    # entity IDs are canonical node indices (ADR-019) — floats,
+    # strings and bools must fail fast with a clear TypeError
+    with pytest.raises(TypeError, match="edge endpoints must be integers"):
+        CAEGraph("g", n_entities=2, edges=[bad_edge])  # type: ignore[list-item]
+
+
 def test_node_categories_length_must_match():
     with pytest.raises(ValueError, match="match n_entities"):
         CAEGraph("g", n_entities=3, node_categories=[NodeCategory.INTERIOR])
