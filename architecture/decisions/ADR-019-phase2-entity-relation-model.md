@@ -2,7 +2,7 @@
 
 - 编号：ADR-019
 - 标题：冻结 Phase 2 的 CAEGraph 实体族（node/cell entities）与关系最小数据模型（node graph）、cell-based 构造语义（face 展开去重、region 驱动 NodeCategory 的适用边界）与构造期 field 基数校验；region 分类机制与多图构造、几何特征挂载、序列化继续出清或待裁
-- 日期：2026-09-17（v3）
+- 日期：2026-09-18（v3）
 - 状态：proposed（v3 修订起草：D1/D4 决策级修订待报批重新采纳，获批前本 ADR 不标 accepted；v2 的 accepted 状态自本修订起草起挂起）
 - 关联：ADR-015（canonical 表示）、ADR-016（构造契约——本 ADR 为其"随派单定稿"的构造语义提供数据模型依据）、ADR-017（后端适配，下游）、ADR-018（领域组成——本 ADR 即其出清的 entity identity 与 relation 存储的 dedicated ADR）、ADR-014（cell-based 拓扑规范）、Phase 2、Design UML `class_diagram.puml`
 
@@ -60,4 +60,4 @@ v3 修订动因（三方审查结论）：v2 的 D1 将 domain entity 与 GNN ve
 
 - 2026-09-17 v1：最小可行决策——D1–D6 冻结，出清项显式记录。
 - 2026-09-17 v2：补 1D 构造特例（LINE2 cell 贡献其节点对）——Slice 3a 复核发现 1D 空边集缺陷；accepted。
-- 2026-09-17 v3：三方审查修订——D1 重写为双 entity family（node/cell，graph vertices 为 representation choice）；D2 errata（k-node face → k 候选对、退化对丢弃、唯一边参考表）；D4 重构为显式 region 分类规则问题（Phase 2 机械映射限定 boundary-participation 类别，一般化分类待裁）；D5 措辞与校验扩展（leading entity axis、membership 越界拦截、BoundaryManager 最小语义、"最小表示契约"表述）；新增 associate_field 状态声明与对称边 materialization 归属。**D1/D4 决策级修订待报批重新采纳，获批前状态为 proposed。**
+- 2026-09-18 v3：三方审查修订——D1 重写为双 entity family（node/cell，graph vertices 为 representation choice）；D2 errata（k-node face → k 候选对、退化对丢弃、唯一边参考表）；D4 重构为显式 region 分类规则问题（Phase 2 机械映射限定 boundary-participation 类别，一般化分类待裁）；D5 措辞与校验扩展（leading entity axis、membership 越界拦截、BoundaryManager 最小语义、"最小表示契约"表述）；新增 associate_field 状态声明与对称边 materialization 归属。**D1/D4 决策级修订待报批重新采纳，获批前状态为 proposed。**
