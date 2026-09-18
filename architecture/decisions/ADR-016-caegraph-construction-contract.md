@@ -26,9 +26,9 @@ flowchart LR
 
 ## 决策（Decision）
 
-1. **构造边界（construction boundary）**：`CAE source representation → source-specific construction → CAEGraph`。Representation construction is separated from IO and from domain/topology ownership, while consuming topology semantics defined by ADR-014. Topology objects do not provide `to_graph()` because representation construction is not their responsibility; the dependency direction remains governed by ADR-007.
+1. **构造边界（construction boundary）**：`CAE source representation → source-specific construction → CAEGraph`。representation construction 与 IO 以及 domain/topology ownership 相互分离，但会消费 ADR-014 定义的 topology semantics。Topology objects 不提供 `to_graph()`，因为 representation construction 不是其职责；依赖方向仍由 ADR-007 约束。
 2. **construction 是策略，不是领域对象类型**：FEM ≠ FEMGraph、SPH ≠ SPHGraph——不同数值方法是不同的构造方式（策略变化点），不是不同的 CAEGraph 子类型（ADR-015 禁令在本层的落实）。
-3. **与 ADR-012 的交接**：mesh-based sources are parsed and normalized by ADR-012/013 into source-specific topology information（cell topology 语义 per ADR-014），then constructed into CAEGraph；无 cell topology 的 source（grid / particles）不经 cell 拓扑，直接构造 + 邻接生成。
+3. **与 ADR-012 的交接**：mesh-based sources 由 ADR-012/013 解析并规范化为按 source 特化的 topology information（cell topology 语义遵循 ADR-014），再构造为 CAEGraph；无 cell topology 的 source（grid / particles）不经 cell 拓扑，直接构造并生成邻接关系。
 
 ## 不冻结的内容
 
@@ -45,7 +45,7 @@ flowchart LR
 | --- | --- | --- |
 | Mesh→Graph 单一转换路径（GraphBuilder，ADR-009 原案） | 否决 | 锁死构造路径；FDM/SPH 强制伪 mesh（ADR-015 方案 B 论证） |
 | source-type 子类体系（FEMGraph / SPHGraph） | 否决 | 分类学复辟；继承不承载构造差异（ADR-015 禁令） |
-| IO 层拥有 CAEGraph 构造逻辑（IO owns construction logic） | 否决 | 构造逻辑所有权不得归 IO——loader 可内部委托 builder，但 ownership 留在构造侧（ADR-012 边界不破坏） |
+| IO 层拥有 CAEGraph 构造逻辑 | 否决 | 构造逻辑所有权不得归 IO——loader 可内部委托 builder，但 ownership 留在构造侧（ADR-012 边界不破坏） |
 | source-specific construction 策略层（本决策） | 采纳 | 边界统一、策略开放；API 留待 coding 派单 |
 
 ## 影响（Consequences）
