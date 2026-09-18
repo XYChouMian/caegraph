@@ -193,3 +193,34 @@ def test_node_categories_length_must_match():
 def test_non_enum_categories_are_rejected():
     with pytest.raises(TypeError, match="NodeCategory"):
         CAEGraph("g", n_entities=1, node_categories=["interior"])  # type: ignore[list-item]
+
+
+# --- validate() invariant tamper paths (ADR-019 v3) ---------------------------
+
+
+def test_validate_rejects_tampered_non_canonical_edges():
+    graph = CAEGraph("g", n_entities=3, edges=[(0, 1)])
+    graph._edges = ((1, 0),)  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="canonical"):
+        graph.validate()
+
+
+def test_validate_rejects_tampered_out_of_range_edges():
+    graph = CAEGraph("g", n_entities=2, edges=[(0, 1)])
+    graph._edges = ((0, 5),)  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="out of range"):
+        graph.validate()
+
+
+def test_validate_rejects_tampered_unsorted_duplicated_edges():
+    graph = CAEGraph("g", n_entities=3, edges=[(0, 1), (1, 2)])
+    graph._edges = ((1, 2), (1, 2))  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="sorted and deduplicated"):
+        graph.validate()
+
+
+def test_validate_rejects_tampered_category_length():
+    graph = CAEGraph("g", n_entities=2, edges=[(0, 1)])
+    graph._node_categories = (NodeCategory.INTERIOR,)  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="match n_entities"):
+        graph.validate()

@@ -35,10 +35,11 @@ class MeshRepresentationBuilder:
     (specs) are not migrated — bind them against
     ``graph.boundaries`` after construction.
 
-    Field length validation executes here (ADR-014 as amended /
+    Field cardinality validation executes here (ADR-014 as amended /
     ADR-019 D5): fields whose ``association`` is ``"node"`` or
-    ``"cell"`` must carry exactly ``n_nodes`` / ``n_cells`` sized
-    values; other association labels are not length-checked.
+    ``"cell"`` must carry a leading entity axis of exactly
+    ``n_nodes`` / ``n_cells`` entries; other association labels are
+    not cardinality-checked.
 
     No builder registry exists in Phase 2 (single construction
     strategy, ADR-019 D6); further source families extend this layer
@@ -64,13 +65,15 @@ class MeshRepresentationBuilder:
                 (length-validated for node/cell associations).
 
         Returns:
-            The fully populated CAEGraph, named after the mesh.
+            A CAEGraph satisfying the Phase 2 minimal representation
+            contract (ADR-019 D5), named after the mesh.
 
         Raises:
             TypeError: If ``mesh`` is not a
                 :class:`~caegraph.core.topology.Mesh`.
             ValueError: If a region references an unknown facet id or
-                a field fails its association length check.
+                a field fails its leading-entity-axis cardinality
+                check.
         """
         if not isinstance(mesh, Mesh):
             raise TypeError("MeshRepresentationBuilder expects a Mesh source")
@@ -132,8 +135,10 @@ class MeshRepresentationBuilder:
         codim-1 face template (closed ring) form candidate edges. A
         1D cell (LINE2) is itself an edge and contributes its own
         node pair — its codim-1 faces are dimension-0 points, absent
-        from the canonical topology (ADR-014/019 D2). Every candidate
-        is canonicalized to ``(min, max)`` and deduplicated globally.
+        from the canonical topology (ADR-014/019 D2). Degenerate
+        same-endpoint candidates ``(a, a)`` are discarded. Every
+        candidate is canonicalized to ``(min, max)`` and deduplicated
+        globally.
         """
         edges: set[tuple[int, int]] = set()
         for cell_id in range(mesh.n_cells):
@@ -141,22 +146,24 @@ class MeshRepresentationBuilder:
             nodes = mesh.cell_nodes(cell_id).tolist()
             if cell_type.dim == 1:
                 first, second = nodes
-                edges.add((min(first, second), max(first, second)))
+                if first != second:
+                    edges.add((min(first, second), max(first, second)))
                 continue
             for face in cell_type.faces:
                 ring = [nodes[local] for local in face]
                 for index in range(len(ring)):
                     first = ring[index]
                     second = ring[(index + 1) % len(ring)]
-                    edges.add((min(first, second), max(first, second)))
+                    if first != second:
+                        edges.add((min(first, second), max(first, second)))
         return tuple(sorted(edges))
 
     def _validate_field(self, field: Field, mesh: Mesh) -> None:
-        """Enforce the association length contract (ADR-019 D5).
+        """Enforce the leading-entity-axis cardinality contract (ADR-019 D5).
 
         Raises:
-            ValueError: If a node/cell-associated field carries
-                non-sized values or a mismatched value count.
+            ValueError: If a node/cell-associated field carries an
+                unsized payload or a mismatched leading-axis count.
         """
         association = field.association
         if association not in ("node", "cell"):
@@ -166,11 +173,12 @@ class MeshRepresentationBuilder:
         except TypeError as error:
             raise ValueError(
                 f"field {field.name!r} with association {association!r} "
-                "must carry sized values"
+                "must carry a sized leading entity axis"
             ) from error
         expected = mesh.n_nodes if association == "node" else mesh.n_cells
         if length != expected:
             raise ValueError(
-                f"field {field.name!r} carries {length} values but "
-                f"association {association!r} requires {expected}"
+                f"field {field.name!r} has a leading entity axis of "
+                f"{length} entries but association {association!r} "
+                f"requires {expected}"
             )

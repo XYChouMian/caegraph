@@ -146,6 +146,50 @@ def test_region_with_unknown_facet_is_rejected():
         MeshRepresentationBuilder()(_two_triangle_mesh(), manager)
 
 
+def test_region_with_negative_facet_id_is_rejected():
+    manager = BoundaryManager()
+    manager.register(BoundaryRegion("ghost", [-1]))
+    with pytest.raises(ValueError, match="unknown facet"):
+        MeshRepresentationBuilder()(_two_triangle_mesh(), manager)
+
+
+@pytest.mark.parametrize(
+    ("cell_type", "node_count", "unique_edges"),
+    [
+        (CellType.TET4, 4, 6),
+        (CellType.PYR5, 5, 8),
+        (CellType.WEDGE6, 6, 9),
+        (CellType.HEX8, 8, 12),
+    ],
+)
+def test_unique_edge_counts_per_cell_type(cell_type, node_count, unique_edges):
+    # ADR-019 v3 reference table: candidates != unique edges
+    mesh = Mesh(
+        "single_cell",
+        nodes=[[float(index), 0.0, 0.0] for index in range(node_count)],
+        topo_dim=3,
+        cell_types=[cell_type.code],
+        cells=list(range(node_count)),
+        cell_offsets=[0, node_count],
+    )
+    graph = MeshRepresentationBuilder()(mesh)
+    assert len(graph.edges) == unique_edges
+
+
+def test_degenerate_same_endpoint_candidates_are_discarded():
+    mesh = Mesh(
+        "degenerate_tri",
+        nodes=[[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
+        topo_dim=2,
+        cell_types=[CellType.TRI3.code],
+        cells=[0, 1, 1],  # repeated node -> face (1, 2) degenerates to (1, 1)
+        cell_offsets=[0, 3],
+    )
+    graph = MeshRepresentationBuilder()(mesh)
+    # faces (0,1),(1,1),(1,0): (1,1) discarded, the rest collapse to (0,1)
+    assert graph.edges == ((0, 1),)
+
+
 def test_node_field_length_is_validated():
     mesh = _two_triangle_mesh()
     with pytest.raises(ValueError, match="requires 4"):

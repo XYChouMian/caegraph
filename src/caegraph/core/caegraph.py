@@ -215,7 +215,10 @@ class CAEGraph(BaseObject):
 
         Association is a reference, not ownership: fields belong to
         entities and keep their own entity scope. Field names are
-        unique per representation.
+        unique per representation. Phase 2 status: lightweight
+        association API — no topology-cardinality validation happens
+        here (cardinality is checked at construction time by the
+        representation builder, ADR-019 D5).
 
         Args:
             field: The field data to associate.
