@@ -195,7 +195,7 @@ def test_non_enum_categories_are_rejected():
         CAEGraph("g", n_entities=1, node_categories=["interior"])  # type: ignore[list-item]
 
 
-# --- validate() invariant tamper paths (ADR-019 v3) ---------------------------
+# --- validate() invariant tamper paths (ADR-019) ------------------------------
 
 
 def test_validate_rejects_tampered_non_canonical_edges():

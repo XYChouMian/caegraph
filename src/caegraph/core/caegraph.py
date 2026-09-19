@@ -56,7 +56,11 @@ class CAEGraph(BaseObject):
             (``Mesh.n_nodes``); direct construction is deliberately
             not cross-checked against ``topology`` (future
             multi-graph construction may legitimately differ,
-            ADR-019 D6).
+            ADR-019 D6). For Phase 2 this counts the node-graph
+            vertex set — node entities serving as graph vertices is
+            a representation choice, not the domain entity total
+            (ADR-019 D1); cell entities are addressed through the
+            topology provider's cell IDs.
         edges: Optional node-pair relations. Each pair is normalized
             to ``(min, max)``, self-loops are rejected, indices are
             bounds-checked against ``n_entities`` and the stored set
@@ -187,7 +191,7 @@ class CAEGraph(BaseObject):
 
     @property
     def n_entities(self) -> int:
-        """Entity count of the construction-time entity model (ADR-019)."""
+        """Node-graph vertex count of the construction-time entity model (ADR-019 D1)."""
         return self._n_entities
 
     @property

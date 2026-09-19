@@ -163,7 +163,7 @@ def test_region_with_negative_facet_id_is_rejected():
     ],
 )
 def test_unique_edge_counts_per_cell_type(cell_type, node_count, unique_edges):
-    # ADR-019 v3 reference table: candidates != unique edges
+    # ADR-019 reference table: candidates != unique edges
     mesh = Mesh(
         "single_cell",
         nodes=[[float(index), 0.0, 0.0] for index in range(node_count)],
