@@ -4,7 +4,7 @@
 
 - 编号：ADR-NNN
 - 标题：<一句话决策>
-- 日期：<YYYY-MM-DD>
+- 日期：<确认当前日期后填写 YYYY-MM-DD>
 - 状态：accepted | superseded（被 ADR-XXX 取代）
 - 关联：相关 Phase / UML 节点 / 被取代的 ADR
 
@@ -26,3 +26,5 @@
 ## 影响（Consequences）
 
 <正面影响、代价、后续必须做的事>
+
+填写日期或修订历史前，必须读取并执行 `.agent/skills/time/SKILL.md`；历史日期必须有明确证据，不得凭当前日期猜测。

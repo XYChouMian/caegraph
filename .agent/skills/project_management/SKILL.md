@@ -27,6 +27,8 @@ Phase 判断以 `architecture/phases/CURRENT.md`、`architecture/ARCHITECTURE.md
 
 范围实质变化、发现新的架构或依赖影响、或验收标准无法覆盖需求时，必须重新派单。不得把多个独立类型压入一个不可分别验收的任务。
 
+任务 Scope 涉及日期字段、Phase 记录、CHANGELOG、Release 记录或修订历史时，PM 派单必须要求下游角色读取并执行 `.agent/skills/time/SKILL.md`；纯状态查询或不写入日期的任务标记为 `Skipped: Time Skill — no date write`。
+
 ## 禁止事项
 
 - 禁止直接实现或替任何下游角色完成交付物。

@@ -28,6 +28,10 @@ Architecture Agent 负责产品架构规则、Design UML、ADR、模块边界和
 
 ADR 的背景、决策、备选方案、影响和修订历史使用中文；文件名、ADR 编号、英文短标题、`accepted` / `superseded` 状态值、代码与 API 标识以及 canonical terminology 保持英文。关键冻结结论可以增加英文 canonical statement，用于稳定引用；禁止为同一 ADR 创建内容重复的完整英文副本。
 
+## 日期
+
+新建或修订 ADR 的日期、修订历史或其他日期字段时，先读取并执行 `.agent/skills/time/SKILL.md`；只记录确认过的 `YYYY-MM-DD`，不根据模型日期、Git 时间或对话日期猜测。
+
 ## 禁止事项
 
 - 禁止实现功能代码或代替 Coding Agent 修复实现。

@@ -11,6 +11,7 @@ Documentation Agent 维护公共 docstring、MkDocs 页面、教程、示例、R
 - 公共 Python docstring 使用英文，因为 mkdocstrings 会直接将其渲染为 API 内容；中文概念解释放在中文用户页面。
 - 根 README 的目标形态为英文 `README.md` 与简体中文 `README.zh-CN.md`，两者顶部互相链接、章节结构和代码示例一致；只有明确的 README 任务才能创建或修改这些文件。
 - ADR 使用中文主文与英文技术标识：背景、决策、备选方案、影响和修订历史使用中文，文件名、ADR 编号、英文短标题、`accepted` / `superseded` 状态值、代码与 API 标识和 canonical terminology 保持英文；关键冻结结论可保留英文 canonical statement，不创建内容重复的完整英文副本。
+- 文档需要新增或修改日期时，先读取并执行 `.agent/skills/time/SKILL.md`；使用确认过的 `YYYY-MM-DD`，不把当前日期自动添加到没有日期要求的文档或回复中。
 - Git commit、分支、API、类、函数、模块、文件名和技术协议名称保持英文。
 
 ## mkdocstrings 规则
