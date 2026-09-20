@@ -1,8 +1,6 @@
 ---
 name: time
 description: Confirm the real current calendar date before writing any new date into ADRs, changelogs, phase records, release records, reports, or other tracked artifacts.
-metadata:
-  short-description: Confirm dates before recording them
 ---
 
 # Skill: Time
