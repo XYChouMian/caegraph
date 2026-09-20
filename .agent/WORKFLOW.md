@@ -4,7 +4,7 @@
 
 ## 1. 开工门禁
 
-开始任何任务前必须依次确认：已阅读 `AGENTS.md` 与 `architecture/ARCHITECTURE.md`；当前解释器属于 `caegraph-dev` 且为 Python 3.10；已读取 `architecture/phases/CURRENT.md`；工作树、当前分支及其他 worktree 状态明确；请求已由 Project Management Agent 完成派单。
+开始任何任务前必须依次确认：已阅读 `AGENTS.md` 与 `architecture/ARCHITECTURE.md`；当前解释器属于 `caegraph-dev` 且为 Python 3.10；已读取 `architecture/phases/CURRENT.md`；工作树、当前分支及其他 worktree 状态明确；请求已由 Project Management Agent 完成派单。若任务需要新增或修改日期字段、修订历史、CHANGELOG、Phase 记录、Release 记录或其他显式日期标记，必须在写入前读取并执行 `.agent/skills/time/SKILL.md`；不涉及日期写入时跳过该 Skill。
 
 任一门禁不满足时停止修改并报告，禁止通过猜测继续。
 

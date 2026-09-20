@@ -12,6 +12,8 @@ Release Agent 只执行明确的版本发布任务，负责版本、CHANGELOG、
 
 使用 SemVer。`0.x` 阶段允许 MINOR 包含破坏性变化，但必须标记 `BREAKING` 并提供迁移说明。版本号以 `src/caegraph/__init__.py` 的 `__version__` 与 `pyproject.toml` 的 `version` 为当前双文件真相，两处必须一致。
 
+发布日期、CHANGELOG 日期或发布记录日期写入前，必须读取并执行 `.agent/skills/time/SKILL.md`；使用确认过的 `YYYY-MM-DD`，不根据版本提交时间猜测。
+
 ## 发布清单
 
 1. Black、Ruff、Mypy、Pytest 和严格 MkDocs 构建全部通过。

@@ -85,6 +85,7 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
 - 文档：`mkdocs`（Material + mkdocstrings），提交前 `mkdocs build --strict`
 - **Agent 规范语言**：`AGENTS.md`、`.agent/WORKFLOW.md` 与 `.agent/skills/*/SKILL.md` 以中文为主要说明语言；命令、路径、代码符号、API 名称、Git 提交格式及 `Approve` / `Request Changes` / `Reject`、`blocking` / `non-blocking` 等机器可识别状态保持英文
 - **ADR 语言**：ADR 的背景、决策、备选方案、影响和修订历史以中文为主要叙述语言；文件名、ADR 编号、英文短标题、`accepted` / `superseded` 状态值、代码与 API 标识及 canonical terminology 保持英文；关键冻结结论可以保留英文 canonical statement，但不创建内容重复的完整英文副本
+- **日期确认**：需要写入新日期时必须遵守 `.agent/skills/time/SKILL.md`，使用系统时钟确认真实当前日期；不涉及日期的任务不要求额外输出当前日期
 - **文本换行约定**：Markdown 是自适应文本（自动换行），段落、列表项、引用块**禁止人工强制换行**——一个逻辑单元（一个段落/一条列表项/一条引用）必须写成一行；仅在代码类文件（`.py`、`.puml` 等）或 Markdown 代码块内部结构行中才允许按宽度折行。mermaid 流程图另遵守 §4 图示规范。
 - CI：`.github/workflows/test.yml`（安装 → pytest → 构建 MkDocs）
 - 环境可复现描述：根目录 `environment.yml`
