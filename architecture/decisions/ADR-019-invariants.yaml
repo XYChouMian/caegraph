@@ -2,8 +2,9 @@
 #
 # Source of truth for the decision text:
 #   architecture/decisions/ADR-019-phase2-entity-relation-model.md
-# This registry was extracted from the v3 decision text BEFORE the v4
-# restructure (anchor-first workflow) and cross-checked afterwards.
+# Semantics were extracted from the v3 decision text (baseline commit
+# ca78575) and cross-checked against the v4 restructured body; both
+# claims are verifiable from git history.
 #
 # Rules:
 # - Every statement is decidable (true/false); no "should consider" or
@@ -18,7 +19,7 @@
 
 adr: "ADR-019"
 version: "v4"
-extracted_from: "v3 decision text (pre-restructure anchor)"
+extracted_from: "v3 decision text (baseline commit ca78575)"
 
 invariants:
   # --- D1: entity family model ------------------------------------------
