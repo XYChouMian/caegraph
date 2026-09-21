@@ -154,20 +154,27 @@ def test_region_with_negative_facet_id_is_rejected():
 
 
 @pytest.mark.parametrize(
-    ("cell_type", "node_count", "unique_edges"),
+    ("cell_type", "node_count", "topo_dim", "unique_edges"),
     [
-        (CellType.TET4, 4, 6),
-        (CellType.PYR5, 5, 8),
-        (CellType.WEDGE6, 6, 9),
-        (CellType.HEX8, 8, 12),
+        (CellType.LINE2, 2, 1, 1),
+        (CellType.TRI3, 3, 2, 3),
+        (CellType.QUAD4, 4, 2, 4),
+        (CellType.TET4, 4, 3, 6),
+        (CellType.PYR5, 5, 3, 8),
+        (CellType.WEDGE6, 6, 3, 9),
+        (CellType.HEX8, 8, 3, 12),
     ],
 )
-def test_unique_edge_counts_per_cell_type(cell_type, node_count, unique_edges):
-    # ADR-019 reference table: candidates != unique edges
+def test_unique_edge_counts_per_cell_type(
+    cell_type, node_count, topo_dim, unique_edges
+):
+    # ADR-019 reference table: candidates != unique edges (all 7 types;
+    # the LINE2 case also re-exercises the 1D special-case branch on a
+    # bare mesh, complementing the facet-context 1D test)
     mesh = Mesh(
         "single_cell",
         nodes=[[float(index), 0.0, 0.0] for index in range(node_count)],
-        topo_dim=3,
+        topo_dim=topo_dim,
         cell_types=[cell_type.code],
         cells=list(range(node_count)),
         cell_offsets=[0, node_count],
