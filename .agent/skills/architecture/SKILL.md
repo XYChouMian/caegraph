@@ -34,15 +34,11 @@ ADR 的背景、决策、备选方案、影响和修订历史使用中文；文�
 
 ## 可选 YAML 不变式登记
 
-YAML 不变式登记只适用于同时满足以下条件的实现型 ADR：约束数量有限、每条可判定真伪、且需要逐条关联测试或显式登记测试缺口。原则、流程、定位类 ADR 不创建 YAML，避免产生与 Markdown ADR 重复的第二真相。满足准入条件的 ADR 可创建 `ADR-NNN-invariants.yaml`；不创建该文件本身不构成缺陷。只有当 PM 派单明确关联该文件或 ADR 已有该登记时，才必须按本节严格维护和核验。
+YAML 不变式登记只适用于约束有限、可判定真伪且需要逐条测试证据或显式缺口登记的实现型 ADR；原则、流程和定位类 ADR 不创建。满足条件的 ADR 可创建 `ADR-NNN-invariants.yaml`，不创建本身不构成缺陷。Markdown ADR 始终是唯一决策真源，YAML 只作为机器可读的核验索引。
 
-Markdown ADR 是决策文字的唯一真源；YAML 是机器可审计的可选伴随登记，不得替代 ADR、测试或 Reviewer 判断。登记头部必须包含 ADR 编号、当前版本和 `extracted_from` 锚点；该锚点必须写明来源 ADR 版本与可由 Git 解析的 commit hash。新登记的叙述值使用中文，ID 与 `path::test_name` 保持英文；确需跨 commit 稳定引用时才增加英文 `canonical_statement`。既有已审计登记不因本规则回翻语言。
+只有 PM 派单明确关联 YAML 或 ADR 已有该登记时，才必须严格核验。Architecture 决定是否创建登记，并独占所有会改变 ADR 含义的内容、来源锚定、重构零语义变化声明及测试缺口处置；经 PM 明确授权的执行 Agent 只能同步本次 diff 已客观证明的既有测试证据，不得据此创建、推导或改写架构约束。
 
-每条不变式必须包含 `id`、中文 `statement`、来源 `decision` 和 `test_mapping`；`test_mapping` 只能是测试映射列表或 `TEST_MISSING`。`TEST_MISSING` 可选携带 `missing_reason`，且在 Phase 收尾时必须存在。`explicitly_not_frozen` 只登记刻意未冻结的自由度，不得作为实现要求。
-
-本角色独占语义字段 `statement`、`decision`、`canonical_statement` 和 `explicitly_not_frozen` 的创建与修改。经派单明确授权的执行 Agent 可以机械更新 `test_mapping` 与 `missing_reason`，但不得借此改变任何语义字段。
-
-YAML 有两类触发点：编写符合准入条件的新 ADR；以及重构既有 ADR 且需要证明语义零变化。后者必须先以重构前 ADR 建立或读取基线登记，再逐条比对重构后的 `id`、`statement`、`decision` 和 `explicitly_not_frozen`；任何差异都必须作为 Architecture 变更处理，不能宣称零变化。
+YAML 的字段、示例与填写规则见 [ADR Template](../../architecture/decisions/ADR-000-template.md)。
 
 ## 禁止事项
 

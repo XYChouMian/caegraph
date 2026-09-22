@@ -45,7 +45,7 @@ Git 是所有 CAEGraph Agent 共享的基础工程能力，不是独立交付角
 | Reviewer | 只读检查 diff、历史与提交 | 审查时静默修改或提交代码 |
 | Release | 经批准的版本、CHANGELOG、发布分支、tag 与产物准备 | 未经批准发布或跳过检查 |
 
-仅在 PM 派单明确授权时，执行 Agent 可更新关联 `ADR-NNN-invariants.yaml` 中获准的映射字段；暂存前必须确认 diff 不含未授权字段或文件。
+仅在 PM 派单明确授权时，执行 Agent 可暂存关联 `ADR-NNN-invariants.yaml` 中获准的测试证据同步；暂存前必须确认 diff 不含语义变更或未授权文件。
 
 ## 分支策略
 
