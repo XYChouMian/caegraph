@@ -11,6 +11,7 @@ from caegraph.core import (
     CAEGraph,
     Field,
     Mesh,
+    NodeCategory,
 )
 from caegraph.core.topology.celltype import CellType
 
@@ -114,3 +115,112 @@ def test_metadata_is_defensively_copied():
 
 def test_repr_shows_class_and_name():
     assert repr(CAEGraph("channel_flow")) == "CAEGraph(name='channel_flow')"
+
+
+# --- construction-time entity/relation model (ADR-019) ----------------------
+
+
+def test_graph_data_defaults_to_empty_entity_model():
+    graph = CAEGraph("channel_flow")
+    assert graph.n_entities == 0
+    assert graph.edges == ()
+    assert graph.node_categories == ()
+
+
+def test_graph_data_is_normalized_at_construction():
+    graph = CAEGraph("g", n_entities=3, edges=[(2, 0), (1, 0), (0, 1)])
+    assert graph.edges == ((0, 1), (0, 2))
+    assert graph.node_categories == (
+        NodeCategory.INTERIOR,
+        NodeCategory.INTERIOR,
+        NodeCategory.INTERIOR,
+    )
+
+
+def test_explicit_node_categories_are_stored():
+    graph = CAEGraph(
+        "g",
+        n_entities=2,
+        edges=[(0, 1)],
+        node_categories=[NodeCategory.BOUNDARY, NodeCategory.CORNER],
+    )
+    assert graph.node_categories == (NodeCategory.BOUNDARY, NodeCategory.CORNER)
+
+
+def test_graph_data_requires_n_entities():
+    with pytest.raises(ValueError, match="n_entities is required"):
+        CAEGraph("g", edges=[(0, 1)])
+
+
+def test_non_positive_n_entities_is_rejected():
+    with pytest.raises(ValueError, match="at least 1"):
+        CAEGraph("g", n_entities=0)
+
+
+def test_bool_n_entities_is_rejected():
+    with pytest.raises(TypeError, match="integer"):
+        CAEGraph("g", n_entities=True)  # type: ignore[arg-type]
+
+
+def test_self_loop_edges_are_rejected():
+    with pytest.raises(ValueError, match="self-loop"):
+        CAEGraph("g", n_entities=2, edges=[(1, 1)])
+
+
+def test_out_of_range_edges_are_rejected():
+    with pytest.raises(ValueError, match="out of range"):
+        CAEGraph("g", n_entities=2, edges=[(0, 5)])
+
+
+def test_malformed_edge_pairs_are_rejected():
+    with pytest.raises(ValueError, match=r"\(int, int\) pairs"):
+        CAEGraph("g", n_entities=2, edges=[(0, 1, 2)])  # type: ignore[list-item]
+
+
+@pytest.mark.parametrize("bad_edge", [(0.5, 1), ("0", 1), (0, True), (False, 0)])
+def test_non_integer_edge_endpoints_are_rejected(bad_edge):
+    # entity IDs are canonical node indices (ADR-019) — floats,
+    # strings and bools must fail fast with a clear TypeError
+    with pytest.raises(TypeError, match="edge endpoints must be integers"):
+        CAEGraph("g", n_entities=2, edges=[bad_edge])  # type: ignore[list-item]
+
+
+def test_node_categories_length_must_match():
+    with pytest.raises(ValueError, match="match n_entities"):
+        CAEGraph("g", n_entities=3, node_categories=[NodeCategory.INTERIOR])
+
+
+def test_non_enum_categories_are_rejected():
+    with pytest.raises(TypeError, match="NodeCategory"):
+        CAEGraph("g", n_entities=1, node_categories=["interior"])  # type: ignore[list-item]
+
+
+# --- validate() invariant tamper paths (ADR-019) ------------------------------
+
+
+def test_validate_rejects_tampered_non_canonical_edges():
+    graph = CAEGraph("g", n_entities=3, edges=[(0, 1)])
+    graph._edges = ((1, 0),)  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="canonical"):
+        graph.validate()
+
+
+def test_validate_rejects_tampered_out_of_range_edges():
+    graph = CAEGraph("g", n_entities=2, edges=[(0, 1)])
+    graph._edges = ((0, 5),)  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="out of range"):
+        graph.validate()
+
+
+def test_validate_rejects_tampered_unsorted_duplicated_edges():
+    graph = CAEGraph("g", n_entities=3, edges=[(0, 1), (1, 2)])
+    graph._edges = ((1, 2), (1, 2))  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="sorted and deduplicated"):
+        graph.validate()
+
+
+def test_validate_rejects_tampered_category_length():
+    graph = CAEGraph("g", n_entities=2, edges=[(0, 1)])
+    graph._node_categories = (NodeCategory.INTERIOR,)  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="match n_entities"):
+        graph.validate()

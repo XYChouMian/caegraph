@@ -36,6 +36,8 @@ package "caegraph.geometry" as caegraph.geometry {
 }
 package "caegraph.graph" as caegraph.graph {
 }
+package "caegraph.graph.builder" as caegraph.graph.builder {
+}
 package "caegraph.inference" as caegraph.inference {
 }
 package "caegraph.io" as caegraph.io {
@@ -71,6 +73,7 @@ caegraph.core.boundary.spec --> caegraph.core.boundary.region
 caegraph.core.boundary.spec --> caegraph.core.enums
 caegraph.core.caegraph --> caegraph.core.base
 caegraph.core.caegraph --> caegraph.core.boundary.manager
+caegraph.core.caegraph --> caegraph.core.enums
 caegraph.core.caegraph --> caegraph.core.field
 caegraph.core.caegraph --> caegraph.core.topology.mesh
 caegraph.core.field --> caegraph.core.base
@@ -78,5 +81,11 @@ caegraph.core.topology --> caegraph.core.topology.celltype
 caegraph.core.topology --> caegraph.core.topology.mesh
 caegraph.core.topology.mesh --> caegraph.core.base
 caegraph.core.topology.mesh --> caegraph.core.topology.celltype
+caegraph.graph --> caegraph.graph.builder
+caegraph.graph.builder --> caegraph.core.boundary.manager
+caegraph.graph.builder --> caegraph.core.caegraph
+caegraph.graph.builder --> caegraph.core.enums
+caegraph.graph.builder --> caegraph.core.field
+caegraph.graph.builder --> caegraph.core.topology.mesh
 caegraph.utils --> caegraph.utils.logging
 @enduml

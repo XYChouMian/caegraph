@@ -1,0 +1,145 @@
+# ADR-019 invariant registry — machine-auditable contract
+#
+# Source of truth for the decision text:
+#   architecture/decisions/ADR-019-phase2-entity-relation-model.md
+# Semantics were extracted from the v3 decision text (baseline commit
+# ca78575) and cross-checked against the v4 restructured body; both
+# claims are verifiable from git history.
+#
+# Rules:
+# - Every statement is decidable (true/false); no "should consider" or
+#   "in principle" wording is allowed.
+# - test_mapping references the guarding tests under tests/ in the
+#   form "path::test_name". TEST_MISSING marks invariants that have no
+#   guarding test yet — they are registered explicitly here and must
+#   never be silently dropped.
+# - explicitly_not_frozen lists the deliberate non-decisions of the
+#   ADR: implementation freedoms and deferred decisions that must NOT
+#   be treated as invariants.
+
+adr: "ADR-019"
+version: "v4"
+extracted_from: "v3 decision text (baseline commit ca78575)"
+
+invariants:
+  # --- D1: entity family model ------------------------------------------
+  - id: "ADR-019-D1-01"
+    statement: "Phase 2 cell-based CAEGraph covers exactly two entity families: node entities and cell entities."
+    decision: "D1"
+    test_mapping: "TEST_MISSING"
+  - id: "ADR-019-D1-02"
+    statement: "n_entities equals the node-graph vertex count (== Mesh.n_nodes for builder output), never n_nodes + n_cells."
+    decision: "D1"
+    test_mapping:
+      - "tests/graph/test_builder.py::test_node_and_edge_structure_of_two_triangle_mesh"
+  - id: "ADR-019-D1-03"
+    statement: "CAEGraph defines no NodeEntity/CellEntity wrapper classes and no cell_entities storage member; cell identity is carried by Mesh cell indices."
+    decision: "D1"
+    test_mapping: "TEST_MISSING"
+
+  # --- D2: relation model --------------------------------------------------
+  - id: "ADR-019-D2-01"
+    statement: "Stored edges are canonical (min, max) pairs, globally deduplicated and lexicographically sorted."
+    decision: "D2"
+    test_mapping:
+      - "tests/core/test_caegraph.py::test_graph_data_is_normalized_at_construction"
+      - "tests/core/test_caegraph.py::test_validate_rejects_tampered_non_canonical_edges"
+      - "tests/core/test_caegraph.py::test_validate_rejects_tampered_unsorted_duplicated_edges"
+  - id: "ADR-019-D2-02"
+    statement: "No self-loop edges exist: explicit (a, a) input is rejected at construction and degenerate face candidates are discarded during expansion."
+    decision: "D2"
+    test_mapping:
+      - "tests/core/test_caegraph.py::test_self_loop_edges_are_rejected"
+      - "tests/graph/test_builder.py::test_degenerate_same_endpoint_candidates_are_discarded"
+  - id: "ADR-019-D2-03"
+    statement: "Unique-edge counts of a single cell are LINE2=1, TRI3=3, QUAD4=4, TET4=6, PYR5=8, WEDGE6=9, HEX8=12 (candidates differ: 12/16/18/24 for the 3-D types)."
+    decision: "D2"
+    test_mapping:
+      - "tests/graph/test_builder.py::test_unique_edge_counts_per_cell_type"
+  - id: "ADR-019-D2-04"
+    statement: "1D sources contribute each LINE2 cell's own node pair as an edge."
+    decision: "D2"
+    test_mapping:
+      - "tests/graph/test_builder.py::test_1d_line2_cells_contribute_their_node_pairs_as_edges"
+
+  # --- D3: storage semantics ----------------------------------------------
+  - id: "ADR-019-D3-01"
+    statement: "Edge endpoints are integers; bools are rejected despite being int subclasses."
+    decision: "D3"
+    test_mapping:
+      - "tests/core/test_caegraph.py::test_non_integer_edge_endpoints_are_rejected"
+  - id: "ADR-019-D3-02"
+    statement: "CAEGraph storage never holds both orientations of an edge: input containing (u, v) and (v, u) collapses to one canonical pair."
+    decision: "D3"
+    test_mapping:
+      - "tests/core/test_caegraph.py::test_graph_data_is_normalized_at_construction"
+
+  # --- D4: NodeCategory ------------------------------------------------------
+  - id: "ADR-019-D4-01"
+    statement: "Within the boundary-participation scope, node categories map as: no region -> INTERIOR, exactly one distinct region -> BOUNDARY, two or more distinct regions -> CORNER."
+    decision: "D4"
+    test_mapping:
+      - "tests/graph/test_builder.py::test_node_categories_from_two_regions"
+      - "tests/graph/test_builder.py::test_node_categories_without_regions_are_all_interior"
+      - "tests/graph/test_builder.py::test_undeclared_boundary_nodes_remain_interior"
+  - id: "ADR-019-D4-02"
+    statement: "Corner counting uses distinct-region membership, not facet-occurrence count (a node in one region via two facets is BOUNDARY, not CORNER)."
+    decision: "D4"
+    test_mapping:
+      - "tests/graph/test_builder.py::test_node_categories_from_two_regions"
+  - id: "ADR-019-D4-03"
+    statement: "1D meshes have NodeCategory INTERIOR for every node."
+    decision: "D4"
+    test_mapping:
+      - "tests/graph/test_builder.py::test_1d_line2_cells_contribute_their_node_pairs_as_edges"
+
+  # --- D5: construction ------------------------------------------------------
+  - id: "ADR-019-D5-01"
+    statement: "At construction, node-associated fields must have a leading entity axis of exactly n_nodes entries."
+    decision: "D5"
+    test_mapping:
+      - "tests/graph/test_builder.py::test_node_field_length_is_validated"
+  - id: "ADR-019-D5-02"
+    statement: "At construction, cell-associated fields must have a leading entity axis of exactly n_cells entries."
+    decision: "D5"
+    test_mapping:
+      - "tests/graph/test_builder.py::test_cell_field_length_is_validated"
+  - id: "ADR-019-D5-03"
+    statement: "Region membership IDs outside the supplied Mesh's facet namespace fail construction (negative or >= n_facets)."
+    decision: "D5"
+    test_mapping:
+      - "tests/graph/test_builder.py::test_region_with_unknown_facet_is_rejected"
+      - "tests/graph/test_builder.py::test_region_with_negative_facet_id_is_rejected"
+  - id: "ADR-019-D5-04"
+    statement: "CAEGraph.associate_field performs no topology-cardinality validation; cardinality is enforced only at construction time."
+    decision: "D5"
+    test_mapping: "TEST_MISSING"
+
+  # --- Consequences -----------------------------------------------------------
+  - id: "ADR-019-C-01"
+    statement: "Materializing undirected relations as symmetric directed edges ((u, v) and (v, u)) is a backend-adaptation transform (ADR-017) and never part of CAEGraph storage."
+    decision: "Consequences / D3"
+    test_mapping:
+      - "tests/core/test_caegraph.py::test_graph_data_is_normalized_at_construction"
+
+explicitly_not_frozen:
+  - item: "edge container form (tuple-of-pairs vs CSR) — implementation detail"
+    source: "D3"
+  - item: "serialization and batching of graph data"
+    source: "D3 / deferred"
+  - item: "cross-instance, multi-namespace and distributed entity identity"
+    source: "D1 / deferred (ADR-018 exclusion retained)"
+  - item: "generalized region classification rules (interface / physical-group semantics) — future dedicated ADR with recorded triggers"
+    source: "D4 / deferred"
+  - item: "reference vs snapshot semantics for BoundaryManager inputs"
+    source: "D5 / deferred"
+  - item: "builder registry (single Phase 2 strategy; revisit when a second source family arrives)"
+    source: "deferred"
+  - item: "builder API, class names and module layout (unfrozen by ADR-016)"
+    source: "deferred"
+  - item: "multi-graph construction (node graph + cell-center graph coexistence)"
+    source: "D2 / deferred"
+  - item: "geometry feature attachment (Design UML arrow deferred until the geometry slice)"
+    source: "deferred"
+  - item: "Python container mechanics of the cardinality check (len() on the leading axis is an implementation detail, not a domain contract)"
+    source: "D5"
