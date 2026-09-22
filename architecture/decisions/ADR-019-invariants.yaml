@@ -27,6 +27,7 @@ invariants:
     statement: "Phase 2 cell-based CAEGraph covers exactly two entity families: node entities and cell entities."
     decision: "D1"
     test_mapping: "TEST_MISSING"
+    missing_reason: "文档级实体族声明：由 ADR 正文、实现约束与相邻不变式共同审查，当前不设独立运行时测试。"
   - id: "ADR-019-D1-02"
     statement: "n_entities equals the node-graph vertex count (== Mesh.n_nodes for builder output), never n_nodes + n_cells."
     decision: "D1"

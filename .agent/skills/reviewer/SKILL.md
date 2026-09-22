@@ -21,6 +21,9 @@ Reviewer Agent 是合入前的独立终审，只读检查完整 diff、历史、
 - 行为变化是否有确定性合成测试；科学结果变化是否有 Validation 指标、容差和 benchmark 证据。
 - 依赖变化是否经过 Environment 与 Architecture，并同步声明和验证。
 - 文档事实、语言版本、README 策略、Markdown 换行和 Mermaid 是否符合 Documentation Skill 与 `AGENTS.md`。
+- 对符合准入条件的实现型 ADR，是否有与 Markdown 真源一致的可选 `ADR-NNN-invariants.yaml`；登记头部是否锚定来源 ADR 版本与 commit hash，且重构前后的零变化声明已逐条比对。
+- YAML 中的 `id`、`statement`、`decision`、`test_mapping` 与 `explicitly_not_frozen` 是否符合字段职责；执行 Agent 是否只机械更新了获授权的 `test_mapping` / `missing_reason`。
+- 每个非 `TEST_MISSING` 映射是否指向真实测试；Phase 收尾时每个 `TEST_MISSING` 是否已闭合、附中文 `missing_reason` 显式保留，或已在对应 Phase 文档的 `## Backlog` 记录不变式 ID、缺口原因和目标 Phase。
 - Black、Ruff、Mypy、Pytest、严格 MkDocs 构建、CI 及其他派单验收是否有证据。
 - diff 是否仅含派单 Scope，是否混入用户或其他 Agent 的修改。
 
