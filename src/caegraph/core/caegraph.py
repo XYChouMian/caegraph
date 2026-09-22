@@ -239,12 +239,30 @@ class CAEGraph(BaseObject):
     def validate(self) -> None:
         """Raise if the representation is in an invalid state.
 
+        Composes the validation layers of the BaseObject layering
+        convention (ARCHITECTURE.md §3.4): the state layer and the
+        metadata layer. No cross layer is defined — CAEGraph
+        explicitly declares no cross constraints.
+        """
+        self._validate_state()
+        self._validate_metadata()
+
+    # No _validate_cross layer: CAEGraph declares no cross-layer
+    # (state x metadata) constraints — an explicitly registered
+    # decision (ARCHITECTURE.md §3.4).
+
+    def _validate_state(self) -> None:
+        """Check the state-layer invariants (never read metadata).
+
         The topology provider must remain a topology-subsystem
         :class:`~caegraph.core.topology.Mesh` (or absent), associated
         entries must remain fields, and the construction-time graph
         data must keep its ADR-019 invariants (canonical sorted
         deduplicated edges without self-loops, in-range indices,
         category count matching the entity count).
+        Internal validation hook invoked by BaseObject lifecycle
+        (construction, metadata updates, explicit re-check). Not a
+        public API.
         """
         if self._topology is not None and not isinstance(self._topology, Mesh):
             raise TypeError(
@@ -262,3 +280,15 @@ class CAEGraph(BaseObject):
                 raise ValueError("edges reference entities out of range")
         if len(self._node_categories) != self._n_entities:
             raise ValueError("node_categories length must match n_entities")
+
+    def _validate_metadata(self) -> None:
+        """Check the metadata-layer invariants (annotation itself).
+
+        Explicit no-op: CAEGraph assigns no semantics to metadata
+        keys — metadata is annotation, not domain state, and
+        undeclared means free (ARCHITECTURE.md §3.4).
+        Internal validation hook invoked by BaseObject lifecycle
+        (construction, metadata updates, explicit re-check). Not a
+        public API.
+        """
+        # no metadata constraints declared (explicit decision)
