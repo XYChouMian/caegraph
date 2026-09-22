@@ -35,7 +35,8 @@ invariants:
   - id: "ADR-019-D1-03"
     statement: "CAEGraph defines no NodeEntity/CellEntity wrapper classes and no cell_entities storage member; cell identity is carried by Mesh cell indices."
     decision: "D1"
-    test_mapping: "TEST_MISSING"
+    test_mapping:
+      - "tests/core/test_caegraph.py::test_no_entity_wrapper_classes_or_cell_entity_storage"
 
   # --- D2: relation model --------------------------------------------------
   - id: "ADR-019-D2-01"
@@ -113,7 +114,8 @@ invariants:
   - id: "ADR-019-D5-04"
     statement: "CAEGraph.associate_field performs no topology-cardinality validation; cardinality is enforced only at construction time."
     decision: "D5"
-    test_mapping: "TEST_MISSING"
+    test_mapping:
+      - "tests/core/test_caegraph.py::test_associate_field_skips_cardinality_validation"
 
   # --- Consequences -----------------------------------------------------------
   - id: "ADR-019-C-01"

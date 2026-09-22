@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+import caegraph.core
 from caegraph.core import (
     BoundaryRegion,
     BoundarySpec,
@@ -101,6 +102,19 @@ def test_associate_field_rejects_non_fields():
         CAEGraph("channel_flow").associate_field("pressure")  # type: ignore[arg-type]
 
 
+def test_associate_field_skips_cardinality_validation():
+    # ADR-019 D5: associate_field is a lightweight association API —
+    # topology-cardinality checks happen only at construction time.
+    # The field below is intentionally mismatched (2 values vs 3
+    # entities); Field itself performs no cardinality check, so both
+    # the field construction and this association succeeding prove
+    # the lightweight contract (invariant registry ADR-019-D5-04).
+    graph = CAEGraph("g", n_entities=3, edges=[(0, 1), (1, 2)])
+    field = Field("pressure", [1.0, 2.0], association="node")
+    graph.associate_field(field)
+    assert graph.associated_fields == (field,)
+
+
 def test_metadata_is_carried_through():
     graph = CAEGraph("channel_flow", metadata={"case": "re200"})
     assert graph.metadata == {"case": "re200"}
@@ -193,6 +207,18 @@ def test_node_categories_length_must_match():
 def test_non_enum_categories_are_rejected():
     with pytest.raises(TypeError, match="NodeCategory"):
         CAEGraph("g", n_entities=1, node_categories=["interior"])  # type: ignore[list-item]
+
+
+def test_no_entity_wrapper_classes_or_cell_entity_storage():
+    # ADR-019 D1: entity identity lives in canonical Mesh indices —
+    # wrapper classes or duplicated cell-entity storage must never
+    # appear (invariant registry ADR-019-D1-03). Assertions turn red
+    # the moment such a wrapper or storage member is introduced.
+    assert not hasattr(caegraph.core, "NodeEntity")
+    assert not hasattr(caegraph.core, "CellEntity")
+    graph = CAEGraph("g", n_entities=2, edges=[(0, 1)])
+    assert not hasattr(graph, "cell_entities")
+    assert not hasattr(graph, "node_entities")
 
 
 # --- validate() invariant tamper paths (ADR-019) ------------------------------
