@@ -126,3 +126,4 @@ Phase 1 (core vocabulary: BaseObject, registry, enums).
 ## Backlog
 
 - [ ] doctest 常驻化：pytest --doctest-modules 全库启用评估（owner: Testing；触发：下个测试配置变更或 phase 收尾；基线：B2 修复后 10/10 人工验证）
+- [ ] 校验精准触发（on_metadata_changed 覆写）：按依赖准则定向重跑 metadata 与 cross 层（owner: Architecture/Coding；触发：首个赋予 metadata 键领域语义的子类出现，或大图高频 metadata 更新；基线：BaseObject 默认全量校验 + 原子回滚已落地，CAEGraph 显式声明无标注约束与交叉约束）
