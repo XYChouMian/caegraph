@@ -23,11 +23,14 @@ class CAEGraph(BaseObject):
     for cell-based discretizations, absent for mesh-free ones,
     ADR-014). Semantic composition deliberately does not define class
     members or storage layout by itself: the Phase 2 minimal
-    entity/relation model — entities as canonical node IDs, relations
-    as deduplicated ``(min, max)`` node pairs, per-entity
-    NodeCategory annotations — is authorized and frozen by ADR-019
-    and populated at representation construction time
-    (:class:`~caegraph.graph.MeshRepresentationBuilder`).
+    entity/relation model — node and cell entity families (node
+    entities with canonical Mesh node IDs serve as the Phase 2 graph
+    vertices, a representation choice; cell entities with canonical
+    Mesh cell IDs carry identity via the Mesh, with no independent
+    storage), relations as deduplicated ``(min, max)`` node pairs,
+    per-node-entity NodeCategory annotations — is authorized and
+    frozen by ADR-019 and populated at representation construction
+    time (:class:`~caegraph.graph.MeshRepresentationBuilder`).
 
     This class also exposes the minimal association hooks the Phase 2
     domain vocabulary needs: an optional topology provider reference,
@@ -56,7 +59,8 @@ class CAEGraph(BaseObject):
             (``Mesh.n_nodes``); direct construction is deliberately
             not cross-checked against ``topology`` (future
             multi-graph construction may legitimately differ,
-            ADR-019 D6). For Phase 2 this counts the node-graph
+            an ADR-019 deferred item). For Phase 2 this counts the
+            node-graph
             vertex set — node entities serving as graph vertices is
             a representation choice, not the domain entity total
             (ADR-019 D1); cell entities are addressed through the

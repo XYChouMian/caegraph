@@ -17,12 +17,17 @@ class MeshRepresentationBuilder:
     """Construct a :class:`~caegraph.core.CAEGraph` from a cell-based Mesh source.
 
     Phase 2 cell-based construction strategy (ADR-016 boundary,
-    ADR-019 semantics): entities are the mesh nodes; relations are
-    undirected node pairs expanded from every cell's codim-1 face
-    templates (canonical ``(min, max)``, globally deduplicated). For
-    1D sources (``topo_dim == 1``) each LINE2 cell contributes its
-    own node pair as an edge, because dimension-0 facets are absent
-    from the canonical topology (ADR-014/019). Per-node
+    ADR-019 semantics): domain entities form two families — node
+    entities (ID = canonical Mesh node ID) and cell entities (ID =
+    canonical Mesh cell ID, identity via the Mesh cell index, no
+    independent storage); the Phase 2 node graph uses node entities
+    as its vertices (a representation choice, not the entity
+    definition); relations are undirected node pairs expanded from
+    every cell's codim-1 face templates (canonical ``(min, max)``,
+    globally deduplicated). For 1D sources (``topo_dim == 1``) each
+    LINE2 cell contributes its own node pair as an edge, because
+    dimension-0 facets are absent from the canonical topology
+    (ADR-014/019). Per-node
     :class:`~caegraph.core.NodeCategory` annotations are
     derived from the semantic regions registered on the caller's
     :class:`~caegraph.core.BoundaryManager` — INTERIOR (no region),
@@ -42,8 +47,9 @@ class MeshRepresentationBuilder:
     not cardinality-checked.
 
     No builder registry exists in Phase 2 (single construction
-    strategy, ADR-019 D6); further source families extend this layer
-    per ADR-016 without new ADRs unless the frozen boundary changes.
+    strategy, an ADR-019 deferred item); further source families
+    extend this layer per ADR-016 without new ADRs unless the frozen
+    boundary changes.
     """
 
     def __call__(
