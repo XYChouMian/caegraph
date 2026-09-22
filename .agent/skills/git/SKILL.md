@@ -45,7 +45,7 @@ Git 是所有 CAEGraph Agent 共享的基础工程能力，不是独立交付角
 | Reviewer | 只读检查 diff、历史与提交 | 审查时静默修改或提交代码 |
 | Release | 经批准的版本、CHANGELOG、发布分支、tag 与产物准备 | 未经批准发布或跳过检查 |
 
-对派单明确关联的 `architecture/decisions/ADR-NNN-invariants.yaml`，Architecture 独占 `statement`、`decision`、`canonical_statement` 和 `explicitly_not_frozen` 等语义字段。派单明确授权时，执行 Agent 可以随测试闭合直接更新 `test_mapping` 与 `missing_reason`；提交前必须检查 diff 仅涉及这两个字段及获批的测试文件，不得以映射更新夹带语义修改。
+仅在 PM 派单明确授权时，执行 Agent 可更新关联 `ADR-NNN-invariants.yaml` 中获准的映射字段；暂存前必须确认 diff 不含未授权字段或文件。
 
 ## 分支策略
 

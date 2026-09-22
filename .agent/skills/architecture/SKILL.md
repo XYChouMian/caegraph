@@ -34,9 +34,9 @@ ADR 的背景、决策、备选方案、影响和修订历史使用中文；文�
 
 ## 可选 YAML 不变式登记
 
-YAML 不变式登记只适用于同时满足以下条件的实现型 ADR：约束数量有限、每条可判定真伪、且需要逐条关联测试或显式登记测试缺口。原则、流程、定位类 ADR 不创建 YAML，避免产生与 Markdown ADR 重复的第二真相。
+YAML 不变式登记只适用于同时满足以下条件的实现型 ADR：约束数量有限、每条可判定真伪、且需要逐条关联测试或显式登记测试缺口。原则、流程、定位类 ADR 不创建 YAML，避免产生与 Markdown ADR 重复的第二真相。满足准入条件的 ADR 可创建 `ADR-NNN-invariants.yaml`；不创建该文件本身不构成缺陷。只有当 PM 派单明确关联该文件或 ADR 已有该登记时，才必须按本节严格维护和核验。
 
-Markdown ADR 是决策文字的唯一真源；符合条件时可在同目录创建 `ADR-NNN-invariants.yaml` 作为机器可审计的伴随登记。登记头部必须包含 ADR 编号、当前版本和 `extracted_from` 锚点；该锚点必须写明来源 ADR 版本与可由 Git 解析的 commit hash。新登记的叙述值使用中文，ID 与 `path::test_name` 保持英文；确需跨 commit 稳定引用时才增加英文 `canonical_statement`。既有已审计登记不因本规则回翻语言。
+Markdown ADR 是决策文字的唯一真源；YAML 是机器可审计的可选伴随登记，不得替代 ADR、测试或 Reviewer 判断。登记头部必须包含 ADR 编号、当前版本和 `extracted_from` 锚点；该锚点必须写明来源 ADR 版本与可由 Git 解析的 commit hash。新登记的叙述值使用中文，ID 与 `path::test_name` 保持英文；确需跨 commit 稳定引用时才增加英文 `canonical_statement`。既有已审计登记不因本规则回翻语言。
 
 每条不变式必须包含 `id`、中文 `statement`、来源 `decision` 和 `test_mapping`；`test_mapping` 只能是测试映射列表或 `TEST_MISSING`。`TEST_MISSING` 可选携带 `missing_reason`，且在 Phase 收尾时必须存在。`explicitly_not_frozen` 只登记刻意未冻结的自由度，不得作为实现要求。
 

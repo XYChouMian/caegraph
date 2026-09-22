@@ -24,8 +24,7 @@ Coding Agent 按已批准的派单和设计实现 `src/caegraph/` 中的功能�
 - 禁止在同一任务夹带无关重构。
 - 新增、升级或移除依赖必须退回 Environment 流程。
 - 只有用户可见行为、公共 API 或版本变化需要 CHANGELOG；纯内部重构和测试补充不登记。
-- 派单关联 `ADR-NNN-invariants.yaml` 时，读取其中 `invariants` 作为实现约束，且不得提前实现 `explicitly_not_frozen` 或 deferred 项。
-- 经派单明确授权时，可与测试闭合在同一提交中机械更新该登记的 `test_mapping` 与 `missing_reason`；不得修改 `statement`、`decision`、`canonical_statement` 或 `explicitly_not_frozen`。
+- 仅当 PM 派单明确关联 `ADR-NNN-invariants.yaml` 或目标 ADR 已有该登记时，才按派单与 Git Skill 的授权处理它；未创建可选登记本身不是实现缺陷。
 
 ## 输出与交接
 
