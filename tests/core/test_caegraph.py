@@ -233,6 +233,19 @@ def test_metadata_is_annotation_not_domain_state():
     assert graph.metadata["units"] == "cgs"
 
 
+def test_update_metadata_skips_state_revalidation_by_default():
+    # default lifecycle: update_metadata performs no validation, so a
+    # corrupted state layer survives an update untouched and is only
+    # reported by an explicit validate() call (white-box corruption
+    # follows the tamper-path test precedent)
+    graph = CAEGraph("g", n_entities=2, edges=[(0, 1)])
+    graph._edges = ((1, 0),)  # type: ignore[assignment]  # non-canonical
+    graph.update_metadata(author="team")  # no validation by default
+    assert graph.metadata == {"author": "team"}
+    with pytest.raises(ValueError, match="canonical"):
+        graph.validate()  # explicit check still catches the corruption
+
+
 # --- validate() invariant tamper paths (ADR-019) ------------------------------
 
 
