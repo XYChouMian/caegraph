@@ -221,6 +221,18 @@ def test_no_entity_wrapper_classes_or_cell_entity_storage():
     assert not hasattr(graph, "node_entities")
 
 
+def test_metadata_is_annotation_not_domain_state():
+    # ARCHITECTURE.md §3.4 principle: metadata is an extensible
+    # annotation channel — CAEGraph assigns no semantics to metadata
+    # keys, so arbitrary keys remain valid (undeclared means free).
+    # Pins the explicit "no _validate_metadata constraints" decision
+    # through public behavior only.
+    graph = CAEGraph("g", n_entities=2, edges=[(0, 1)])
+    graph.update_metadata(author="team", units="cgs", extra={"nested": 1})
+    graph.validate()
+    assert graph.metadata["units"] == "cgs"
+
+
 # --- validate() invariant tamper paths (ADR-019) ------------------------------
 
 
