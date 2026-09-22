@@ -68,7 +68,7 @@ class MeshRepresentationBuilder:
                 regions drive NodeCategory derivation and are
                 re-registered on the produced graph.
             fields: Optional fields to associate after construction
-                (length-validated for node/cell associations).
+                (cardinality-validated for node/cell associations).
 
         Returns:
             A CAEGraph satisfying the Phase 2 minimal representation

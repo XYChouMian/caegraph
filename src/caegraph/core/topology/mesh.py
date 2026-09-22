@@ -185,12 +185,7 @@ class Mesh(BaseObject):
         domain_groups: Mapping[str, Iterable[int]] | None = None,
         metadata: Mapping[str, Any] | None = None,
     ) -> None:
-        """Coerce, canonicalize and freeze the topology, then validate.
-
-        Raises:
-            TypeError: If ``topo_dim`` is not an integer (bools are
-                rejected despite being int subclasses).
-        """
+        """Coerce, canonicalize and freeze the topology, then validate."""
         if not isinstance(topo_dim, int) or isinstance(topo_dim, bool):
             raise TypeError(
                 f"topo_dim must be an integer (1, 2 or 3), "

@@ -70,14 +70,7 @@ class Field(BaseObject):
         association: str | None = None,
         metadata: Mapping[str, Any] | None = None,
     ) -> None:
-        """Initialize payload and association semantics, then validate.
-
-        Raises:
-            ValueError: If ``values`` is ``None`` or string slots are
-                empty.
-            TypeError: If ``timestep`` is not a number or string slots
-                are of the wrong type.
-        """
+        """Initialize payload and association semantics, then validate."""
         if values is None:
             raise ValueError(
                 "values are required: a field without data is a declaration, not a field"
@@ -119,10 +112,7 @@ class Field(BaseObject):
         return self._association
 
     def validate(self) -> None:
-        """Raise if the field is in an invalid state.
-
-        A field must carry data: ``values`` may never be ``None``.
-        """
+        """Raise if the field is in an invalid state."""
         if self._values is None:
             raise ValueError(
                 "values are required: a field without data is a declaration, not a field"
