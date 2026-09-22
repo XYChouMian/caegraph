@@ -261,8 +261,8 @@ class CAEGraph(BaseObject):
         deduplicated edges without self-loops, in-range indices,
         category count matching the entity count).
         Internal validation hook invoked by BaseObject lifecycle
-        (construction, metadata updates, explicit re-check). Not a
-        public API.
+        (construction, explicit re-check; metadata updates only via
+        an overriding on_metadata_changed). Not a public API.
         """
         if self._topology is not None and not isinstance(self._topology, Mesh):
             raise TypeError(
@@ -288,7 +288,7 @@ class CAEGraph(BaseObject):
         keys — metadata is annotation, not domain state, and
         undeclared means free (ARCHITECTURE.md §3.4).
         Internal validation hook invoked by BaseObject lifecycle
-        (construction, metadata updates, explicit re-check). Not a
-        public API.
+        (construction, explicit re-check; metadata updates only via
+        an overriding on_metadata_changed). Not a public API.
         """
         # no metadata constraints declared (explicit decision)

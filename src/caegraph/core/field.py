@@ -112,7 +112,12 @@ class Field(BaseObject):
         return self._association
 
     def validate(self) -> None:
-        """Raise if the field is in an invalid state."""
+        """Raise if the field is in an invalid state (state layer only).
+
+        Single state-only check: no metadata or cross layers are
+        declared — metadata is an annotation channel (ARCHITECTURE.md
+        §3.4).
+        """
         if self._values is None:
             raise ValueError(
                 "values are required: a field without data is a declaration, not a field"

@@ -72,6 +72,11 @@ class BoundaryRegion(BaseObject):
         return self._membership
 
     def validate(self) -> None:
-        """Raise if the region is in an invalid state."""
+        """Raise if the region is in an invalid state (state layer only).
+
+        Single state-only check: no metadata or cross layers are
+        declared — metadata is an annotation channel (ARCHITECTURE.md
+        §3.4).
+        """
         if not self._membership:
             raise ValueError("membership must contain at least one member identifier")
