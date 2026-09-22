@@ -15,8 +15,9 @@ class BaseObject(ABC):
     Provides identity (a non-empty name), free-form metadata and a
     fail-fast validation contract. Subclasses implement
     :meth:`validate`; it runs automatically at construction time and
-    after every metadata update, and can be re-invoked explicitly to
-    re-check mutated state.
+    after every metadata update (atomically — a failed update rolls
+    the whole batch back and leaves the object unchanged), and can be
+    re-invoked explicitly to re-check mutated state.
 
     Learning-layer classes (``Graph``, ``CAEDataset``, ``Model``)
     intentionally do *not* inherit from :class:`BaseObject`; they use
@@ -64,15 +65,42 @@ class BaseObject(ABC):
         return dict(self._metadata)
 
     def update_metadata(self, **values: Any) -> None:
-        """Merge ``values`` into the metadata and re-validate.
+        """Merge ``values`` into the metadata and re-validate atomically.
+
+        The candidate mapping is staged on a fresh dict first; when
+        validation fails, the previous metadata is restored
+        (fail-clean, not only fail-loud) and the original validation
+        error is re-raised unchanged — the whole batch rolls back,
+        including entries that would have been legal on their own.
 
         Args:
             **values: Metadata entries to set or overwrite.
 
         Raises:
-            ValueError: If the resulting state fails :meth:`validate`.
+            Exception: Whatever :meth:`on_metadata_changed` (by
+                default :meth:`validate`) raises, propagated
+                unchanged after rollback.
         """
-        self._metadata.update(values)
+        # never mutated: candidates are fresh dicts (ARCHITECTURE.md §3.4)
+        old_metadata = self._metadata
+        self._metadata = {**old_metadata, **values}
+        try:
+            self.on_metadata_changed()
+        except Exception:
+            self._metadata = old_metadata
+            raise
+
+    def on_metadata_changed(self) -> None:
+        """Re-validate after a metadata change.
+
+        Extension point for subclasses: the default implementation
+        runs the full :meth:`validate` check (backward compatible);
+        subclasses that intentionally assign semantic meaning to
+        specific metadata keys (or have expensive state checks) may
+        override it for targeted re-validation.
+        Precision triggering is deliberately deferred until the first
+        metadata-carrying subclass exists.
+        """
         self.validate()
 
     @abstractmethod

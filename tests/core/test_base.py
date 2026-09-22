@@ -57,6 +57,31 @@ def test_update_metadata_keeps_previous_entries():
     assert probe.metadata == {"a": 1, "b": 2}
 
 
+def test_update_metadata_failure_reraises_original_exception():
+    # spec 1: the validation error propagates unchanged — the same
+    # type and message validate() raised, never swallowed or wrapped
+    with pytest.raises(ValueError, match="probe is broken"):
+        _Probe("p").update_metadata(broken=True)
+
+
+def test_update_metadata_failure_rolls_back_whole_batch():
+    # spec 2: a mixed batch (legal entries + a failing trigger) rolls
+    # back entirely — legal values do not survive a failed update
+    probe = _Probe("p", {"a": 1})
+    with pytest.raises(ValueError, match="probe is broken"):
+        probe.update_metadata(a=2, b=3, broken=True)
+    assert probe.metadata == {"a": 1}
+
+
+def test_update_metadata_failure_restores_previous_metadata():
+    # spec 3: after a failed update the metadata is restored to the
+    # pre-call state (asserted via the public metadata property)
+    probe = _Probe("p", {"a": 1, "b": 2})
+    with pytest.raises(ValueError, match="probe is broken"):
+        probe.update_metadata(broken=True)
+    assert probe.metadata == {"a": 1, "b": 2}
+
+
 def test_repr_shows_class_and_name():
     probe = _Probe("pressure")
     assert repr(probe) == "_Probe(name='pressure')"
