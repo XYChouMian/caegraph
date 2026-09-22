@@ -108,14 +108,7 @@ class CAEGraph(BaseObject):
         node_categories: Iterable[NodeCategory] | None = None,
         metadata: Mapping[str, Any] | None = None,
     ) -> None:
-        """Initialize graph data and association hooks, then validate.
-
-        Raises:
-            TypeError: If ``topology`` is neither ``None`` nor a
-                :class:`~caegraph.core.topology.Mesh`, or graph data
-                types are invalid.
-            ValueError: If graph data is inconsistent.
-        """
+        """Initialize graph data and association hooks, then validate."""
         if topology is not None and not isinstance(topology, Mesh):
             raise TypeError(
                 "topology must be a Mesh provider of the topology "

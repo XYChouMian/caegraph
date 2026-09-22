@@ -36,6 +36,7 @@ class Registry(Generic[T]):
     """
 
     def __init__(self, kind: str) -> None:
+        """Validate the kind label and start with an empty registry."""
         if not isinstance(kind, str) or not kind.strip():
             raise ValueError("kind must be a non-empty string")
         self._kind = kind

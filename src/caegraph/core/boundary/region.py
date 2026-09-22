@@ -53,12 +53,7 @@ class BoundaryRegion(BaseObject):
         *,
         metadata: Mapping[str, Any] | None = None,
     ) -> None:
-        """Initialize membership identifiers, then validate.
-
-        Raises:
-            ValueError: If ``membership`` is empty.
-            TypeError: If a member identifier is not an int.
-        """
+        """Initialize membership identifiers, then validate."""
         members = frozenset(membership)
         if not members:
             raise ValueError("membership must contain at least one member identifier")
@@ -77,10 +72,6 @@ class BoundaryRegion(BaseObject):
         return self._membership
 
     def validate(self) -> None:
-        """Raise if the region is in an invalid state.
-
-        A region must have at least one canonical member identifier;
-        node sets are derived views resolved elsewhere (ADR-014).
-        """
+        """Raise if the region is in an invalid state."""
         if not self._membership:
             raise ValueError("membership must contain at least one member identifier")

@@ -122,3 +122,7 @@ CellType prerequisites remain binding for any topology work: stable integer code
 ## Depends on
 
 Phase 1 (core vocabulary: BaseObject, registry, enums).
+
+## Backlog
+
+- [ ] doctest 常驻化：pytest --doctest-modules 全库启用评估（owner: Testing；触发：下个测试配置变更或 phase 收尾；基线：B2 修复后 10/10 人工验证）
