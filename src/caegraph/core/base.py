@@ -33,9 +33,17 @@ class BaseObject(ABC):
         ...     def validate(self) -> None:
         ...         if self.metadata.get("gain", 1.0) < 0:
         ...             raise ValueError("gain must be non-negative")
+        ...     def on_metadata_changed(self) -> None:
+        ...         self.validate()
         >>> sensor = Sensor("pressure_probe", {"gain": 2.0})
         >>> sensor.name
         'pressure_probe'
+        >>> sensor.update_metadata(gain=-1)
+        Traceback (most recent call last):
+            ...
+        ValueError: gain must be non-negative
+        >>> sensor.metadata["gain"]  # rolled back
+        2.0
 
     """
 
