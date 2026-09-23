@@ -112,6 +112,14 @@ class Mesh(BaseObject):
       after construction + :meth:`validate`; exposed arrays are
       read-only and there are no mutation methods.
 
+    Every storage member described under ``Args`` is exposed as a
+    same-named read-only property (a view of the frozen storage,
+    never a copy), alongside the ``n_nodes`` / ``n_cells`` /
+    ``n_facets`` count conveniences and O(1) per-entity accessors —
+    :meth:`cell_type`, :meth:`cell_nodes`, :meth:`facet_nodes` and
+    :meth:`facet_adjacent_cells` — so callers never slice the CSR
+    offset arrays by hand.
+
     Args:
         name: Non-empty mesh name.
         nodes: Coordinates as a 2D array-like of shape
