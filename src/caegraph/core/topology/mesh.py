@@ -361,6 +361,21 @@ class Mesh(BaseObject):
     # --- validation ---------------------------------------------------------
 
     def validate(self) -> None:
+        """Raise if the mesh is in an invalid state.
+
+        Composes the validation layers of the BaseObject layering
+        convention (ARCHITECTURE.md §3.4): the state layer and the
+        metadata layer. No cross layer is defined — Mesh explicitly
+        declares no cross constraints.
+        """
+        self._validate_state()
+        self._validate_metadata()
+
+    # No _validate_cross layer: Mesh declares no cross-layer
+    # (state x metadata) constraints — an explicitly registered
+    # decision (ARCHITECTURE.md §3.4).
+
+    def _validate_state(self) -> None:
         """Enforce the ADR-014 8a topology-legality invariants, fail-fast.
 
         Checks (all unconditional): nodes shape/dtype (canonical 3D
@@ -372,6 +387,9 @@ class Mesh(BaseObject):
         in-range, duplicate-free adjacent cell and matches a legal
         codim-1 face template of each adjacent cell); domain-group
         cell-ID bounds.
+        Internal validation hook invoked by BaseObject lifecycle
+        (construction, explicit re-check; metadata updates only via
+        an overriding on_metadata_changed). Not a public API.
 
         Raises:
             ValueError: If any invariant is violated.
@@ -478,6 +496,18 @@ class Mesh(BaseObject):
                 raise ValueError(
                     f"domain group {group_name!r} references cell ids out of range"
                 )
+
+    def _validate_metadata(self) -> None:
+        """Check the metadata-layer invariants (annotation itself).
+
+        Explicit no-op: Mesh assigns no semantics to metadata keys —
+        metadata is annotation, not domain state, and undeclared means
+        free (ARCHITECTURE.md §3.4).
+        Internal validation hook invoked by BaseObject lifecycle
+        (construction, explicit re-check; metadata updates only via
+        an overriding on_metadata_changed). Not a public API.
+        """
+        # no metadata constraints declared (explicit decision)
 
     def __repr__(self) -> str:
         return (

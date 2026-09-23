@@ -15,6 +15,23 @@ class _Probe(BaseObject):
             raise ValueError("probe is broken")
 
 
+class _ConstrainedProbe(BaseObject):
+    """Probe assigning domain semantics to metadata keys.
+
+    Rejects ``broken`` metadata at construction (full validate) and
+    on updates by overriding the ``on_metadata_changed`` mutation
+    hook — the canonical pattern for classes with metadata
+    constraints (ARCHITECTURE.md §3.4).
+    """
+
+    def validate(self) -> None:
+        if self.metadata.get("broken"):
+            raise ValueError("probe is broken")
+
+    def on_metadata_changed(self) -> None:
+        self.validate()
+
+
 def test_construction_runs_validation_and_fails_fast():
     with pytest.raises(ValueError, match="probe is broken"):
         _Probe("bad", {"broken": True})
@@ -45,10 +62,20 @@ def test_metadata_is_defensively_copied_on_init():
     assert probe.metadata == {"a": 1}
 
 
-def test_update_metadata_reruns_validation():
+def test_update_metadata_default_performs_no_validation():
+    # default lifecycle: metadata is an annotation channel — updating
+    # it performs no validation, even when validate() would reject
+    # the resulting metadata (opt-in happens via hook override)
     probe = _Probe("p")
+    probe.update_metadata(broken=True)
+    assert probe.metadata == {"broken": True}
+
+
+def test_constrained_probe_construction_still_validates_metadata():
+    # construction keeps the full consistency check: an invalid
+    # initial metadata fails at birth even for the default probe
     with pytest.raises(ValueError, match="probe is broken"):
-        probe.update_metadata(broken=True)
+        _ConstrainedProbe("p", {"broken": True})
 
 
 def test_update_metadata_keeps_previous_entries():
@@ -58,25 +85,26 @@ def test_update_metadata_keeps_previous_entries():
 
 
 def test_update_metadata_failure_reraises_original_exception():
-    # spec 1: the validation error propagates unchanged — the same
-    # type and message validate() raised, never swallowed or wrapped
+    # spec 1 (constrained probe): the hook's error propagates
+    # unchanged — same type and message, never swallowed or wrapped
     with pytest.raises(ValueError, match="probe is broken"):
-        _Probe("p").update_metadata(broken=True)
+        _ConstrainedProbe("p").update_metadata(broken=True)
 
 
 def test_update_metadata_failure_rolls_back_whole_batch():
-    # spec 2: a mixed batch (legal entries + a failing trigger) rolls
-    # back entirely — legal values do not survive a failed update
-    probe = _Probe("p", {"a": 1})
+    # spec 2 (constrained probe): a mixed batch (legal entries + a
+    # failing trigger) rolls back entirely — legal values do not
+    # survive a failed update
+    probe = _ConstrainedProbe("p", {"a": 1})
     with pytest.raises(ValueError, match="probe is broken"):
         probe.update_metadata(a=2, b=3, broken=True)
     assert probe.metadata == {"a": 1}
 
 
 def test_update_metadata_failure_restores_previous_metadata():
-    # spec 3: after a failed update the metadata is restored to the
-    # pre-call state (asserted via the public metadata property)
-    probe = _Probe("p", {"a": 1, "b": 2})
+    # spec 3 (constrained probe): after a failed update the metadata
+    # is restored to the pre-call state (public property assertion)
+    probe = _ConstrainedProbe("p", {"a": 1, "b": 2})
     with pytest.raises(ValueError, match="probe is broken"):
         probe.update_metadata(broken=True)
     assert probe.metadata == {"a": 1, "b": 2}

@@ -25,7 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- `BaseObject.update_metadata` is now atomic: a failing validation rolls the whole update back (including entries that would have been legal on their own) and re-raises the original error unchanged; previously a failed update left the partially merged metadata behind on the object (fail-loud degraded into a dirty state). Adds the `on_metadata_changed` re-validation extension point (default: full `validate`, backward compatible; precision triggering deliberately deferred until the first subclass that assigns domain semantics to metadata keys exists).
+- `BaseObject.update_metadata` is now a transaction boundary: the candidate mapping is staged on a fresh dict, the `on_metadata_changed` hook is invoked, and any exception it raises rolls the whole update back (including entries that would have been legal on their own) before being re-raised unchanged — previously a failed update left the partially merged metadata behind on the object. The new `on_metadata_changed` mutation hook defaults to no validation (metadata is an annotation channel; changing metadata does not imply domain-state validation); classes assigning domain semantics to metadata keys override it and define their own re-validation strategy. The rollback is a transaction guarantee independent of validation semantics.
 
 ### Added
 
