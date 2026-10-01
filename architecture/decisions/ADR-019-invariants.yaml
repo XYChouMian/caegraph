@@ -96,13 +96,16 @@ invariants:
       - "tests/graph/test_builder.py::test_1d_line2_cells_contribute_their_node_pairs_as_edges"
 
   # --- D5: construction ------------------------------------------------------
+  # 2026-10-01 ADR-020 adoption sync: D5 statements migrated to FieldData
+  # semantics (ADR-020 D5); guarding-test evidence migrates with the
+  # field-split implementation dispatch (existing mappings retained).
   - id: "ADR-019-D5-01"
-    statement: "At construction, node-associated fields must have a leading entity axis of exactly n_nodes entries."
+    statement: "At construction, node-associated FieldData values must have a leading entity axis of exactly n_nodes entries (validation target migrated from field values by ADR-020 D5)."
     decision: "D5"
     test_mapping:
       - "tests/graph/test_builder.py::test_node_field_length_is_validated"
   - id: "ADR-019-D5-02"
-    statement: "At construction, cell-associated fields must have a leading entity axis of exactly n_cells entries."
+    statement: "At construction, cell-associated FieldData values must have a leading entity axis of exactly n_cells entries (validation target migrated from field values by ADR-020 D5)."
     decision: "D5"
     test_mapping:
       - "tests/graph/test_builder.py::test_cell_field_length_is_validated"

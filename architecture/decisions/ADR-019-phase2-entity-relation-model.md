@@ -4,7 +4,7 @@
 - 标题：冻结 Phase 2 的 CAEGraph 实体族（node/cell entities）与关系最小数据模型（node graph）、cell-based 构造语义（face 展开去重、region 驱动 NodeCategory 的适用边界）与构造期 field 基数校验；region 分类机制与多图构造、几何特征挂载、序列化为本 ADR 不覆盖项
 - 日期：2026-09-21（v4）
 - 状态：accepted（v3 裁决采纳维持有效；v4 为结构重构，语义零变化——见修订历史）
-- 关联：ADR-015（canonical 表示）、ADR-016（构造契约——本 ADR 为其"随派单定稿"的构造语义提供数据模型依据）、ADR-017（后端适配，下游）、ADR-018（领域组成——本 ADR 即其不覆盖的 entity identity 与 relation 存储的 dedicated ADR）、ADR-014（cell-based 拓扑规范）、Phase 2、Design UML `class_diagram.puml`、不变式登记 `ADR-019-invariants.yaml`
+- 关联：ADR-015（canonical 表示）、ADR-016（构造契约——本 ADR 为其"随派单定稿"的构造语义提供数据模型依据）、ADR-017（后端适配，下游）、ADR-018（领域组成——本 ADR 即其不覆盖的 entity identity 与 relation 存储的 dedicated ADR）、ADR-020（D5 校验对象迁移——field values → FieldData values）、ADR-014（cell-based 拓扑规范）、Phase 2、Design UML `class_diagram.puml`、不变式登记 `ADR-019-invariants.yaml`
 
 ## 背景（Context）
 
@@ -143,6 +143,8 @@ cell-center 图列入本 ADR 不覆盖项。
 - 正确：构造期拦截首轴长度错误的 node/cell 字段；拦截引用未知 facet 的 region。
 - 错误：在 `associate_field()` 内执行 topology cardinality validation；以 `len(values)` 措辞作为领域契约写入对外文档。
 
+> **Amendment（2026-10-01，ADR-020；随其采纳生效）**：D5 基数契约（leading entity axis、构造期校验、`associate_field` 轻量性声明）原样有效；**校验对象由 field values 迁移为 FieldData values**（ADR-020 D5）。`ADR-019-invariants.yaml` 的 D5-01/02 statement 已同步为 FieldData 语义；守护测试证据随 field-split implementation dispatch 迁移。
+
 ## 本 ADR 不覆盖项（Deferred decisions）
 
 - 多图构造并存（node graph + cell-center graph）；
@@ -203,3 +205,4 @@ cell-center 图列入本 ADR 不覆盖项。
 - 2026-09-18 v3：三方审查修订（作者两轮对抗性复核 + codex 独立审查两轮 + 人工裁决）。**v2 D1 被否决的理由**：以 mesh 节点直接定义实体，混淆 domain entity 与 GNN vertex，与 ADR-018 "Fields are associated with entities" 及 `association == "cell"` 的既有事实矛盾。**v2 D4 被限定的理由**：region-count 机械映射对 internal interface（interface 节点会被误标 BOUNDARY、两 interface 相交误标 CORNER）与 physical group 语义失效。v3 内容：D1 重写为双 entity family（node/cell，graph vertices 为 representation choice）；D2 errata（k-node face → k 候选对、退化对丢弃、唯一边参考表，数字经独立验证全部正确）；D4 限定 boundary-participation 范围并记录两个备选；D5 措辞与校验扩展（leading entity axis、membership 越界拦截、BoundaryManager 最小语义、"最小表示契约"表述）；新增 associate_field 状态声明与对称边 materialization 归属。D1/D4 决策级修订待报批重新采纳。
 - 2026-09-18：v3 裁决采纳（arch/adr-019-reconciliation 派单）——D1 补 Phase 2 最小关闭口径与 cell entities 无独立存储声明（`n_entities` = node graph vertex 计数）；D4 补一般化分类的后续 ADR 立项触发条件；D5 补 BoundaryManager 语义与 ADR-018 不覆盖边界的关系；D3 补端点整数性；D2 状态链措辞自洽。状态恢复 accepted，D1–D5 全量生效。
 - 2026-09-21 v4：结构重构为 agent 可执行约束格式——正文与演进历史分离（R0）；新增 Mental Model（三层 + Entity ≠ Graph vertex）与 Terminology（六条，含 Graph vertex）；D1–D5 改为"结论/展开/实现约束/正误示例"四段式；旧演进期措辞统一替换为规范术语（本 ADR 不覆盖项 / 冻结·定义 / 语义范围 / 纳入决策范围）；新增不变式登记（ADR 内人类可读摘要 + 独立 `ADR-019-invariants.yaml`，含 TEST_MISSING 与 explicitly_not_frozen）与错误实现示例。**语义零变化**；不变式清单自 v3 原文先行提炼作为零变化锚点（F3 流程）。两处显式化申报：① D4 "physical group 不自动解释"由"其他语义 region"拆出（语义等价）；② Mental Model 的 Data layer 为既有 field 语义的结构化表述。
+- 2026-10-01：ADR-020 amendment 注记加入 D5（校验对象 field values → FieldData values，契约与位置不变；不变式登记 D5-01/02 statement 同步）；关联清单增补 ADR-020。正文其余内容语义零变化。
