@@ -26,7 +26,7 @@ flowchart LR
 3. **依赖方向**：core 永不 import PyG（ADR-007 D2）；adapter 属于本 ADR 定义的 backend adaptation layer（package ownership 不冻结）；DataGraph / PyG Data 只是 backend 侧对象。
 4. **换 backend 的门槛**：替换或新增 backend adapter 本身不需要新 ADR——**除非该替换改变了 CAEGraph domain model 或 dependency direction**；此时需 architecture review（必要时新 ADR）。
 
-> **澄清（2026-10-01，ADR-020；随其采纳生效）**：下方「不冻结的内容」清单未覆盖 adapter 的**领域输入构成**——该契约空隙由 ADR-020 D4 封堵：backend adapter 的领域输入唯一为 CAEGraph canonical representation（含可选 FieldData 组成），`adapter(caegraph, field_values={...})` 式外部注入路径自此属契约排除项；此类签名变更触发 architecture review。适配链与其余不冻结项不变。
+> **澄清（2026-10-01，ADR-020；随其采纳生效）**：下方「不冻结的内容」清单未覆盖 adapter 的**领域输入构成**——该契约空隙由 ADR-020 D4 封堵：backend adapter 的领域输入唯一为 CAEGraph canonical representation（含可选的 FieldData 可访问语义），`adapter(caegraph, field_values={...})` 式外部注入路径自此属契约排除项；此类签名变更触发 architecture review。适配链与其余不冻结项不变。
 
 ## 不冻结的内容
 

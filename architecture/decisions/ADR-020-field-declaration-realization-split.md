@@ -1,7 +1,7 @@
 # ADR-020: Field declaration and field realization data separation
 
 - 编号：ADR-020
-- 标题：冻结 Field（stable physical quantity declaration）与 FieldData（单次 realization data）的语义边界——1:0..* 关系、Field 为 name/unit/association/component semantics 唯一真源、FieldData 可缺席且属 CAEGraph 组合、adapter 领域输入唯一、基数校验对象迁移至 FieldData values 且位置不变（representation construction）、多个可用 realization 禁止静默选择；不冻结 FieldData API/继承/identity 机制/ownership/container/存储组织/selection 机制
+- 标题：冻结 Field（stable physical quantity declaration）与 FieldData（单次 realization data）的语义边界——1:0..* 关系、Field 为 name/unit/association/component semantics 唯一真源、FieldData 可缺席且位于 canonical data flow、adapter 领域输入唯一、基数校验对象迁移至 FieldData values 且位置不变（representation construction）、要求唯一 realization 的消费遇多个可用 FieldData 须显式选择或显式失败；不冻结 FieldData API/继承/identity 机制/ownership/container/存储组织/selection 机制
 - 日期：2026-10-01
 - 状态：**proposed（草案——待 Reviewer 独立审查与人工裁决；采纳后本 ADR 与对 ADR-007/014/017/018/019 的同步注记一并生效）**
 - 关联：ADR-007（D6 Field 签名局部取代）、ADR-014（组成澄清——Mesh 不受影响）、ADR-015（canonical 表示——组成声明不变）、ADR-016（构造契约——校验位置不变）、ADR-017（适配主链不变；输入唯一性契约空隙封堵）、ADR-018（Fields / field data 词汇正式化）、ADR-019（D5 校验对象迁移；不变式登记同步）、Phase 2、Design UML `class_diagram.puml`（更新随 field-split implementation dispatch）
@@ -18,7 +18,7 @@
 ```mermaid
 flowchart LR
     F["Field — stable declaration<br>(name / unit / association)"] --- R["FieldData — one realization<br>(values + realization metadata)"]
-    R --- G["CAEGraph composition<br>(FieldData 可缺席)"]
+    R --- G["CAEGraph canonical data flow<br>(FieldData 可缺席、可访问)"]
     G -->|"sole domain input"| AD["backend adapter<br>(ADR-017)"]
     classDef nowrap white-space:nowrap
     class F,R,G,AD nowrap
@@ -30,7 +30,7 @@ flowchart LR
 - **FieldData**：某 Field 的一次 realization data——values + realization metadata；成员为示例性方向，精确集合不冻结（D2）。
 - **Declaration / realization**：声明回答「这个问题里有哪些物理量」；realization 回答「某次求解/观测/预测给了它什么数据」。
 - **Realization metadata**：随单次 realization 变化的标注（timestep / time / coverage / sample identity 等）；与 Field 的稳定语义相对。
-- **Silent selection（静默选择）**：消费方面对同一 Field 的多个可用 FieldData 时，未经显式指定而隐式取其一（如隐式取最新）。
+- **Silent selection（静默选择）**：消费/物化路径要求唯一 realization 时，面对同一 Field 的多个可用 FieldData 未经显式指定而隐式取其一（如隐式取最新）。
 
 ## 决策（Decision）
 
@@ -48,17 +48,17 @@ flowchart LR
 
 **展开解释**：成员精确集合**不冻结**，随 field-split implementation 派单定稿，上列成员为示例性方向；realization 的 source/type 语义（solution / observation / prediction）不在本 ADR 冻结。
 
-### D3 语义唯一真源与结构保证
+### D3 语义唯一真源与唯一对应
 
-**一句话结论**：FieldData 以 **object identity** 引用 Field；name/unit/association 单一真源于 Field，FieldData **结构上**不持有副本——机制保证，非纪律约定。
+**一句话结论**：FieldData 对应恰一个 Field；Field 是 name/unit/association/component semantics 的唯一 authoritative source——FieldData 不得独立定义、修改或覆盖这些语义。
 
-**展开解释**：任何消费方读取 field 语义必须经 FieldData → Field 引用解析。「object identity」是语义要求（引用同一声明对象）；其实现机制（成员形式、容器、引用形态）不冻结。
+**展开解释**：任何消费方读取 field 语义必须经 FieldData 到其对应 Field 的解析。具体 identity/reference 机制——以及是否暴露只读代理、缓存或派生访问器——均不冻结（scope exclusion）。
 
-### D4 FieldData 属 CAEGraph 组合；adapter 领域输入唯一
+### D4 FieldData 位于 canonical data flow；adapter 领域输入唯一
 
-**一句话结论**：CAEGraph 可合法地只有 Field 而无 FieldData（problem-before-solving 合法态）；FieldData 属 CAEGraph canonical data flow 的组合；**backend adapter 的领域输入唯一 = CAEGraph canonical representation（含可选 FieldData 组成）**——显式封死 `adapter(caegraph, field_values={...})` 式外部注入路径（ADR-017 字面未禁、属契约空隙；此后此类签名变更触发 architecture review）。
+**一句话结论**：CAEGraph 可合法地只有 Field 而无 FieldData（problem-before-solving 合法态）；realization data 位于 CAEGraph canonical data flow，经 canonical representation 可访问；**backend adapter 的领域输入唯一 = CAEGraph canonical representation（含可选的 FieldData 可访问语义）**——显式封死 `adapter(caegraph, field_values={...})` 式外部注入路径（ADR-017 字面未禁、属契约空隙；此后此类签名变更触发 architecture review）。
 
-**展开解释**：realization data 仍位于 CAEGraph canonical data flow——ADR-017 主链 `CAEGraph → backend adapter → framework-specific representation` 零改动；transforms / dataset 的消费面（framework representation）不变。
+**展开解释**：ADR-017 主链 `CAEGraph → backend adapter → framework-specific representation` 零改动；transforms / dataset 的消费面（framework representation）不变。ownership / container / storage 不冻结——「canonical data flow 可访问」为本 ADR 冻结的全部归属语义（scope exclusion）。
 
 ### D5 基数校验对象迁移
 
@@ -66,17 +66,17 @@ flowchart LR
 
 **展开解释**：`association == "node"` → FieldData values 首轴 == `n_nodes`；`association == "cell"` → == `n_cells`；继续不在 `associate_field` 类轻量挂载 API 上执行 topology-cardinality 校验（ADR-019 D5 状态声明不变）。
 
-### D6 多 realization 禁止静默选择
+### D6 唯一-realization 消费的条件触发
 
-**一句话结论**：当同一 Field 存在多个可用 FieldData 且消费方未显式指定选择时，必须**显式失败**；禁止静默选择（如隐式取最新）。selection API 本身不冻结（scope exclusion）。
+**一句话结论**：仅当 consumer / materialization 要求**唯一 realization** 且存在多个 eligible FieldData 时，必须显式选择或显式失败；representation construction 可合法保存多个 realization。
 
-**展开解释**：本条对 representation construction 与 backend adaptation 同时生效——gate 4b 恢复时 adapter 遵守：遇同一 Field 的多个可用 FieldData 且无显式选择即拒绝。显式选择机制（参数形态、策略词汇）随实现派单定稿。
+**展开解释**：本条不禁止存储多帧；它只约束要求唯一输入的消费 / 物化路径——含 backend adaptation（gate 4b 恢复时 adapter 若需唯一 realization 而遇多帧且无显式选择即拒绝）。「eligible」的判定与显式选择机制（参数形态、策略词汇）不冻结（scope exclusion）。
 
 ## 本 ADR 不覆盖项（scope exclusions）
 
 - FieldData 的 API、继承谱系（含是否继承 BaseObject）与 identity / validation 契约细节；
-- FieldData 的 storage / ownership / container / 挂载入口机制（含构造后追加语义——若出现该入口，校验位置随入口机制重新声明）；
-- identity / reference 机制的实现形态（D3 只冻结语义要求）；
+- FieldData 的 ownership / container / storage / 挂载入口机制——「canonical data flow 可访问」为本 ADR 冻结的全部归属语义（含构造后追加语义——若出现该入口，校验位置随入口机制重新声明）；
+- identity / reference 机制——全部 defer，含是否暴露只读代理、缓存或派生访问器（D3 只冻结「恰一个 Field + 语义唯一真源」）；
 - realization 的 source/type 语义（solution / observation / prediction）；
 - global operating parameters（Re / Mach / AoA 等）是否属 Field——**显式排除**，不在本 ADR 处理；
 - Condition 绑定 Field 语义还是 FieldData——等 FieldFunction slice；不得强绑定 FieldData；
@@ -94,8 +94,9 @@ flowchart LR
 
 ## Invariant 登记策略
 
-- 本 ADR 属 implementation ADR，具备不变式登记资格；**登记创建延迟至 field-split implementation dispatch**——届时与测试证据同步创建 `ADR-020-invariants.yaml`，仅登记可执行子集（候选：Field 不持 values/timestep 成员；FieldData 无 name/unit/association 副本；FieldData values leading entity axis 构造期校验；多 realization 无显式选择即失败）。ontology 决策（D1–D4 语义）始终以本 Markdown 为唯一决策真源，YAML 只作机器可读核验索引。
-- `ADR-019-invariants.yaml` 的 D5-01/02 statement 随本 ADR 采纳同步为 FieldData 语义；守护测试证据留待 field-split implementation 迁移。
+- 本 ADR 属 implementation ADR，具备不变式登记资格；**登记创建延迟至 field-split implementation dispatch**——届时与测试证据同步创建 `ADR-020-invariants.yaml`，仅登记可执行子集（候选：Field 不持 values/timestep 成员；FieldData 语义唯一真源可达（经对应 Field）；FieldData values leading entity axis 构造期校验；要求唯一 realization 的路径遇多帧且无显式选择即失败）。ontology 决策（D1–D4 语义）始终以本 Markdown 为唯一决策真源，YAML 只作机器可读核验索引。
+- **eligibility review**：采纳时（及登记创建时）仅对真正可执行的不变式做资格评审——凡候选引用 deferred API 或机制（identity/reference 形态、ownership/container/storage、selection 机制）者一律不得登记；禁止 YAML 反向冻结本 ADR 的不冻结项。
+- `ADR-019-invariants.yaml` 的 D5-01/02 statement 随本 ADR 采纳同步为 FieldData 语义；旧 Field 语义守护测试降级为 `TEST_MISSING + missing_reason`，field-split 落地后经 PM 授权更新证据。
 
 ## 备选方案（Options considered）
 
@@ -109,9 +110,10 @@ flowchart LR
 
 - 新能力：problem-before-solving 可表达（只有 Field 而无 FieldData 的 CAEGraph 合法）；一个 Field 天然多 realization（瞬态 / 多源）。
 - 成本：**一个中型 field-split code dispatch**（Field 瘦身 + FieldData 新类 + builder / CAEGraph / 测试适配 + ADR-020 不变式登记）——本 ADR 仅登记，不执行。
-- gate 4b（backend adaptation）在 field-split dispatch 之后恢复；adapter 输入契约重确认：仅含 Field 声明的 graph 不产生 field 数据列；同一 Field 的多个可用 FieldData 且无显式选择即拒绝（D6）；symmetric edge materialization 契约（ADR-019 C-01）不受影响。
+- gate 4b（backend adaptation）在 field-split dispatch 之后恢复；adapter 输入契约重确认：仅含 Field 声明的 CAEGraph——本 ADR 只冻结「不凭空生成 realization values」，其物化形态属 PyG schema、不冻结；要求唯一 realization 的物化路径遇多帧且无显式选择即拒绝（D6）；symmetric edge materialization 契约（ADR-019 C-01）不受影响。
 - ADR-017 主链与 transforms / dataset 消费面零改动；不引入新依赖、不改变依赖分层与 PyG 边界（ADR-007 D2 不变）。
 
 ## 修订历史（Revision history）
 
 - 2026-10-01 v1：草案（proposed）——Planning Report（事实链核验 + Option C 七维对抗性压力测试，零冲突零反例）经人工确认后成文；D1–D5 按人工冻结骨架撰写，D6（多个可用 realization 禁止静默选择）按 Phase 2 裁决补入；scope exclusions 含六项显式排除与五项机制不冻结。
+- 2026-10-01 v2：人工 Revision Planning 修正（语义收紧，非方向变更）——① D3 删除 `object identity` 冻结，仅保留「恰一个 Field + 语义唯一真源（authoritative source）」，identity/reference 机制（含只读代理/缓存/派生访问器）全部 defer；② 删除「CAEGraph 组合」表述，统一为 canonical data flow / canonical representation 可访问（ownership/container/storage 不冻结）；③ ADR-019 YAML D5-01/02 保持 FieldData statement，旧 Field 语义测试降级 TEST_MISSING + missing_reason，field-split 落地后经 PM 授权更新证据；④ D6 改为唯一-realization 消费条件触发，representation construction 保存多 realization 合法；⑤ 补 invariant eligibility review 条款（YAML 不得反向冻结 deferred API）；⑥ Consequences 去 PyG schema 预设，declaration-only CAEGraph 仅冻结「不凭空生成 realization values」。D1/D2/D5 语义不变。

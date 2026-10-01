@@ -42,7 +42,7 @@ CAEGraph 的定位经历四轮演进（详见 ADR-008），本 ADR 曾随之两�
 
 **D6. 六抽象**（ADR-008 冻结、ADR-009 明确继承与命名；ADR-015 修订）：BaseObject / CAEGraph / Mesh（topology subsystem）/ Field / CAEDataset / Model（Trainer 出局；Graph 由 backend adapter 侧对象取代，不再是领域类）。`Field(name, values, unit, timestep, node/cell 归属)` 是工程真源的一等公民，graph 特征装配由此成为显式特征工程。
 
-> **局部取代（2026-10-01，ADR-020；随其采纳生效）**：上段「`Field(name, values, unit, timestep, node/cell 归属)`」签名句已由 ADR-020 取代——Field 收窄为 stable physical quantity declaration（不持 values / timestep），realization data 由 FieldData 承载（1:0..*，object identity 引用）；「工程真源的一等公民」与「graph 特征装配由此成为显式特征工程」条款由 Field 与 FieldData 共同承接。六抽象清单不变——FieldData 为 Field 概念的 realization 成员，不新增计数。D6 其余内容不变。
+> **局部取代（2026-10-01，ADR-020；随其采纳生效）**：上段「`Field(name, values, unit, timestep, node/cell 归属)`」签名句已由 ADR-020 取代——Field 收窄为 stable physical quantity declaration（不持 values / timestep），realization data 由 FieldData 承载（1:0..*，Field 为语义唯一真源）；「工程真源的一等公民」与「graph 特征装配由此成为显式特征工程」条款由 Field 与 FieldData 共同承接。六抽象清单不变——FieldData 为 Field 概念的 realization 成员，不新增计数。D6 其余内容不变。
 
 **D7. 包架构与依赖 DAG（终版）**
 
