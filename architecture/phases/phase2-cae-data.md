@@ -1,8 +1,28 @@
 # Phase 2 — CAE Data Pipeline
 
-Status: In progress — ADR-015~019 accepted; coding gates 1–3 plus the mesh representation builder landed (gate 4a: CAEGraph domain core, Field/boundary vocabulary, topology subsystem `Mesh`+`CellType`, node-graph construction per ADR-019); next: backend adapter (gate 4b) and the remaining data band.
+Status: In progress — ADR-015~019 accepted; coding gates 1–3 and 4a landed (1 domain core, 2 Field/semantic regions, 3 topology subsystem, 4a representation construction with the node-graph builder per ADR-019); next: 4b backend adaptation, then 5 source IO vertical slice, 6 transforms/dataset/write-back, 7 end-to-end validation + benchmark. Completion is defined by the Definition of Done below, not by module completeness.
 
 Goal: implement **R1** — the CAE → GNN data band (ADR-007/008): the domain-core objects plus geometry / io / graph / transforms / dataset.
+
+## Definition of Done
+
+Phase 2 is complete when the first real data path is closed end to end — not when every planned module exists. A representative cell-based CAE case must flow through the full pipeline:
+
+```mermaid
+flowchart TB
+    classDef nowrap white-space:nowrap
+    A["Gmsh source"] --> B["source normalization"]
+    B --> C["Mesh + Fields + Regions/Conditions"]
+    C --> D["MeshRepresentationBuilder"]
+    D --> E["CAEGraph"]
+    E --> F["PyG backend adapter"]
+    F --> G["PyG Data"]
+    G --> H["Transforms / CAEDataset"]
+    H --> I["GNN-ready data"]
+    class A,B,C,D,E,F,G,H,I nowrap
+```
+
+Topology, field association and region/boundary semantics must survive every conversion boundary without unintended loss or alteration. Gates 5–7 exist to serve this contract; module completeness alone does not close the phase.
 
 ## New modules (planned)
 
@@ -43,12 +63,17 @@ src/caegraph/core/          # domain canonical representation (ADR-015)
 src/caegraph/geometry/
 ├── metrics.py              # mesh-derived geometric entity features:
 │                           #   distance/direction/normal/quality
-└── interpolation.py        # field interpolation onto mesh nodes
+└── interpolation.py        # explicit field interpolation onto mesh nodes
+                            #   (e.g. cell field → node field): a data
+                            #   transform, never an implicit side effect of
+                            #   loading, building or backend adaptation
 
 src/caegraph/io/
 ├── base.py                 # AbstractMeshLoader: stable __call__ pipeline
-│                           #   (ADR-012); protected hooks are adapter
-│                           #   implementation details, not frozen
+│                           #   (ADR-012); the loader abstraction for mesh-based
+│                           #   source representations, not the universal source
+│                           #   abstraction of CAEGraph; protected hooks are
+│                           #   adapter implementation details, not frozen
 ├── registry.py             # format registry on the core registry
 ├── gmsh.py                 # first source adapter: normalizes the Gmsh source
 │                           #   representation through meshio (external IO
@@ -69,11 +94,16 @@ src/caegraph/graph/         # representation construction + backend adapter laye
                             #   (adaptation contract: ADR-017; PyG is a
                             #   backend, never the domain model)
 
-src/caegraph/transforms/    # BC application lives HERE, not on Graph
+src/caegraph/transforms/    # backend-consumable encoding of geometry, features
+│                           #   and physics/boundary semantics; enforcement
+│                           #   strategy stays model-side (not prescribed here,
+│                           #   and never by mutating Graph)
 ├── geometry.py             # coordinate / feature normalization
 ├── feature.py              # CAE feature engineering
-└── physics.py              # boundary-condition encoding:
-                            #   data.x[data.inlet_mask] = value pattern
+└── physics.py              # boundary/physics semantic encoding into
+                            #   backend-consumable features, masks and
+                            #   attributes; does not prescribe model-side
+                            #   enforcement strategy
 
 src/caegraph/dataset/
 └── dataset.py              # CAEDataset(PyG Dataset): collections, splits
@@ -85,19 +115,35 @@ src/caegraph/dataset/
 - `Mesh` / `CellType` — topology subsystem (ADR-014 narrowed): Mesh is a topology-rich discretization representation (FEM/FVM), no longer the top-level canonical object
 - `Field` / `BoundaryRegion` / `BoundarySpec` / `BoundaryManager` — field & semantic-region vocabulary (ADR-007 D6, ADR-010/011); `FieldFunction` deferred
 - `AbstractMeshLoader` + gmsh adapter — source loading pipeline (ADR-012; target object redefined by ADR-015); meshio provisional engine (ADR-013)
-- representation builder — source discretization → CAEGraph entities + relations; extension point per ADR-015, construction boundary frozen by ADR-016 (accepted; API/naming/registry deferred to the coding dispatch); replaces the single `Mesh → GraphBuilder` contract
-- backend adapter — `CAEGraph → framework-specific representation` (PyG Data in Phase 2; adaptation boundary frozen by ADR-017, accepted — DataGraph is the conceptual backend representation layer, backend-side, owns no domain semantics, not a domain class)
+- representation builder — source discretization → CAEGraph entities + relations; extension point per ADR-015, construction boundary frozen by ADR-016 (accepted; API/naming/registry deferred to the coding dispatch); replaces the single `Mesh → GraphBuilder` contract. The Phase 2 learning representation is a node graph — node entities are the graph vertices (ADR-019); cell identities are retained because CAE source data may be cell-associated, not because Phase 2 intends a heterogeneous or cell-centered GNN graph
+- backend adapter — `CAEGraph → framework-specific representation` (PyG Data in Phase 2; adaptation boundary frozen by ADR-017, accepted — DataGraph is the conceptual backend representation layer, backend-side, owns no domain semantics, not a domain class). Boundary with construction: the representation builder decides the canonical domain structure — graph vertices are node entities, relations are canonical node pairs — while the adapter only materializes that representation into the backend (`edge_index`, tensors, masks, attributes); `pyg.py` contains the PyG backend adapter, does not reimplement PyG graph abstractions and never re-decides what a node is or how cells connect (it is not a second GraphBuilder)
+- Semantic-preservation principle (backend adaptation): adaptation preserves semantics and must not silently perform domain-changing transformations. Symmetric directed `edge_index` expansion of the canonical undirected pairs is adaptation (backend side per ADR-019 D3); turning a cell field into a node field by interpolation is not — that is an explicit data/representation transform (geometry band), never something a loader, builder or backend adapter does implicitly
 - Geometry / feature / physics transforms (PyG transform protocol)
 - `CAEDataset`; VTK writer
 
 ## Validation focus (Validation Agent, mandatory)
 
-- topology preservation (node/edge counts, connectivity)
-- source named group mapping: source groups (e.g. Gmsh physical groups) → domain groups / BoundaryRegion (global facet IDs — cell-based scope per ADR-014), classified by dimension per ADR-012
-- NodeCategory semantics: interior / boundary / corner; corner derived from membership in multiple boundary/interface facet regions (not from a legacy node-set boundary model)
-- Graph schema conformance: required CAE field and graph attributes present; `validate()` enforced (the learning-side representation, not a full Mesh copy)
+Validation verifies **information preservation across representation boundaries** — not just matching node/edge counts. Organized by conversion boundary:
+
+- **Source → canonical topology/domain data**
+  - source ordering normalization; cell/facet topology facts per ADR-014
+  - source named group mapping (e.g. Gmsh physical groups) → domain groups / BoundaryRegion (global facet IDs — cell-based scope per ADR-014), classified by dimension per ADR-012
+  - field association recorded with its entity scope
+- **Canonical data → CAEGraph**
+  - entity identity: node/cell entity families per ADR-019 D1; `n_entities` is the node-graph vertex count, never `n_nodes + n_cells`
+  - canonical relations: deduplicated `(min, max)` node pairs with degenerate `(a, a)` candidates discarded during expansion; 1D LINE2 cells contribute their own node pair
+  - region semantics and NodeCategory: interior / boundary / corner, derived only from boundary-participation regions, counted by distinct region membership (not facet occurrences); 1D meshes → always INTERIOR; interface / physical-group participation is not covered by the current mapping (dedicated ADR triggers recorded in ADR-019 D4)
+  - field cardinality: leading entity axis of exactly `n_nodes` / `n_cells` entries for node/cell associations (ADR-019 D5)
+  - ADR-019 invariants: machine-auditable checklist (`ADR-019-invariants.yaml`) — each executable invariant mapped to guarding tests; `TEST_MISSING` marks explicitly registered items that have no independent executable surface yet (e.g. the D1-01 architecture-level scope declaration) and must never be silently dropped
+- **CAEGraph → PyG (backend adaptation)**
+  - graph vertex preservation: adapter `num_nodes` equals `graph.n_entities`
+  - canonical relation → backend `edge_index`: symmetric directed materialization `[2, 2E]` while CAEGraph storage stays undirected with no duplicated bidirectional entries (ADR-019 D3 / ADR-017)
+  - `graph.validate()` enforced at the adaptation entry; field/geometry mapping and boundary encoding present with dtype/association preserved
+  - no unintended domain-semantic transformation (semantic-preservation principle — e.g. no silent cell→node interpolation)
+- **Output / round trip**
+  - VTK validation: canonical Mesh → VTK → re-read topology consistency; Phase 2 owns the Mesh→VTK writer (Graph-layer predicted-field export stays with Phase 4)
+  - end-to-end representative Gmsh pipeline per the Definition of Done
 - PyG boundary: `core`/`geometry`/`io` never import `torch_geometric`
-- VTK validation: canonical Mesh → VTK → re-read topology consistency. Phase 2 owns the Mesh→VTK writer; Graph-layer predicted-field export stays with Phase 4.
 
 ## Rules
 
@@ -110,12 +156,17 @@ src/caegraph/dataset/
 
 ## Coding gate
 
-Coding order follows the ADR-015 hierarchy — CAEGraph core first, topology/discretization adapters after:
+Coding order follows the ADR-015 hierarchy — CAEGraph core first, topology/discretization adapters after. Gate numbers are referenced by the Status line and the review records:
 
-1. `CAEGraph` core (semantic composition — entities, relations, fields, regions, conditions; never PyG)
-2. `Field` / semantic regions (`boundary/`)
-3. topology subsystem + discretization adapters (FEM: Mesh topology + CellType — the CellType foundation has already landed and is tested)
-4. backend adapter (PyG Data as the Phase 2 framework representation; ADR-017)
+1. **Domain core** — `CAEGraph` semantic composition (entities, relations, fields, regions, conditions; never PyG) — *landed*
+2. **Field / semantic regions** — `Field` / `boundary/` vocabulary — *landed*
+3. **Topology subsystem** — FEM: Mesh topology + CellType (CellType foundation landed in Phase 1, migrated per ADR-015) — *landed*
+4. **Representation construction + backend adaptation** — two adjacent but distinct conversion boundaries (construction is not the prelude of adaptation, ADR-016 vs ADR-017):
+   - **4a. Representation construction** — `MeshRepresentationBuilder`, node-graph construction per ADR-019 — *landed*
+   - **4b. Backend adaptation** — PyG Data as the Phase 2 framework representation (ADR-017) — *next*. ADR-019 executable invariants relevant to backend adaptation must be guarded before this gate closes; D1-01 remains an explicitly registered architecture-level scope invariant (`TEST_MISSING`) unless a non-artificial executable surface emerges — the invariant registry serves the architecture, never the reverse
+5. **Source IO vertical slice** — `AbstractMeshLoader` + gmsh adapter; format registry on the core registry (ADR-012/013)
+6. **Transforms / dataset / write-back** — geometry/feature/physics transforms, `CAEDataset`, VTK writer
+7. **End-to-end validation + benchmark** — the first full Gmsh → GNN-ready pipeline per the Definition of Done; R1 proven as a whole
 
 CellType prerequisites remain binding for any topology work: stable integer codes (explicit mapping, not enum-declaration order), CAEGraph local-node conventions, codim-1 face templates — frozen with the implementation (docstring + tests).
 
