@@ -44,8 +44,8 @@ class NodeCategory(str, Enum):
     """Role of a mesh node with respect to boundary regions (ADR-007).
 
     ``CORNER`` identifies nodes that belong to more than one boundary
-    region; it is derived during Mesh-to-Graph conversion, never
-    declared by users.
+    region; it is derived during representation construction
+    (ADR-016), never declared by users.
     """
 
     INTERIOR = "interior"

@@ -31,8 +31,10 @@ class BoundaryManager:
         >>> inlet = BoundaryRegion("fluid_inlet", [1, 5])
         >>> manager.register(wall) is wall
         True
+        >>> manager.register(inlet) is inlet
+        True
         >>> manager.multi_region_members()
-        {5: (inlet, wall)}
+        {5: (BoundaryRegion(name='fluid_inlet'), BoundaryRegion(name='fluid_wall'))}
     """
 
     def __init__(self) -> None:
