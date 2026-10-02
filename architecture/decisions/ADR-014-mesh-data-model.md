@@ -4,11 +4,13 @@
 - 标题：定义 CAEGraph Mesh canonical representation——canonical cell 存储与显式 facet 拓扑双 CSR、身份契约、connectivity 语义（facet winding-free / cell 有向局部拓扑且不含 backend 编号）、CellType 词汇与显式稳定编码、校验分层（拓扑合法性 / 条件 coverage-partition）
 - 日期：2026-09-06
 - 状态：accepted
-- 关联：ADR-007（D3 反 god-object / D6 Field）、ADR-008（跨软件定位）、ADR-009（BaseObject 限于 domain-truth）、ADR-010（三层职责链）、ADR-011（槽位一致性）、ADR-012（读取管线——source normalization 进入契约，经重写与本 ADR 对齐）、ADR-013（IO 引擎 provisional）、ADR-015（顶层 canonical 对象与范围收窄）、Phase 2、Design UML `class_diagram.puml`
+- 关联：ADR-007（D3 反 god-object / D6 Field）、ADR-008（跨软件定位）、ADR-009（BaseObject 限于 domain-truth）、ADR-010（三层职责链）、ADR-011（槽位一致性）、ADR-012（读取管线——source normalization 进入契约，经重写与本 ADR 对齐）、ADR-013（IO 引擎 provisional）、ADR-015（顶层 canonical 对象与范围收窄）、ADR-020（fields 词汇组成澄清——Mesh 不受影响）、Phase 2、Design UML `class_diagram.puml`
 
 **范围收窄（2026-09-07，ADR-015 已采纳，生效）**：本 ADR 的范围是 **cell-based 离散（FEM/FVM）的 canonical topology model**——ADR-014 定义 cell-based 离散所用的 canonical topology model，而不定义完整的 CAEGraph representation。顶层 canonical 对象由 ADR-015 冻结为 CAEGraph（graph-native canonical domain representation）；本 ADR 全部内容（stable IDs / CellType / connectivity normalization / facet 语义 / topology validation / 校验分层）归位其 topology subsystem，效力不变；已落地的 `core/celltype.py` 随采纳迁移至 `core/topology/celltype.py`。
 
 **组成修订（2026-09-13，ADR-018 已采纳，生效）**：决策 7 组成清单中的 `BoundaryManager` 与 `fields / add_field` 两项归位表示层——ADR-018 冻结 fields associated with entities 的关联钩点与语义区域/条件注册表于 CAEGraph（Phase 2 Slice 1 已落地：`CAEGraph.associate_field` 与 `CAEGraph.boundaries`）；Mesh 作为 topology subsystem 仅承载拓扑事实（nodes / cells / facets / facet_cells）与 domain_groups。8a 末项「场值长度与关联（node/cell）匹配」随之不在 Mesh 上实现，由表示构造层（ADR-016 builder 与 CAEGraph 场关联）执行。决策 1–6 与决策 8 其余各项效力不变。
+
+**组成澄清（2026-10-01，ADR-020；随其采纳生效）**：上条修订中的「fields」词汇现正式化为两层——Field（stable physical quantity declaration）与 FieldData（一次 realization data，ADR-020）；二者均留在表示层（CAEGraph canonical data flow 可访问），Mesh 作为 topology subsystem 仍仅承载拓扑事实与 domain_groups，场值基数校验对象随 ADR-020 D5 迁移为 FieldData values、位置仍在表示构造层。本澄清不改变本 ADR 任何决策的效力与范围。
 
 ## 背景（Context）
 

@@ -4,7 +4,7 @@
 - 标题：冻结「CAEGraph 如何被 ML 框架消费」的适配边界——CAEGraph → backend adapter → framework-specific graph representation（PyG Data 为 Phase 2 实现）；backend 替换仅在改变领域/backend 边界或依赖方向时需 architecture review
 - 日期：2026-09-08
 - 状态：**accepted（2026-09-08 经 Architecture review 采纳，适配边界冻结）**
-- 关联：ADR-015（父决策：canonical representation）、ADR-007（D2：core 永不 import PyG；PyG 自 graph 层起可用）、ADR-008（无替代图后端）、ADR-009（学习层原生继承）、ADR-016（上游构造契约）、Phase 2、Design UML `class_diagram.puml`
+- 关联：ADR-015（父决策：canonical representation）、ADR-007（D2：core 永不 import PyG；PyG 自 graph 层起可用）、ADR-008（无替代图后端）、ADR-009（学习层原生继承）、ADR-016（上游构造契约）、ADR-020（adapter 领域输入唯一性空隙封堵）、Phase 2、Design UML `class_diagram.puml`
 
 ## 背景（Context）
 
@@ -25,6 +25,8 @@ flowchart LR
 2. **DataGraph 是概念名（backend representation layer）**：指 adapter 产出的框架侧数据表示整体，**不是必须实现的类**，更不是领域对象——不拥有 boundary semantics、CellType、physical regions、mesh topology truth；领域语义止于 CAEGraph（ADR-015）。**DataGraph 不引入额外的强制转换阶段**——它是 adapter 产出的 representation layer 的称呼，不是链上第四个节点。DataGraph 保留为讨论 backend representation layers 的术语：≠ class、≠ 转换阶段、= 概念层名。
 3. **依赖方向**：core 永不 import PyG（ADR-007 D2）；adapter 属于本 ADR 定义的 backend adaptation layer（package ownership 不冻结）；DataGraph / PyG Data 只是 backend 侧对象。
 4. **换 backend 的门槛**：替换或新增 backend adapter 本身不需要新 ADR——**除非该替换改变了 CAEGraph domain model 或 dependency direction**；此时需 architecture review（必要时新 ADR）。
+
+> **澄清（2026-10-01，ADR-020；随其采纳生效）**：下方「不冻结的内容」清单未覆盖 adapter 的**领域输入构成**——该契约空隙由 ADR-020 D4 封堵：backend adapter 的领域输入唯一为 CAEGraph canonical representation（含可选的 FieldData 可访问语义），`adapter(caegraph, field_values={...})` 式外部注入路径自此属契约排除项；此类签名变更触发 architecture review。适配链与其余不冻结项不变。
 
 ## 不冻结的内容
 

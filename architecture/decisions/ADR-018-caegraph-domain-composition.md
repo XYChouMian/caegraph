@@ -4,7 +4,7 @@
 - 标题：冻结 CAEGraph 的语义组成与归属关系（semantic composition and semantic ownership）；范围排除见正文 scope exclusions
 - 日期：2026-09-08
 - 状态：**accepted（2026-09-08 经 Architecture review 采纳，语义组成与归属原则冻结）**
-- 关联：ADR-015（父决策——本 ADR 归口其「后续设计决策」①②③ 的原则层）、ADR-014（topology subsystem 规范——仅引用，不重复立法）、ADR-016/017（downstream construction and backend adaptation contracts）、Phase 2、Design UML `class_diagram.puml`
+- 关联：ADR-015（父决策——本 ADR 归口其「后续设计决策」①②③ 的原则层）、ADR-014（topology subsystem 规范——仅引用，不重复立法）、ADR-016/017（downstream construction and backend adaptation contracts）、ADR-020（Fields / field data 词汇正式化）、Phase 2、Design UML `class_diagram.puml`
 
 ## 背景（Context）
 
@@ -25,6 +25,8 @@ ADR-015 冻结 CAEGraph 为 canonical domain representation 并列出组成方�
 | Topology subsystem | 离散结构如何定义 | CAEGraph 引用的 optional semantic provider；cell-based topology semantics 由 ADR-014 定义的 topology subsystem 提供 |
 
 **Ownership 总则**：Fields **associated with** entities；Conditions 可以引用 Regions 和 field data；topology subsystem 是 **referenced by CAEGraph**，而非由 CAEGraph 拥有的 domain concept——它是 optional semantic provider，不是 CAEGraph 的内部对象，更不是继承体系。
+
+**澄清注记（2026-10-01，ADR-020；随其采纳生效）**：上表 Fields 行与 Ownership 总则中的 "Fields" 指 stable physical quantity declaration（ADR-020 的 **Field**）；Conditions 行与总则中的 "field data" 指其 realization 层数据（现行对应物为 **FieldData**，ADR-020）。Conditions 引用 realization 层数据，但**不强绑定 FieldData**——绑定机制等 FieldFunction slice。Fields 仍为一个领域概念（由 Field 与 FieldData 共同承载），FieldData 不构成第七领域概念。本注记不改写上表任何原则。
 
 ## 不冻结的内容（scope exclusions）
 
