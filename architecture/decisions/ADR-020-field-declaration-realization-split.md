@@ -3,7 +3,7 @@
 - 编号：ADR-020
 - 标题：冻结 Field（stable physical quantity declaration）与 FieldData（单次 realization data）的语义边界——1:0..* 关系、Field 为 name/unit/association/component semantics 唯一真源、FieldData 可缺席且位于 canonical data flow、adapter 领域输入唯一、基数校验对象迁移至 FieldData values 且位置不变（representation construction）、要求唯一 realization 的消费遇多个可用 FieldData 须显式选择或显式失败；不冻结 FieldData API/继承/identity 机制/ownership/container/存储组织/selection 机制
 - 日期：2026-10-01
-- 状态：**proposed（草案——待 Reviewer 独立审查与人工裁决；采纳后本 ADR 与对 ADR-007/014/017/018/019 的同步注记一并生效）**
+- 状态：**accepted（2026-10-02 经人工裁决采纳，Field declaration / realization 语义边界冻结；对 ADR-007/014/017/018/019 的同步注记随之生效）**
 - 关联：ADR-007（D6 Field 签名局部取代）、ADR-014（组成澄清——Mesh 不受影响）、ADR-015（canonical 表示——组成声明不变）、ADR-016（构造契约——校验位置不变）、ADR-017（适配主链不变；输入唯一性契约空隙封堵）、ADR-018（Fields / field data 词汇正式化）、ADR-019（D5 校验对象迁移；不变式登记同步）、Phase 2、Design UML `class_diagram.puml`（更新随 field-split implementation dispatch）
 
 ## 背景（Context）
@@ -117,3 +117,4 @@ flowchart LR
 
 - 2026-10-01 v1：草案（proposed）——Planning Report（事实链核验 + Option C 七维对抗性压力测试，零冲突零反例）经人工确认后成文；D1–D5 按人工冻结骨架撰写，D6（多个可用 realization 禁止静默选择）按 Phase 2 裁决补入；scope exclusions 含六项显式排除与五项机制不冻结。
 - 2026-10-01 v2：人工 Revision Planning 修正（语义收紧，非方向变更）——① D3 删除 `object identity` 冻结，仅保留「恰一个 Field + 语义唯一真源（authoritative source）」，identity/reference 机制（含只读代理/缓存/派生访问器）全部 defer；② 删除「CAEGraph 组合」表述，统一为 canonical data flow / canonical representation 可访问（ownership/container/storage 不冻结）；③ ADR-019 YAML D5-01/02 保持 FieldData statement，旧 Field 语义测试降级 TEST_MISSING + missing_reason，field-split 落地后经 PM 授权更新证据；④ D6 改为唯一-realization 消费条件触发，representation construction 保存多 realization 合法；⑤ 补 invariant eligibility review 条款（YAML 不得反向冻结 deferred API）；⑥ Consequences 去 PyG schema 预设，declaration-only CAEGraph 仅冻结「不凭空生成 realization values」。D1/D2/D5 语义不变。
+- 2026-10-02：accepted（人工审查通过并裁决采纳；本 ADR 与五处同步注记、`ADR-019-invariants.yaml` D5 同步一并生效）。
