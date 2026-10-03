@@ -70,3 +70,14 @@ def test_semantics_resolve_through_the_field_reference():
     assert data.field.name == "pressure"
     assert data.field.unit == "Pa"
     assert data.field.association == "node"
+
+
+def test_validate_rechecks_the_realization_state():
+    # FieldData mirrors the BaseObject lifecycle pattern: __init__
+    # assigns and delegates to validate(); the same checks are
+    # reachable on an existing instance.
+    data = FieldData(_declaration(), [1.0], timestep=2)
+    data.validate()  # valid state — no exception
+    data._values = None  # type: ignore[assignment]
+    with pytest.raises(ValueError, match="values are required"):
+        data.validate()

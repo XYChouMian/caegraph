@@ -41,8 +41,8 @@ class Field(BaseObject):
 
     Raises:
         ValueError: If ``name`` is empty, or ``unit``/``association``
-            is an empty string (checked only when not ``None``).
-        TypeError: If ``unit``/``association`` are not strings, or
+            is not a non-empty string (checked only when not
+            ``None`` — non-string values fail the same check), or
             the initial state fails :meth:`validate`.
 
     Examples:
@@ -121,7 +121,7 @@ class FieldData:
     BaseObject's name-based identity would duplicate Field
     semantics.
 
-    Member set (finalized in the field-split dispatch): ``field``,
+    Member set (current Phase 2 implementation choice): ``field``,
     ``values``, ``timestep``, ``metadata``. Time, coverage and sample
     identity are deferred / NOT frozen (ADR-020 D2).
 
@@ -130,8 +130,8 @@ class FieldData:
         values: Realization payload — any array-like object. A
             missing argument is a signature error (Python
             ``TypeError``); an explicit ``None`` payload is rejected.
-        timestep: Optional temporal index or label of this
-            realization.
+        timestep: Optional numeric temporal index of this realization
+            (``int`` or ``float``; bools rejected).
         metadata: Optional free-form key/value annotations.
 
     Raises:
@@ -159,7 +159,12 @@ class FieldData:
         timestep: float | None = None,
         metadata: Mapping[str, Any] | None = None,
     ) -> None:
-        """Initialize the realization payload and its declaration reference."""
+        """Initialize the realization payload and its declaration reference.
+
+        Assigns the member set and then delegates to
+        :meth:`validate` — mirroring the BaseObject lifecycle pattern
+        (construction-time validation).
+        """
         if not isinstance(field, Field):
             raise TypeError("field must be a Field declaration (ADR-020 D3)")
         if values is None:
@@ -173,7 +178,8 @@ class FieldData:
         self._field = field
         self._values = values
         self._timestep = timestep
-        self._metadata: dict[str, Any] = dict(metadata) if metadata else {}
+        self._metadata: dict[str, Any] = dict(metadata) if metadata is not None else {}
+        self.validate()
 
     @property
     def field(self) -> Field:
@@ -187,7 +193,7 @@ class FieldData:
 
     @property
     def timestep(self) -> float | None:
-        """Temporal index or label of this realization, if declared."""
+        """Numeric temporal index of this realization, if declared."""
         return self._timestep
 
     @property
@@ -200,7 +206,8 @@ class FieldData:
 
         Internal consistency check: a :class:`Field` reference, a
         non-``None`` values payload and a numeric (or absent)
-        timestep.
+        timestep. Mirrors the BaseObject lifecycle pattern —
+        ``__init__`` assigns and then delegates to this method.
         """
         if not isinstance(self._field, Field):
             raise TypeError("field must be a Field declaration (ADR-020 D3)")

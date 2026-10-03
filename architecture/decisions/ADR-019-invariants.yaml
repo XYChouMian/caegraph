@@ -100,6 +100,10 @@ invariants:
   # D5 guarding tests were migrated to FieldData-based construction and
   # the evidence is restored (statements unchanged since the ADR-020
   # adoption sync — the old TEST_MISSING gap is closed).
+  # Provenance note: the D5 statements were amended by the ADR-020
+  # field-split implementation dispatch (Markdown ADR-020 remains the
+  # decision truth source; the registry schema defines no amended_by
+  # field, so this provenance lives as a comment).
   - id: "ADR-019-D5-01"
     statement: "At construction, node-associated FieldData values must have a leading entity axis of exactly n_nodes entries (validation target migrated from field values by ADR-020 D5)."
     decision: "D5"

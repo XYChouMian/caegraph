@@ -296,6 +296,23 @@ def test_dangling_field_data_is_rejected():
         )
 
 
+def test_same_name_different_field_object_is_rejected():
+    # Phase 2 implementation consistency guard: a realization must
+    # reference the declared Field OBJECT — a distinct object that
+    # merely shares the name would smuggle different semantics (kPa /
+    # cell here) under the declared identity. Implementation-level
+    # guard only; not an ADR-020 D3 identity/reference freeze.
+    mesh = _two_triangle_mesh()
+    declared = Field("p", unit="Pa", association="node")
+    same_name = Field("p", unit="kPa", association="cell")
+    with pytest.raises(ValueError, match="declared Field object"):
+        MeshRepresentationBuilder()(
+            mesh,
+            fields=[declared],
+            field_data=[FieldData(same_name, [1.0, 2.0, 3.0, 4.0])],
+        )
+
+
 def test_non_mesh_source_is_rejected():
     with pytest.raises(TypeError, match="Mesh"):
         MeshRepresentationBuilder()("two_tri")  # type: ignore[arg-type]

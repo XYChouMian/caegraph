@@ -42,11 +42,12 @@ class MeshRepresentationBuilder:
 
     FieldData validation executes here (ADR-019 D5 as amended by
     ADR-020 D5): the builder is the only write path for realization
-    data — every :class:`~caegraph.core.FieldData` must reference an
-    explicitly associated Field declaration (no dangling
-    realizations), and node/cell-associated values must carry a
-    leading entity axis of exactly ``n_nodes`` / ``n_cells`` entries;
-    other association labels are not cardinality-checked.
+    data — every :class:`~caegraph.core.FieldData` must reference the
+    explicitly associated Field declaration object (no dangling and
+    no same-name-distinct-object realizations), and node/cell-
+    associated values must carry a leading entity axis of exactly
+    ``n_nodes`` / ``n_cells`` entries; other association labels are
+    not cardinality-checked.
     Declaration-only field sets are legal (ADR-020 D4), and multiple
     realizations per Field are stored without silent selection
     (ADR-020 D6).
@@ -79,10 +80,10 @@ class MeshRepresentationBuilder:
                 D4).
             field_data: Optional realization data to register after
                 construction. Each entry is validated for a
-                non-dangling declaration and leading-entity-axis
-                cardinality, then written through the internal
-                construction path — the builder is the only
-                FieldData write path (ADR-020).
+                non-dangling, reference-consistent declaration and
+                leading-entity-axis cardinality, then written through
+                the internal construction path — the builder is the
+                only FieldData write path (ADR-020).
 
         Returns:
             A CAEGraph satisfying the Phase 2 minimal representation
@@ -92,7 +93,8 @@ class MeshRepresentationBuilder:
             TypeError: If ``mesh`` is not a
                 :class:`~caegraph.core.topology.Mesh`.
             ValueError: If a region references an unknown facet id, a
-                FieldData realization has no associated declaration,
+                FieldData realization has no associated declaration
+                or references a same-named but distinct Field object,
                 or a node/cell-associated payload fails its
                 leading-entity-axis cardinality check.
         """
@@ -114,7 +116,7 @@ class MeshRepresentationBuilder:
             for field in fields:
                 graph.associate_field(field)
         if field_data is not None:
-            declared = {field.name for field in graph.associated_fields}
+            declared = {field.name: field for field in graph.associated_fields}
             for data in field_data:
                 self._validate_field_data(data, mesh, declared)
                 graph._register_field_data(data)
@@ -184,25 +186,39 @@ class MeshRepresentationBuilder:
         return tuple(sorted(edges))
 
     def _validate_field_data(
-        self, data: FieldData, mesh: Mesh, declared: set[str]
+        self, data: FieldData, mesh: Mesh, declared: dict[str, Field]
     ) -> None:
-        """Enforce the declaration and cardinality contracts (ADR-019 D5 / ADR-020).
+        """Enforce the declaration, reference-consistency and cardinality contracts.
 
-        Dangling-declaration check first: every realization must
-        reference an explicitly associated Field declaration. Then
-        the leading-entity-axis cardinality contract (ADR-019 D5 as
-        amended by ADR-020 D5) on ``FieldData.values``; other
-        association labels are not cardinality-checked.
+        Three fail-fast checks (ADR-019 D5 / ADR-020): first, every
+        realization must reference an explicitly associated Field
+        declaration (no dangling realizations); second, the reference
+        must be the declared Field **object itself** — a distinct
+        object that merely shares the name is rejected (a Phase 2
+        implementation consistency guard; not a freeze of the
+        ADR-020 D3 identity/reference mechanism, which stays
+        deferred). Finally the leading-entity-axis cardinality
+        contract (ADR-019 D5 as amended by ADR-020 D5) on
+        ``FieldData.values``; other association labels are not
+        cardinality-checked.
 
         Raises:
             ValueError: If the realization has no associated
-                declaration, or a node/cell-associated payload is
+                declaration, references a same-named but distinct
+                Field object, or a node/cell-associated payload is
                 unsized or carries a mismatched leading-axis count.
         """
         if data.field.name not in declared:
             raise ValueError(
                 f"field data for {data.field.name!r} has no associated "
                 "declaration — declare the Field first (ADR-020 D3)"
+            )
+        if declared[data.field.name] is not data.field:
+            raise ValueError(
+                f"field data for {data.field.name!r} must reference the "
+                "declared Field object itself, not a distinct object "
+                "that merely shares the name (Phase 2 implementation "
+                "consistency guard)"
             )
         association = data.field.association
         if association not in ("node", "cell"):

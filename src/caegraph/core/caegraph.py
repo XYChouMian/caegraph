@@ -220,10 +220,11 @@ class CAEGraph(BaseObject):
         """Realization data in the canonical data flow (read-only view, ADR-020 D4).
 
         FieldData enters this representation exclusively through the
-        representation builder (cardinality and dangling-declaration
-        checks live there, ADR-019 D5 / ADR-020 D5); no public
-        registration API exists — an ADR-020 scope-exclusion
-        implementation microdecision, re-evaluable at gate 4b.
+        representation builder (cardinality, dangling-declaration and
+        reference-consistency checks live there, ADR-019 D5 /
+        ADR-020 D5); no public registration API exists — an ADR-020
+        scope-exclusion implementation microdecision, re-evaluable at
+        gate 4b.
         """
         return tuple(self._field_data)
 
