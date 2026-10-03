@@ -11,7 +11,7 @@
 ' GUIDE   : see architecture/UML_GUIDE.md
 ' =============================================================================
 
-title CAEGraph Domain Abstractions (Design) - ADR-007-019
+title CAEGraph Domain Abstractions (Design) - ADR-007-020
 
 package "external ecosystem bases" {
   class "torch_geometric.data.Data" as PyGData <<external>>
@@ -61,11 +61,41 @@ package "caegraph.core (domain truth: CAEGraph + topology subsystem; torch-only,
     never the domain model
   }
   class Field {
-    Named field data: values, unit, timestep,
-    node-or-cell association (ADR-007 D6;
-    association - ADR-018; cardinality -
-    ADR-019 D5)
+    Stable physical quantity declaration
+    (ADR-020 D1): name, unit, association,
+    component semantics - the single
+    authoritative source (D3);
+    NO values, NO timestep; may legally
+    exist without any FieldData
+    (problem-before-solving, D4);
+    semantic role only - exact
+    member/API form not frozen
   }
+  class FieldData <<"realization member">> {
+    One realization of a Field
+    (ADR-020 D2): values payload;
+    semantic role only - exact
+    member/API form not frozen,
+    finalized at the field-split
+    implementation dispatch
+  }
+  note right of FieldData
+    Realization metadata examples
+    (illustrative, NOT frozen - ADR-020 D2):
+    timestep / time / coverage /
+    sample identity.
+    Identity / reference mechanism
+    deferred (ADR-020 D3): read-only
+    proxy / cache / derived accessors
+    all unfrozen.
+    Lineage (BaseObject or not)
+    deferred (ADR-020 scope exclusion).
+    Lives in the CAEGraph canonical
+    data flow, accessible via the
+    canonical representation;
+    ownership / container / storage
+    NOT frozen (ADR-020 D4).
+  end note
   enum BoundaryType {
     Mathematical BC categories (ADR-010):
     DIRICHLET / NEUMANN / ROBIN /
@@ -209,10 +239,10 @@ package "caegraph.graph (representation construction + backend adapter)" {
     region classification deferred
     (ADR-019 D4);
     construction-time validation
-    (ADR-019 D5):
-    field cardinality: leading entity
-    axis == n_entities (node field) /
-    n_cells (cell field); fail-fast
+    (ADR-019 D5 as amended by ADR-020 D5):
+    FieldData cardinality: leading entity
+    axis == n_nodes (node) /
+    n_cells (cell); fail-fast
     otherwise; only "node"/"cell"
     associations are checked;
     region membership out-of-bounds ->
@@ -241,7 +271,20 @@ package "caegraph.graph (representation construction + backend adapter)" {
     specific symmetric directed pairs
     (u,v)/(v,u); this transformation
     belongs to backend representation,
-    never CAEGraph storage (ADR-017/019)
+    never CAEGraph storage (ADR-017/019);
+    domain input (ADR-020 D4): the
+    CAEGraph canonical representation
+    ONLY - with optional FieldData
+    accessible semantics; external
+    field-value injection signatures
+    are contract-excluded;
+    declaration-only graphs yield no
+    fabricated realization values;
+    on gate 4b resumption: if
+    materialization requires a unique
+    realization and multiple eligible
+    FieldData exist, explicitly select
+    or fail (ADR-020 D6)
   }
 }
 
@@ -334,7 +377,9 @@ BoundaryManager "1" o-- "*" BoundarySpec : binds
 BoundarySpec --> BoundaryType : typed by
 BoundarySpec "*" --> "0..1" BoundaryRegion : targets by name
 BoundarySpec "*" o--> "0..1" FieldFunction : optional value
-CAEGraph ..> Field : associated node/cell entity data
+Field "1" <-- "0..*" FieldData : corresponds to declaration / Field is semantic authoritative source (identity/reference mechanism deferred - ADR-020 D3)
+CAEGraph ..> Field : associated quantity declarations (ADR-020 D1/D4)
+CAEGraph ..> FieldData : canonical data flow access - ownership / container / storage deferred (ADR-020 D4)
 CAEGraph ..> Mesh : cell-based topology example (optional semantic provider; ADR-014/018)
 CAEGraph ..> BoundaryManager : uses semantic regions
 CAEGraph ..> NodeCategory : node-entity annotation only (Phase 2; cell entities excluded - ADR-019 D3)
