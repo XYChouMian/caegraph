@@ -19,7 +19,7 @@ def _sample_objects() -> list[BaseObject]:
     return [
         CAEGraph("g", topology=mesh, n_entities=3, edges=[(0, 1)]),
         mesh,
-        Field("pressure", [1.0, 2.0, 3.0], association="node"),
+        Field("pressure", association="node"),
         BoundaryRegion("wall", [0]),
     ]
 

@@ -50,7 +50,7 @@ def test_field_cannot_impersonate_a_topology_provider():
     # ADR-018: only topology-subsystem objects qualify as providers;
     # a Field is domain-truth but belongs to a different family.
     with pytest.raises(TypeError, match="topology"):
-        CAEGraph("channel_flow", topology=Field("pressure", [1.0]))  # type: ignore[arg-type]
+        CAEGraph("channel_flow", topology=Field("pressure", unit="Pa"))  # type: ignore[arg-type]
 
 
 def test_regions_cannot_impersonate_a_topology_provider():
@@ -76,15 +76,15 @@ def test_boundary_manager_is_available():
 
 def test_associate_field_keeps_reference_semantics():
     graph = CAEGraph("channel_flow")
-    field = Field("pressure", [0.1, 0.2], association="node")
+    field = Field("pressure", association="node")
     graph.associate_field(field)
     assert graph.associated_fields == (field,)
 
 
 def test_associated_fields_are_ordered_by_name():
     graph = CAEGraph("channel_flow")
-    pressure = Field("pressure", [1.0])
-    velocity = Field("velocity", [2.0])
+    pressure = Field("pressure")
+    velocity = Field("velocity")
     graph.associate_field(pressure)
     graph.associate_field(velocity)
     assert graph.associated_fields == (pressure, velocity)
@@ -92,9 +92,9 @@ def test_associated_fields_are_ordered_by_name():
 
 def test_duplicate_field_names_are_rejected():
     graph = CAEGraph("channel_flow")
-    graph.associate_field(Field("pressure", [1.0]))
+    graph.associate_field(Field("pressure"))
     with pytest.raises(ValueError, match="already associated"):
-        graph.associate_field(Field("pressure", [2.0]))
+        graph.associate_field(Field("pressure"))
 
 
 def test_associate_field_rejects_non_fields():
@@ -102,15 +102,21 @@ def test_associate_field_rejects_non_fields():
         CAEGraph("channel_flow").associate_field("pressure")  # type: ignore[arg-type]
 
 
+def test_field_data_is_empty_by_default():
+    # ADR-020 D4: realization data is optional — a semantic-only
+    # representation exposes an empty field_data view.
+    assert CAEGraph("channel_flow").field_data == ()
+
+
 def test_associate_field_skips_cardinality_validation():
     # ADR-019 D5: associate_field is a lightweight association API —
-    # topology-cardinality checks happen only at construction time.
-    # The field below is intentionally mismatched (2 values vs 3
-    # entities); Field itself performs no cardinality check, so both
-    # the field construction and this association succeeding prove
-    # the lightweight contract (invariant registry ADR-019-D5-04).
+    # topology-cardinality checks happen only at construction time
+    # (on FieldData values, via the representation builder). The
+    # declaration below carries no payload at all: both its
+    # construction and this association succeeding prove the
+    # lightweight contract (invariant registry ADR-019-D5-04).
     graph = CAEGraph("g", n_entities=3, edges=[(0, 1), (1, 2)])
-    field = Field("pressure", [1.0, 2.0], association="node")
+    field = Field("pressure", association="node")
     graph.associate_field(field)
     assert graph.associated_fields == (field,)
 
