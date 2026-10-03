@@ -7,7 +7,7 @@ from collections.abc import Iterable
 from caegraph.core.boundary.manager import BoundaryManager
 from caegraph.core.caegraph import CAEGraph
 from caegraph.core.enums import NodeCategory
-from caegraph.core.field import Field
+from caegraph.core.field import Field, FieldData
 from caegraph.core.topology.mesh import Mesh
 
 __all__ = ["MeshRepresentationBuilder"]
@@ -40,11 +40,16 @@ class MeshRepresentationBuilder:
     (specs) are not migrated — bind them against
     ``graph.boundaries`` after construction.
 
-    Field cardinality validation executes here (ADR-014 as amended /
-    ADR-019 D5): fields whose ``association`` is ``"node"`` or
-    ``"cell"`` must carry a leading entity axis of exactly
-    ``n_nodes`` / ``n_cells`` entries; other association labels are
-    not cardinality-checked.
+    FieldData validation executes here (ADR-019 D5 as amended by
+    ADR-020 D5): the builder is the only write path for realization
+    data — every :class:`~caegraph.core.FieldData` must reference an
+    explicitly associated Field declaration (no dangling
+    realizations), and node/cell-associated values must carry a
+    leading entity axis of exactly ``n_nodes`` / ``n_cells`` entries;
+    other association labels are not cardinality-checked.
+    Declaration-only field sets are legal (ADR-020 D4), and multiple
+    realizations per Field are stored without silent selection
+    (ADR-020 D6).
 
     No builder registry exists in Phase 2 (single construction
     strategy, an ADR-019 deferred item); further source families
@@ -57,6 +62,7 @@ class MeshRepresentationBuilder:
         mesh: Mesh,
         boundaries: BoundaryManager | None = None,
         fields: Iterable[Field] | None = None,
+        field_data: Iterable[FieldData] | None = None,
     ) -> CAEGraph:
         """Construct the CAEGraph representation for ``mesh``.
 
@@ -67,8 +73,16 @@ class MeshRepresentationBuilder:
             boundaries: Optional semantic-region registry whose
                 regions drive NodeCategory derivation and are
                 re-registered on the produced graph.
-            fields: Optional fields to associate after construction
-                (cardinality-validated for node/cell associations).
+            fields: Optional field declarations to associate after
+                construction (references, no payload validation —
+                declarations may remain realization-free, ADR-020
+                D4).
+            field_data: Optional realization data to register after
+                construction. Each entry is validated for a
+                non-dangling declaration and leading-entity-axis
+                cardinality, then written through the internal
+                construction path — the builder is the only
+                FieldData write path (ADR-020).
 
         Returns:
             A CAEGraph satisfying the Phase 2 minimal representation
@@ -77,9 +91,10 @@ class MeshRepresentationBuilder:
         Raises:
             TypeError: If ``mesh`` is not a
                 :class:`~caegraph.core.topology.Mesh`.
-            ValueError: If a region references an unknown facet id or
-                a field fails its leading-entity-axis cardinality
-                check.
+            ValueError: If a region references an unknown facet id, a
+                FieldData realization has no associated declaration,
+                or a node/cell-associated payload fails its
+                leading-entity-axis cardinality check.
         """
         if not isinstance(mesh, Mesh):
             raise TypeError("MeshRepresentationBuilder expects a Mesh source")
@@ -97,8 +112,12 @@ class MeshRepresentationBuilder:
                 graph.boundaries.register(region)
         if fields is not None:
             for field in fields:
-                self._validate_field(field, mesh)
                 graph.associate_field(field)
+        if field_data is not None:
+            declared = {field.name for field in graph.associated_fields}
+            for data in field_data:
+                self._validate_field_data(data, mesh, declared)
+                graph._register_field_data(data)
         return graph
 
     def _derive_node_categories(
@@ -164,27 +183,41 @@ class MeshRepresentationBuilder:
                         edges.add((min(first, second), max(first, second)))
         return tuple(sorted(edges))
 
-    def _validate_field(self, field: Field, mesh: Mesh) -> None:
-        """Enforce the leading-entity-axis cardinality contract (ADR-019 D5).
+    def _validate_field_data(
+        self, data: FieldData, mesh: Mesh, declared: set[str]
+    ) -> None:
+        """Enforce the declaration and cardinality contracts (ADR-019 D5 / ADR-020).
+
+        Dangling-declaration check first: every realization must
+        reference an explicitly associated Field declaration. Then
+        the leading-entity-axis cardinality contract (ADR-019 D5 as
+        amended by ADR-020 D5) on ``FieldData.values``; other
+        association labels are not cardinality-checked.
 
         Raises:
-            ValueError: If a node/cell-associated field carries an
-                unsized payload or a mismatched leading-axis count.
+            ValueError: If the realization has no associated
+                declaration, or a node/cell-associated payload is
+                unsized or carries a mismatched leading-axis count.
         """
-        association = field.association
+        if data.field.name not in declared:
+            raise ValueError(
+                f"field data for {data.field.name!r} has no associated "
+                "declaration — declare the Field first (ADR-020 D3)"
+            )
+        association = data.field.association
         if association not in ("node", "cell"):
             return
         try:
-            length = len(field.values)  # type: ignore[arg-type]
+            length = len(data.values)  # type: ignore[arg-type]
         except TypeError as error:
             raise ValueError(
-                f"field {field.name!r} with association {association!r} "
-                "must carry a sized leading entity axis"
+                f"field data for {data.field.name!r} with association "
+                f"{association!r} must carry a sized leading entity axis"
             ) from error
         expected = mesh.n_nodes if association == "node" else mesh.n_cells
         if length != expected:
             raise ValueError(
-                f"field {field.name!r} has a leading entity axis of "
-                f"{length} entries but association {association!r} "
+                f"field data for {data.field.name!r} has a leading entity "
+                f"axis of {length} entries but association {association!r} "
                 f"requires {expected}"
             )
