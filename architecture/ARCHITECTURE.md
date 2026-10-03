@@ -110,7 +110,7 @@ flowchart TD
 | Package | Responsibility | Depends on |
 | --- | --- | --- |
 | `caegraph.utils` | logging and reproducibility helpers | (nothing internal) |
-| `caegraph.core` | domain truth: BaseObject, CAEGraph (canonical domain representation), topology subsystem (Mesh, cell-based), Field; boundary vocabulary; registries; shared enums | utils (torch allowed, PyG forbidden) |
+| `caegraph.core` | domain truth: BaseObject, CAEGraph (canonical domain representation), topology subsystem (Mesh, cell-based), Field/FieldData (declaration + realization, ADR-020); boundary vocabulary; registries; shared enums | utils (torch allowed, PyG forbidden) |
 | `caegraph.geometry` | geometric services: metrics, edge features, interpolation | core |
 | `caegraph.io` | loaders (gmsh first) and writers (VTK); format registry | core |
 | `caegraph.graph` | representation construction (source discretization → CAEGraph; contracts in ADR-016) + backend adapters (CAEGraph → backend graph data; PyG backend in Phase 2; ADR-017) | core, geometry |
