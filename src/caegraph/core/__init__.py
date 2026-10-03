@@ -4,7 +4,10 @@ This package hosts the engineering domain core: the canonical domain
 representation :class:`~caegraph.core.CAEGraph` (ADR-015/018),
 :class:`~caegraph.core.BaseObject` (identity, metadata and validation
 contract for domain-truth objects such as ``Mesh`` and
-:class:`~caegraph.core.Field`), the semantic-region vocabulary of
+:class:`~caegraph.core.Field`), the field declaration /
+realization-data pair :class:`~caegraph.core.Field` and
+:class:`~caegraph.core.FieldData` (ADR-020), the semantic-region
+vocabulary of
 :mod:`caegraph.core.boundary` (regions, declarations, registry;
 ADR-010/011/018), the name-keyed :class:`~caegraph.core.Registry`
 used by loaders and transforms, and the shared enums
@@ -19,7 +22,7 @@ from caegraph.core.base import BaseObject
 from caegraph.core.boundary import BoundaryManager, BoundaryRegion, BoundarySpec
 from caegraph.core.caegraph import CAEGraph
 from caegraph.core.enums import BoundaryType, NodeCategory
-from caegraph.core.field import Field
+from caegraph.core.field import Field, FieldData
 from caegraph.core.registry import Registry
 from caegraph.core.topology import CellType, Mesh
 
@@ -32,6 +35,7 @@ __all__ = [
     "CAEGraph",
     "CellType",
     "Field",
+    "FieldData",
     "Mesh",
     "NodeCategory",
     "Registry",

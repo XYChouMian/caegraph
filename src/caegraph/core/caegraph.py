@@ -8,7 +8,7 @@ from typing import Any
 from caegraph.core.base import BaseObject
 from caegraph.core.boundary.manager import BoundaryManager
 from caegraph.core.enums import NodeCategory
-from caegraph.core.field import Field
+from caegraph.core.field import Field, FieldData
 from caegraph.core.topology.mesh import Mesh
 
 __all__ = ["CAEGraph"]
@@ -35,8 +35,11 @@ class CAEGraph(BaseObject):
     This class also exposes the minimal association hooks the Phase 2
     domain vocabulary needs: an optional topology provider reference,
     a field association list (references — fields belong to entities,
-    never to the representation object, ADR-018), and the boundary
-    manager hosting semantic regions and condition declarations.
+    never to the representation object, ADR-018) with realization
+    data accessible through the canonical data flow (ADR-020:
+    builder-only write path, read-only ``field_data`` access), and
+    the boundary manager hosting semantic regions and condition
+    declarations.
 
     CAEGraph never imports ``torch_geometric``: PyG / networkx /
     igraph are backends or analysis engines reached through the
@@ -93,7 +96,7 @@ class CAEGraph(BaseObject):
         >>> graph = CAEGraph("channel_flow")
         >>> graph.topology is None  # mesh-free state until a provider is attached
         True
-        >>> graph.associate_field(Field("pressure", [0.1, 0.2], association="node"))
+        >>> graph.associate_field(Field("pressure", association="node"))
         >>> [field.name for field in graph.associated_fields]
         ['pressure']
     """
@@ -178,6 +181,7 @@ class CAEGraph(BaseObject):
             )
 
         self._fields: dict[str, Field] = {}
+        self._field_data: list[FieldData] = []
         self._boundaries = BoundaryManager()
         super().__init__(name, metadata)
 
@@ -208,11 +212,24 @@ class CAEGraph(BaseObject):
 
     @property
     def associated_fields(self) -> tuple[Field, ...]:
-        """Associated field data, ordered by name (references, not ownership)."""
+        """Associated field declarations, ordered by name (references, not ownership)."""
         return tuple(self._fields[name] for name in sorted(self._fields))
 
+    @property
+    def field_data(self) -> tuple[FieldData, ...]:
+        """Realization data in the canonical data flow (read-only view, ADR-020 D4).
+
+        FieldData enters this representation exclusively through the
+        representation builder (cardinality, dangling-declaration and
+        reference-consistency checks live there, ADR-019 D5 /
+        ADR-020 D5); no public registration API exists — an ADR-020
+        scope-exclusion implementation microdecision, re-evaluable at
+        gate 4b.
+        """
+        return tuple(self._field_data)
+
     def associate_field(self, field: Field) -> None:
-        """Associate ``field`` with this representation (ADR-018).
+        """Associate the field ``declaration`` with this representation (ADR-018).
 
         Association is a reference, not ownership: fields belong to
         entities and keep their own entity scope. Field names are
@@ -222,7 +239,7 @@ class CAEGraph(BaseObject):
         representation builder, ADR-019 D5).
 
         Args:
-            field: The field data to associate.
+            field: The field declaration to associate.
 
         Raises:
             TypeError: If ``field`` is not a
@@ -235,6 +252,18 @@ class CAEGraph(BaseObject):
         if field.name in self._fields:
             raise ValueError(f"field {field.name!r} is already associated")
         self._fields[field.name] = field
+
+    def _register_field_data(self, data: FieldData) -> None:
+        """Append validated realization data (internal, builder-authorized).
+
+        Internal construction path: the representation builder is the
+        only authorized caller — it performs the cardinality and
+        dangling-declaration checks first (ADR-019 D5 / ADR-020 D5).
+        Not a public API: the builder-only write path is an ADR-020
+        scope-exclusion implementation microdecision, re-evaluable at
+        gate 4b.
+        """
+        self._field_data.append(data)
 
     def validate(self) -> None:
         """Raise if the representation is in an invalid state.
@@ -271,6 +300,9 @@ class CAEGraph(BaseObject):
         for field in self._fields.values():
             if not isinstance(field, Field):
                 raise TypeError("associated entries must be Field objects")
+        for data in self._field_data:
+            if not isinstance(data, FieldData):
+                raise TypeError("field_data entries must be FieldData objects")
         if self._edges != tuple(sorted(set(self._edges))):
             raise ValueError("edges must be sorted and deduplicated")
         for low, high in self._edges:

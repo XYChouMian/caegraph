@@ -1,0 +1,65 @@
+# ADR-020 invariant registry — machine-auditable contract
+#
+# Source of truth for the decision text:
+#   architecture/decisions/ADR-020-field-declaration-realization-split.md
+# Semantics were extracted from the v2 decision text (baseline commit
+# 517364b, the design-UML merge that precedes the field-split
+# implementation dispatch).
+#
+# Rules:
+# - Every statement is decidable (true/false); no "should consider" or
+#   "in principle" wording is allowed.
+# - test_mapping references the guarding tests under tests/ in the
+#   form "path::test_name". TEST_MISSING marks invariants that have no
+#   guarding test yet — they are registered explicitly here and must
+#   never be silently dropped.
+# - explicitly_not_frozen lists the deliberate non-decisions of the
+#   ADR: implementation freedoms and deferred decisions that must NOT
+#   be treated as invariants.
+# - Eligibility review (field-split dispatch, PM-authorized): only
+#   genuinely executable invariants are registered. The absence of a
+#   deferred API or mechanism must NOT be converted into an executable
+#   invariant. Recorded decision: D3 (semantic authority, structural
+#   no-copy) is Markdown-frozen only and deliberately not registered —
+#   guarding it would require asserting the absence of deferred
+#   reference-machinery shapes.
+
+adr: "ADR-020"
+version: "v2"
+extracted_from: "v2 decision text (baseline commit 517364b)"
+
+invariants:
+  # --- D1: field declaration -------------------------------------------------
+  - id: "ADR-020-D1-01"
+    statement: "Field carries no values or timestep members — realization data lives on FieldData (declaration/realization split, ADR-020 D1)."
+    decision: "D1"
+    test_mapping:
+      - "tests/core/test_field.py::test_field_carries_no_values_or_timestep_members"
+
+  # --- D4: canonical data flow ------------------------------------------------
+  - id: "ADR-020-D4-01"
+    statement: "A field set of declarations without any FieldData is legal at representation construction (problem-before-solving); no payload validation is performed for declaration-only fields."
+    decision: "D4"
+    test_mapping:
+      - "tests/graph/test_builder.py::test_declaration_only_fields_are_legal"
+
+  # --- D6: realization selection discipline -----------------------------------
+  - id: "ADR-020-D6-01"
+    statement: "Representation construction legally stores multiple FieldData realizations per Field (no silent selection at storage time)."
+    decision: "D6"
+    test_mapping:
+      - "tests/graph/test_builder.py::test_multiple_field_data_per_field_are_stored"
+
+explicitly_not_frozen:
+  - item: "FieldData member/API form beyond the Phase 2 minimal set — time, coverage and sample identity are deferred (D2)"
+    source: "D2"
+  - item: "identity / reference mechanism, including read-only proxies, caches and derived accessors (D3 freezes only the exactly-one-Field correspondence and the semantic authoritative source)"
+    source: "D3"
+  - item: "ownership / container / storage of FieldData — canonical-data-flow accessibility is the only frozen ownership semantic"
+    source: "D4"
+  - item: "selection API for consumers requiring a unique realization (D6 freezes only the explicit-select-or-fail obligation)"
+    source: "D6"
+  - item: "PyG schema presentation of field data (gate 4b dispatch)"
+    source: "D4"
+  - item: "component-semantics vocabulary definition (deferred micro-sync)"
+    source: "D1"

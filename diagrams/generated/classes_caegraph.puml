@@ -3,6 +3,7 @@ set namespaceSeparator none
 class "BaseObject" as caegraph.core.base.BaseObject {
   metadata : dict[str, Any]
   name : str
+  {abstract}on_metadata_changed() -> None
   update_metadata() -> None
   {abstract}validate() -> None
 }
@@ -40,6 +41,7 @@ class "CAEGraph" as caegraph.core.caegraph.CAEGraph {
   associated_fields : tuple[Field, ...]
   boundaries : BoundaryManager
   edges : tuple[tuple[int, int], ...]
+  field_data : tuple[FieldData, ...]
   n_entities : int
   node_categories : tuple[NodeCategory, ...]
   topology : Mesh | None
@@ -56,8 +58,13 @@ class "CellType" as caegraph.core.topology.celltype.CellType {
 }
 class "Field" as caegraph.core.field.Field {
   association : str | None
-  timestep : float | None
   unit : str | None
+  validate() -> None
+}
+class "FieldData" as caegraph.core.field.FieldData {
+  field : Field
+  metadata : Mapping[str, Any]
+  timestep : float | None
   values : Any
   validate() -> None
 }

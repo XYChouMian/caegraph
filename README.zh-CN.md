@@ -6,11 +6,11 @@
 
 CAEGraph 打通 **CAE 数据 → canonical 图表示 → GNN 训练 → 跨离散神经仿真 → 实验数据同化**。它将异构 CAE 数据源规范化为 **CAEGraph**——graph-native 的 canonical 领域表示（ADR-015），并通过 backend adapter 对接学习后端（当前为 PyTorch Geometric），保持工程真值与框架无关。
 
-> **状态：Pre-Alpha（Phase 2 — CAE 数据管线，进行中）。** Phase 0（地基）与 Phase 1（核心词汇：`BaseObject`、注册表、共享枚举、日志）已完成。架构基线为 ADR-015~019（CAEGraph 为 canonical 领域表示；topology subsystem、构造、后端适配、领域组成与实体/关系模型契约）。Coding gate 1–3 与 mesh representation builder 已落地：CAEGraph 领域核心（`CAEGraph`、`Field`、boundary 词汇）、topology subsystem（`Mesh`、`CellType`）以及带 NodeCategory 推导的 node-graph 构造（`caegraph.graph.MeshRepresentationBuilder`）。其余数据带（loaders、backend adapter、transforms、dataset）实现中；GNN 训练能力仍为规划功能。
+> **状态：Pre-Alpha（Phase 2 — CAE 数据管线，进行中）。** Phase 0（地基）与 Phase 1（核心词汇：`BaseObject`、注册表、共享枚举、日志）已完成。架构基线为 ADR-015~020（CAEGraph 为 canonical 领域表示；topology subsystem、构造、后端适配、领域组成、实体/关系模型与 field 声明/实现数据契约）。Coding gate 1–3、mesh representation builder 与 ADR-020 field 拆分已落地：CAEGraph 领域核心（`CAEGraph`、`Field`/`FieldData`、boundary 词汇）、topology subsystem（`Mesh`、`CellType`）以及带 NodeCategory 推导的 node-graph 构造（`caegraph.graph.MeshRepresentationBuilder`）。其余数据带（loaders、backend adapter、transforms、dataset）实现中；GNN 训练能力仍为规划功能。
 
 ## 功能（规划中）
 
-- **CAE 数据带** — CAEGraph canonical 表示，含 topology（cell-based 的 Mesh）、Field 与 boundary 词汇；loaders、geometry 服务、表示构造（mesh / grid / particles）、backend adapter（PyG）、transforms 与 datasets
+- **CAE 数据带** — CAEGraph canonical 表示，含 topology（cell-based 的 Mesh）、Field/FieldData（声明 + 实现数据，ADR-020）与 boundary 词汇；loaders、geometry 服务、表示构造（mesh / grid / particles）、backend adapter（PyG）、transforms 与 datasets
 - **Physics AI 工具** — physics 损失、观测同化与 CAE 感知的训练工作流组件，不取代用户自己的训练循环
 - **神经仿真** — 预训练模型跨离散运行、场重建与 VTK 写回
 - 基于 [PyTorch](https://pytorch.org) 与 [PyTorch Geometric](https://pyg.org) 构建，不引入替代性 graph backend、Trainer 或 solver 抽象

@@ -1,6 +1,6 @@
 # Phase 2 — CAE Data Pipeline
 
-Status: In progress — ADR-015~019 accepted; coding gates 1–3 and 4a landed (1 domain core, 2 Field/semantic regions, 3 topology subsystem, 4a representation construction with the node-graph builder per ADR-019); next: 4b backend adaptation, then 5 source IO vertical slice, 6 transforms/dataset/write-back, 7 end-to-end validation + benchmark. Completion is defined by the Definition of Done below, not by module completeness.
+Status: In progress — ADR-015~020 accepted; coding gates 1–3 and 4a landed (1 domain core, 2 Field/semantic regions, 3 topology subsystem, 4a representation construction with the node-graph builder per ADR-019), plus the ADR-020 field split (Field declaration / `FieldData` realization, builder-only write path); gate 4b (backend adaptation) resumes on the post-split model, then 5 source IO vertical slice, 6 transforms/dataset/write-back, 7 end-to-end validation + benchmark. Completion is defined by the Definition of Done below, not by module completeness.
 
 Goal: implement **R1** — the CAE → GNN data band (ADR-007/008): the domain-core objects plus geometry / io / graph / transforms / dataset.
 
@@ -36,7 +36,11 @@ src/caegraph/core/          # domain canonical representation (ADR-015)
 │                           #   regions, conditions; topology subsystem =
 │                           #   optional semantic provider, not class members;
 │                           #   never imports PyG
-├── field.py                # Field: named field data (unit, timestep, association)
+├── field.py                # Field: stable physical quantity declaration +
+│                           #   FieldData: one realization (values, timestep
+│                           #   + metadata) — declaration/realization split
+│                           #   per ADR-020; builder is the only FieldData
+│                           #   write path
 ├── boundary/               # semantic-region vocabulary (annotates CAEGraph)
 │   ├── region.py           # BoundaryRegion: named semantic region (ADR-018) —
 │   │                       #   membership per source discretization (cell-based:
@@ -113,7 +117,7 @@ src/caegraph/dataset/
 
 - `CAEGraph` — domain canonical representation (ADR-015): semantic composition (ADR-018) of entities, relations, fields, geometry, regions, conditions; topology subsystem = optional semantic provider; never imports PyG
 - `Mesh` / `CellType` — topology subsystem (ADR-014 narrowed): Mesh is a topology-rich discretization representation (FEM/FVM), no longer the top-level canonical object
-- `Field` / `BoundaryRegion` / `BoundarySpec` / `BoundaryManager` — field & semantic-region vocabulary (ADR-007 D6, ADR-010/011); `FieldFunction` deferred
+- `Field` / `FieldData` / `BoundaryRegion` / `BoundarySpec` / `BoundaryManager` — field & semantic-region vocabulary: `Field` is the stable physical-quantity declaration (single authoritative semantics source), `FieldData` one realization (values + realization metadata, ADR-020; ADR-007 D6 signature superseded, ADR-010/011 for the boundary vocabulary); `FieldFunction` deferred
 - `AbstractMeshLoader` + gmsh adapter — source loading pipeline (ADR-012; target object redefined by ADR-015); meshio provisional engine (ADR-013)
 - representation builder — source discretization → CAEGraph entities + relations; extension point per ADR-015, construction boundary frozen by ADR-016 (accepted; API/naming/registry deferred to the coding dispatch); replaces the single `Mesh → GraphBuilder` contract. The Phase 2 learning representation is a node graph — node entities are the graph vertices (ADR-019); cell identities are retained because CAE source data may be cell-associated, not because Phase 2 intends a heterogeneous or cell-centered GNN graph
 - backend adapter — `CAEGraph → framework-specific representation` (PyG Data in Phase 2; adaptation boundary frozen by ADR-017, accepted — DataGraph is the conceptual backend representation layer, backend-side, owns no domain semantics, not a domain class). Boundary with construction: the representation builder decides the canonical domain structure — graph vertices are node entities, relations are canonical node pairs — while the adapter only materializes that representation into the backend (`edge_index`, tensors, masks, attributes); `pyg.py` contains the PyG backend adapter, does not reimplement PyG graph abstractions and never re-decides what a node is or how cells connect (it is not a second GraphBuilder)
@@ -133,7 +137,7 @@ Validation verifies **information preservation across representation boundaries*
   - entity identity: node/cell entity families per ADR-019 D1; `n_entities` is the node-graph vertex count, never `n_nodes + n_cells`
   - canonical relations: deduplicated `(min, max)` node pairs with degenerate `(a, a)` candidates discarded during expansion; 1D LINE2 cells contribute their own node pair
   - region semantics and NodeCategory: interior / boundary / corner, derived only from boundary-participation regions, counted by distinct region membership (not facet occurrences); 1D meshes → always INTERIOR; interface / physical-group participation is not covered by the current mapping (dedicated ADR triggers recorded in ADR-019 D4)
-  - field cardinality: leading entity axis of exactly `n_nodes` / `n_cells` entries for node/cell associations (ADR-019 D5)
+  - FieldData cardinality: leading entity axis of exactly `n_nodes` / `n_cells` entries for node/cell associations (ADR-019 D5 as amended by ADR-020 D5, validated by the representation builder — the only FieldData write path); declaration-only field sets are legal (ADR-020 D4)
   - ADR-019 invariants: machine-auditable checklist (`ADR-019-invariants.yaml`) — each executable invariant mapped to guarding tests; `TEST_MISSING` marks explicitly registered items that have no independent executable surface yet (e.g. the D1-01 architecture-level scope declaration) and must never be silently dropped
 - **CAEGraph → PyG (backend adaptation)**
   - graph vertex preservation: adapter `num_nodes` equals `graph.n_entities`

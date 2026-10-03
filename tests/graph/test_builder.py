@@ -5,7 +5,14 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from caegraph.core import BoundaryManager, BoundaryRegion, Field, Mesh, NodeCategory
+from caegraph.core import (
+    BoundaryManager,
+    BoundaryRegion,
+    Field,
+    FieldData,
+    Mesh,
+    NodeCategory,
+)
 from caegraph.core.topology.celltype import CellType
 from caegraph.graph import MeshRepresentationBuilder
 
@@ -79,8 +86,8 @@ def test_duplicate_field_names_are_rejected():
         MeshRepresentationBuilder()(
             mesh,
             fields=[
-                Field("p", [1.0, 2.0, 3.0, 4.0], association="node"),
-                Field("p", [1.0, 2.0, 3.0, 4.0], association="node"),
+                Field("p", association="node"),
+                Field("p", association="node"),
             ],
         )
 
@@ -199,41 +206,111 @@ def test_degenerate_same_endpoint_candidates_are_discarded():
 
 def test_node_field_length_is_validated():
     mesh = _two_triangle_mesh()
+    pressure = Field("p", association="node")
     with pytest.raises(ValueError, match="requires 4"):
         MeshRepresentationBuilder()(
-            mesh, fields=[Field("p", [1.0, 2.0, 3.0], association="node")]
+            mesh,
+            fields=[pressure],
+            field_data=[FieldData(pressure, [1.0, 2.0, 3.0])],
         )
     graph = MeshRepresentationBuilder()(
-        mesh, fields=[Field("p", [1.0, 2.0, 3.0, 4.0], association="node")]
+        mesh,
+        fields=[pressure],
+        field_data=[FieldData(pressure, [1.0, 2.0, 3.0, 4.0])],
     )
     assert [field.name for field in graph.associated_fields] == ["p"]
+    assert len(graph.field_data) == 1
 
 
 def test_cell_field_length_is_validated():
     mesh = _two_triangle_mesh()
+    volume = Field("vol", association="cell")
     with pytest.raises(ValueError, match="requires 2"):
         MeshRepresentationBuilder()(
-            mesh, fields=[Field("vol", [1.0], association="cell")]
+            mesh,
+            fields=[volume],
+            field_data=[FieldData(volume, [1.0])],
         )
     MeshRepresentationBuilder()(
-        mesh, fields=[Field("vol", [1.0, 2.0], association="cell")]
+        mesh,
+        fields=[volume],
+        field_data=[FieldData(volume, [1.0, 2.0])],
     )
 
 
 def test_unsized_values_for_sized_association_are_rejected():
     mesh = _two_triangle_mesh()
+    flag = Field("flag", association="node")
     with pytest.raises(ValueError, match="sized"):
         MeshRepresentationBuilder()(
-            mesh, fields=[Field("flag", 3.0, association="node")]
+            mesh,
+            fields=[flag],
+            field_data=[FieldData(flag, 3.0)],
         )
 
 
 def test_other_association_labels_skip_length_checks():
     mesh = _two_triangle_mesh()
+    marker = Field("meta", association="particle")
     graph = MeshRepresentationBuilder()(
-        mesh, fields=[Field("meta", [1.0], association="particle")]
+        mesh,
+        fields=[marker],
+        field_data=[FieldData(marker, [1.0])],
     )
     assert [field.name for field in graph.associated_fields] == ["meta"]
+    assert len(graph.field_data) == 1
+
+
+def test_declaration_only_fields_are_legal():
+    # ADR-020 D4: problem-before-solving — a declaration-only field
+    # set is legal and performs no payload validation (invariant
+    # registry ADR-020-D4-01).
+    mesh = _two_triangle_mesh()
+    graph = MeshRepresentationBuilder()(mesh, fields=[Field("p", association="node")])
+    assert [field.name for field in graph.associated_fields] == ["p"]
+    assert graph.field_data == ()
+
+
+def test_multiple_field_data_per_field_are_stored():
+    # ADR-020 D6: representation construction legally stores multiple
+    # realizations per Field — no silent selection at storage time
+    # (invariant registry ADR-020-D6-01).
+    mesh = _two_triangle_mesh()
+    pressure = Field("p", association="node")
+    frame0 = FieldData(pressure, [1.0, 2.0, 3.0, 4.0], timestep=0)
+    frame1 = FieldData(pressure, [2.0, 3.0, 4.0, 5.0], timestep=1)
+    graph = MeshRepresentationBuilder()(
+        mesh, fields=[pressure], field_data=[frame0, frame1]
+    )
+    assert graph.field_data == (frame0, frame1)
+
+
+def test_dangling_field_data_is_rejected():
+    mesh = _two_triangle_mesh()
+    pressure = Field("p", association="node")
+    with pytest.raises(ValueError, match="declaration"):
+        MeshRepresentationBuilder()(
+            mesh,
+            fields=[],
+            field_data=[FieldData(pressure, [1.0, 2.0, 3.0, 4.0])],
+        )
+
+
+def test_same_name_different_field_object_is_rejected():
+    # Phase 2 implementation consistency guard: a realization must
+    # reference the declared Field OBJECT — a distinct object that
+    # merely shares the name would smuggle different semantics (kPa /
+    # cell here) under the declared identity. Implementation-level
+    # guard only; not an ADR-020 D3 identity/reference freeze.
+    mesh = _two_triangle_mesh()
+    declared = Field("p", unit="Pa", association="node")
+    same_name = Field("p", unit="kPa", association="cell")
+    with pytest.raises(ValueError, match="declared Field object"):
+        MeshRepresentationBuilder()(
+            mesh,
+            fields=[declared],
+            field_data=[FieldData(same_name, [1.0, 2.0, 3.0, 4.0])],
+        )
 
 
 def test_non_mesh_source_is_rejected():
