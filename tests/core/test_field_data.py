@@ -72,6 +72,16 @@ def test_semantics_resolve_through_the_field_reference():
     assert data.field.association == "node"
 
 
+def test_unsupported_family_rejected_at_creation():
+    # ADR-021 D5: unsupported-family declarations are expressible, but
+    # their realizations cannot be created — no cardinality contract
+    # means unverifiable data is barred from the canonical flow
+    # (invariant registry ADR-021-D05-01).
+    particle = Field("count", association="particle")
+    with pytest.raises(ValueError, match="unsupported realization family"):
+        FieldData(particle, [1.0])
+
+
 def test_validate_rechecks_the_realization_state():
     # FieldData mirrors the BaseObject lifecycle pattern: __init__
     # assigns and delegates to validate(); the same checks are

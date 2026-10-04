@@ -1,0 +1,54 @@
+# ADR-021 invariant registry — machine-auditable contract
+#
+# Source of truth for the decision text:
+#   architecture/decisions/ADR-021-field-association-family-contract.md
+# Semantics were extracted from the v1 decision text (baseline commit
+# 8e5213b, the ADR-021 acceptance merge... note: this registry is
+# created by the field-split association contract migration dispatch
+# together with its guarding-test evidence).
+#
+# Rules:
+# - Every statement is decidable (true/false); no "should consider" or
+#   "in principle" wording is allowed.
+# - test_mapping references the guarding tests under tests/ in the
+#   form "path::test_name". TEST_MISSING marks invariants that have no
+#   guarding test yet — they are registered explicitly here and must
+#   never be silently dropped.
+# - explicitly_not_frozen lists the deliberate non-decisions of the
+#   ADR: implementation freedoms and deferred decisions that must NOT
+#   be treated as invariants.
+# - Eligibility review (association contract migration dispatch,
+#   PM-authorized): only genuinely executable invariants are
+#   registered; the absence of deferred APIs/mechanisms must not be
+#   converted into executable invariants.
+
+adr: "ADR-021"
+version: "v2"
+extracted_from: "v2 decision text (baseline commit 8e5213b)"
+
+invariants:
+  # --- DECISION-03: association required ---------------------------------------
+  - id: "ADR-021-D03-01"
+    statement: "Field construction requires a non-empty entity-family association — None is not a legal canonical Field state (a missing argument is a signature TypeError)."
+    decision: "DECISION-03"
+    test_mapping:
+      - "tests/core/test_field.py::test_association_is_required"
+      - "tests/core/test_field.py::test_non_string_association_is_rejected"
+      - "tests/core/test_field.py::test_blank_association_is_rejected"
+
+  # --- DECISION-05: unsupported-family realization guard ------------------------
+  - id: "ADR-021-D05-01"
+    statement: "FieldData construction rejects unsupported realization families at creation — only node / cell carry cardinality contracts (fail-fast before any data enters the canonical representation)."
+    decision: "DECISION-05"
+    test_mapping:
+      - "tests/core/test_field_data.py::test_unsupported_family_rejected_at_creation"
+
+explicitly_not_frozen:
+  - item: "association representation upgrade — Enum / EntityFamily typing (deferred with recorded triggers, DECISION-04)"
+    source: "DECISION-04"
+  - item: "per-family cardinality semantics for future supported families (per-family dispatch, DECISION-06)"
+    source: "DECISION-06"
+  - item: "PyG key / schema / layout and family-marker form (gate 4b dispatch, DECISION-07)"
+    source: "DECISION-07"
+  - item: "declaration-only backend presentation (DECISION-08)"
+    source: "DECISION-08"

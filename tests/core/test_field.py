@@ -14,10 +14,27 @@ def test_construction_stores_declaration_semantics():
     assert field.association == "node"
 
 
-def test_optional_slots_default_to_none():
-    field = Field("velocity_x")
+def test_unit_defaults_to_none():
+    field = Field("velocity_x", association="node")
     assert field.unit is None
-    assert field.association is None
+
+
+def test_association_is_required():
+    # ADR-021 D3: None is not a legal canonical Field state — the
+    # declaration must carry a non-empty entity family. A missing
+    # argument is Python's own signature TypeError; an explicit None
+    # payload is an explicitly illegal value → ValueError (same
+    # convention as FieldData.values; invariant registry
+    # ADR-021-D03-01).
+    with pytest.raises(TypeError):
+        Field("pressure")  # type: ignore[call-arg]
+    with pytest.raises(ValueError, match="non-empty string"):
+        Field("pressure", association=None)  # type: ignore[arg-type]
+
+
+def test_non_string_association_is_rejected():
+    with pytest.raises(ValueError, match="non-empty string"):
+        Field("pressure", association=5)  # type: ignore[arg-type]
 
 
 def test_field_carries_no_values_or_timestep_members():
@@ -29,24 +46,24 @@ def test_field_carries_no_values_or_timestep_members():
     assert not hasattr(field, "values")
     assert not hasattr(field, "timestep")
     with pytest.raises(TypeError):
-        Field("pressure", [0.1, 0.2])  # type: ignore[call-arg]
+        Field("pressure", [0.1, 0.2], association="node")  # type: ignore[misc]
     with pytest.raises(TypeError):
-        Field("pressure", timestep=3)  # type: ignore[call-arg]
+        Field("pressure", association="node", timestep=3)  # type: ignore[call-arg]
 
 
 def test_empty_name_is_rejected():
     with pytest.raises(ValueError, match="non-empty"):
-        Field("  ")
+        Field("  ", association="node")
 
 
 def test_blank_unit_is_rejected():
     with pytest.raises(ValueError, match="non-empty string"):
-        Field("pressure", unit="   ")
+        Field("pressure", association="node", unit="   ")
 
 
 def test_non_string_unit_is_rejected():
     with pytest.raises(ValueError, match="non-empty string"):
-        Field("pressure", unit=5)  # type: ignore[arg-type]
+        Field("pressure", association="node", unit=5)  # type: ignore[arg-type]
 
 
 def test_blank_association_is_rejected():
@@ -55,5 +72,5 @@ def test_blank_association_is_rejected():
 
 
 def test_metadata_is_carried_through():
-    field = Field("pressure", metadata={"source": "probe"})
+    field = Field("pressure", association="node", metadata={"source": "probe"})
     assert field.metadata == {"source": "probe"}

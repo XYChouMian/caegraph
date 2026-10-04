@@ -249,16 +249,15 @@ def test_unsized_values_for_sized_association_are_rejected():
         )
 
 
-def test_other_association_labels_skip_length_checks():
+def test_unsupported_family_declaration_is_expressible():
+    # ADR-021 D2/D5: the declaration vocabulary is open — an
+    # unsupported-family declaration is legal on its own; only its
+    # realizations are barred (rejected at FieldData construction).
     mesh = _two_triangle_mesh()
-    marker = Field("meta", association="particle")
     graph = MeshRepresentationBuilder()(
-        mesh,
-        fields=[marker],
-        field_data=[FieldData(marker, [1.0])],
+        mesh, fields=[Field("meta", association="particle")]
     )
     assert [field.name for field in graph.associated_fields] == ["meta"]
-    assert len(graph.field_data) == 1
 
 
 def test_declaration_only_fields_are_legal():

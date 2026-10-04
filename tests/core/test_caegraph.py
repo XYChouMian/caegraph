@@ -50,7 +50,7 @@ def test_field_cannot_impersonate_a_topology_provider():
     # ADR-018: only topology-subsystem objects qualify as providers;
     # a Field is domain-truth but belongs to a different family.
     with pytest.raises(TypeError, match="topology"):
-        CAEGraph("channel_flow", topology=Field("pressure", unit="Pa"))  # type: ignore[arg-type]
+        CAEGraph("channel_flow", topology=Field("pressure", association="node", unit="Pa"))  # type: ignore[arg-type]
 
 
 def test_regions_cannot_impersonate_a_topology_provider():
@@ -83,8 +83,8 @@ def test_associate_field_keeps_reference_semantics():
 
 def test_associated_fields_are_ordered_by_name():
     graph = CAEGraph("channel_flow")
-    pressure = Field("pressure")
-    velocity = Field("velocity")
+    pressure = Field("pressure", association="node")
+    velocity = Field("velocity", association="node")
     graph.associate_field(pressure)
     graph.associate_field(velocity)
     assert graph.associated_fields == (pressure, velocity)
@@ -92,9 +92,9 @@ def test_associated_fields_are_ordered_by_name():
 
 def test_duplicate_field_names_are_rejected():
     graph = CAEGraph("channel_flow")
-    graph.associate_field(Field("pressure"))
+    graph.associate_field(Field("pressure", association="node"))
     with pytest.raises(ValueError, match="already associated"):
-        graph.associate_field(Field("pressure"))
+        graph.associate_field(Field("pressure", association="node"))
 
 
 def test_associate_field_rejects_non_fields():

@@ -7,7 +7,11 @@ from collections.abc import Iterable
 from caegraph.core.boundary.manager import BoundaryManager
 from caegraph.core.caegraph import CAEGraph
 from caegraph.core.enums import NodeCategory
-from caegraph.core.field import Field, FieldData
+from caegraph.core.field import (
+    _SUPPORTED_REALIZATION_FAMILIES,
+    Field,
+    FieldData,
+)
 from caegraph.core.topology.mesh import Mesh
 
 __all__ = ["MeshRepresentationBuilder"]
@@ -46,8 +50,9 @@ class MeshRepresentationBuilder:
     explicitly associated Field declaration object (no dangling and
     no same-name-distinct-object realizations), and node/cell-
     associated values must carry a leading entity axis of exactly
-    ``n_nodes`` / ``n_cells`` entries; other association labels are
-    not cardinality-checked.
+    ``n_nodes`` / ``n_cells`` entries; unsupported realization
+    families are rejected outright (ADR-021 D5) — ``node`` / ``cell``
+    are the supported families.
     Declaration-only field sets are legal (ADR-020 D4), and multiple
     realizations per Field are stored without silent selection
     (ADR-020 D6).
@@ -188,25 +193,28 @@ class MeshRepresentationBuilder:
     def _validate_field_data(
         self, data: FieldData, mesh: Mesh, declared: dict[str, Field]
     ) -> None:
-        """Enforce the declaration, reference-consistency and cardinality contracts.
+        """Enforce the declaration, family, reference-consistency and cardinality contracts.
 
-        Three fail-fast checks (ADR-019 D5 / ADR-020): first, every
-        realization must reference an explicitly associated Field
-        declaration (no dangling realizations); second, the reference
-        must be the declared Field **object itself** — a distinct
-        object that merely shares the name is rejected (a Phase 2
-        implementation consistency guard; not a freeze of the
+        Fail-fast checks (ADR-019 D5 / ADR-020 / ADR-021): first,
+        every realization must reference an explicitly associated
+        Field declaration (no dangling realizations); second, the
+        reference must be the declared Field **object itself** — a
+        distinct object that merely shares the name is rejected (a
+        Phase 2 implementation consistency guard; not a freeze of the
         ADR-020 D3 identity/reference mechanism, which stays
-        deferred). Finally the leading-entity-axis cardinality
-        contract (ADR-019 D5 as amended by ADR-020 D5) on
-        ``FieldData.values``; other association labels are not
-        cardinality-checked.
+        deferred); third, the realization family must be supported
+        (``node`` / ``cell``, ADR-021 D5 — FieldData already rejects
+        unsupported families at creation, the builder re-validates as
+        the canonical gate). Finally the leading-entity-axis
+        cardinality contract (ADR-019 D5 as amended by ADR-020 D5)
+        on ``FieldData.values``.
 
         Raises:
             ValueError: If the realization has no associated
                 declaration, references a same-named but distinct
-                Field object, or a node/cell-associated payload is
-                unsized or carries a mismatched leading-axis count.
+                Field object, names an unsupported realization
+                family, or a node/cell-associated payload is unsized
+                or carries a mismatched leading-axis count.
         """
         if data.field.name not in declared:
             raise ValueError(
@@ -221,8 +229,11 @@ class MeshRepresentationBuilder:
                 "consistency guard)"
             )
         association = data.field.association
-        if association not in ("node", "cell"):
-            return
+        if association not in _SUPPORTED_REALIZATION_FAMILIES:
+            raise ValueError(
+                f"field data for {data.field.name!r} references unsupported "
+                f"realization family {association!r} (ADR-021 D5)"
+            )
         try:
             length = len(data.values)  # type: ignore[arg-type]
         except TypeError as error:

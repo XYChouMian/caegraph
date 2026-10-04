@@ -1,4 +1,4 @@
-"""Field declaration and realization data (ADR-018/020)."""
+"""Field declaration and realization data (ADR-018/020/021)."""
 
 from __future__ import annotations
 
@@ -9,6 +9,8 @@ from typing import Any
 from caegraph.core.base import BaseObject
 
 __all__ = ["Field", "FieldData"]
+
+_SUPPORTED_REALIZATION_FAMILIES: frozenset[str] = frozenset({"node", "cell"})
 
 
 class Field(BaseObject):
@@ -29,21 +31,28 @@ class Field(BaseObject):
     component-semantics vocabulary is deferred / NOT frozen
     (ADR-020 D1).
 
+    ``association`` is **required** (ADR-021 D3): ``None`` is not a
+    legal canonical Field state. The label vocabulary is open —
+    ``node`` / ``cell`` / ``particle`` are declarable examples — with
+    ``node`` / ``cell`` as the Phase 2 supported realization families
+    (ADR-021 D2); unsupported families are declarable but
+    realization-less (ADR-021 D5).
+
     Args:
         name: Non-empty field name, for example ``"pressure"``.
+        association: Entity family the quantity attaches to —
+            required, non-empty (ADR-021 D3). Labels denote entity
+            families, never topology positions or semantic regions
+            (ADR-018).
         unit: Optional physical unit label, for example ``"Pa"``.
-        association: Optional entity scope label identifying the
-            entity family the quantity attaches to — for example
-            ``"node"``, ``"cell"`` or ``"particle"``. Labels denote
-            entity families, never topology positions or semantic
-            regions (ADR-018).
         metadata: Optional free-form key/value annotations.
 
     Raises:
-        ValueError: If ``name`` is empty, or ``unit``/``association``
-            is not a non-empty string (checked only when not
-            ``None`` — non-string values fail the same check), or
-            the initial state fails :meth:`validate`.
+        ValueError: If ``name`` is empty, or ``association`` is not
+            a non-empty string, or ``unit`` is an empty string
+            (checked only when not ``None`` — non-string values fail
+            the same check), or the initial state fails
+            :meth:`validate`.
 
     Examples:
         >>> field = Field("pressure", unit="Pa", association="node")
@@ -57,17 +66,15 @@ class Field(BaseObject):
         self,
         name: str,
         *,
+        association: str,
         unit: str | None = None,
-        association: str | None = None,
         metadata: Mapping[str, Any] | None = None,
     ) -> None:
         """Initialize the declaration semantics, then validate."""
+        if not isinstance(association, str) or not association.strip():
+            raise ValueError("association must be a non-empty string")
         if unit is not None and (not isinstance(unit, str) or not unit.strip()):
             raise ValueError("unit must be a non-empty string or None")
-        if association is not None and (
-            not isinstance(association, str) or not association.strip()
-        ):
-            raise ValueError("association must be a non-empty string or None")
         self._unit = unit
         self._association = association
         super().__init__(name, metadata)
@@ -78,8 +85,8 @@ class Field(BaseObject):
         return self._unit
 
     @property
-    def association(self) -> str | None:
-        """Entity scope the quantity attaches to (for example ``"node"``)."""
+    def association(self) -> str:
+        """Entity family the quantity attaches to (required, ADR-021 D3)."""
         return self._association
 
     def validate(self) -> None:
@@ -93,10 +100,8 @@ class Field(BaseObject):
             not isinstance(self._unit, str) or not self._unit.strip()
         ):
             raise ValueError("unit must be a non-empty string or None")
-        if self._association is not None and (
-            not isinstance(self._association, str) or not self._association.strip()
-        ):
-            raise ValueError("association must be a non-empty string or None")
+        if not isinstance(self._association, str) or not self._association.strip():
+            raise ValueError("association must be a non-empty string")
 
 
 class FieldData:
@@ -121,24 +126,34 @@ class FieldData:
     BaseObject's name-based identity would duplicate Field
     semantics.
 
+    Only supported realization families carry realization data —
+    ``field.association`` must name ``node`` or ``cell``
+    (ADR-021 D5); unsupported-family declarations are
+    realization-less and their realizations are rejected at
+    construction.
+
     Member set (current Phase 2 implementation choice): ``field``,
     ``values``, ``timestep``, ``metadata``. Time, coverage and sample
     identity are deferred / NOT frozen (ADR-020 D2).
 
     Args:
-        field: The declaration this realization belongs to.
+        field: The declaration this realization belongs to — its
+            association must name a supported realization family
+            (``node`` / ``cell``, ADR-021 D5).
         values: Realization payload — any array-like object. A
             missing argument is a signature error (Python
             ``TypeError``); an explicit ``None`` payload is rejected.
-        timestep: Optional numeric temporal index of this realization
-            (``int`` or ``float``; bools rejected).
+        timestep: Optional numeric temporal index of this
+            realization (``int`` or ``float``; bools rejected).
         metadata: Optional free-form key/value annotations.
 
     Raises:
         TypeError: If ``field`` is not a :class:`Field`, or
             ``timestep`` is not a number (bools rejected despite
             being int subclasses).
-        ValueError: If ``values`` is explicitly ``None``.
+        ValueError: If ``values`` is explicitly ``None``, or
+            ``field.association`` names an unsupported realization
+            family (ADR-021 D5).
 
     Examples:
         >>> pressure = Field("pressure", unit="Pa", association="node")
@@ -167,6 +182,12 @@ class FieldData:
         """
         if not isinstance(field, Field):
             raise TypeError("field must be a Field declaration (ADR-020 D3)")
+        if field.association not in _SUPPORTED_REALIZATION_FAMILIES:
+            raise ValueError(
+                f"unsupported realization family {field.association!r}: "
+                f"FieldData requires {sorted(_SUPPORTED_REALIZATION_FAMILIES)} "
+                "(no cardinality contract for this family yet — ADR-021 D5)"
+            )
         if values is None:
             raise ValueError(
                 "values are required: a realization without data is not a realization"
@@ -204,13 +225,20 @@ class FieldData:
     def validate(self) -> None:
         """Raise if the realization is in an invalid state.
 
-        Internal consistency check: a :class:`Field` reference, a
-        non-``None`` values payload and a numeric (or absent)
-        timestep. Mirrors the BaseObject lifecycle pattern —
-        ``__init__`` assigns and then delegates to this method.
+        Internal consistency check: a :class:`Field` reference to a
+        supported realization family, a non-``None`` values payload
+        and a numeric (or absent) timestep. Mirrors the BaseObject
+        lifecycle pattern — ``__init__`` assigns and then delegates
+        to this method.
         """
         if not isinstance(self._field, Field):
             raise TypeError("field must be a Field declaration (ADR-020 D3)")
+        if self._field.association not in _SUPPORTED_REALIZATION_FAMILIES:
+            raise ValueError(
+                f"unsupported realization family {self._field.association!r}: "
+                f"FieldData requires {sorted(_SUPPORTED_REALIZATION_FAMILIES)} "
+                "(ADR-021 D5)"
+            )
         if self._values is None:
             raise ValueError(
                 "values are required: a realization without data is not a realization"
