@@ -287,6 +287,16 @@ def test_facet_adjacency_duplicates_are_rejected():
         _two_triangle_mesh(facet_cells=[[0], [0], [0, 0], [1], [1]])
 
 
+def test_facet_cells_reject_bool_entries():
+    # bool is an Integral subclass — explicit rejection keeps facet
+    # cell IDs from silently coercing to 1/0 (parity with
+    # _as_int_array / topo_dim / Region / CAEGraph edge endpoints).
+    with pytest.raises(TypeError, match="must contain integers"):
+        _two_triangle_mesh(facet_cells=[[True], [0], [0, 1], [1], [1]])
+    with pytest.raises(TypeError, match="must contain integers"):
+        _two_triangle_mesh(facet_cells=[[0], [0], [0, 1], [1], [False]])
+
+
 def test_forged_facet_cell_adjacency_is_rejected():
     # facet (0, 1) belongs to cell 0 only; claiming cell 1 must fail the
     # codim-1 face-template match (ADR-014 8a, required failure case)
