@@ -8,7 +8,7 @@ from caegraph.core.boundary.manager import BoundaryManager
 from caegraph.core.caegraph import CAEGraph
 from caegraph.core.enums import NodeCategory
 from caegraph.core.field import (
-    SUPPORTED_REALIZATION_FAMILIES,
+    _SUPPORTED_REALIZATION_FAMILIES,
     Field,
     FieldData,
 )
@@ -229,7 +229,7 @@ class MeshRepresentationBuilder:
                 "consistency guard)"
             )
         association = data.field.association
-        if association not in SUPPORTED_REALIZATION_FAMILIES:
+        if association not in _SUPPORTED_REALIZATION_FAMILIES:
             raise ValueError(
                 f"field data for {data.field.name!r} references unsupported "
                 f"realization family {association!r} (ADR-021 D5)"

@@ -8,9 +8,9 @@ from typing import Any
 
 from caegraph.core.base import BaseObject
 
-__all__ = ["Field", "FieldData", "SUPPORTED_REALIZATION_FAMILIES"]
+__all__ = ["Field", "FieldData"]
 
-SUPPORTED_REALIZATION_FAMILIES: frozenset[str] = frozenset({"node", "cell"})
+_SUPPORTED_REALIZATION_FAMILIES: frozenset[str] = frozenset({"node", "cell"})
 
 
 class Field(BaseObject):
@@ -85,8 +85,8 @@ class Field(BaseObject):
         return self._unit
 
     @property
-    def association(self) -> str | None:
-        """Entity scope the quantity attaches to (for example ``"node"``)."""
+    def association(self) -> str:
+        """Entity family the quantity attaches to (required, ADR-021 D3)."""
         return self._association
 
     def validate(self) -> None:
@@ -143,8 +143,8 @@ class FieldData:
         values: Realization payload — any array-like object. A
             missing argument is a signature error (Python
             ``TypeError``); an explicit ``None`` payload is rejected.
-        timestep: Optional temporal index or label of this
-            realization.
+        timestep: Optional numeric temporal index of this
+            realization (``int`` or ``float``; bools rejected).
         metadata: Optional free-form key/value annotations.
 
     Raises:
@@ -182,10 +182,10 @@ class FieldData:
         """
         if not isinstance(field, Field):
             raise TypeError("field must be a Field declaration (ADR-020 D3)")
-        if field.association not in SUPPORTED_REALIZATION_FAMILIES:
+        if field.association not in _SUPPORTED_REALIZATION_FAMILIES:
             raise ValueError(
                 f"unsupported realization family {field.association!r}: "
-                f"FieldData requires {sorted(SUPPORTED_REALIZATION_FAMILIES)} "
+                f"FieldData requires {sorted(_SUPPORTED_REALIZATION_FAMILIES)} "
                 "(no cardinality contract for this family yet — ADR-021 D5)"
             )
         if values is None:
@@ -233,10 +233,10 @@ class FieldData:
         """
         if not isinstance(self._field, Field):
             raise TypeError("field must be a Field declaration (ADR-020 D3)")
-        if self._field.association not in SUPPORTED_REALIZATION_FAMILIES:
+        if self._field.association not in _SUPPORTED_REALIZATION_FAMILIES:
             raise ValueError(
                 f"unsupported realization family {self._field.association!r}: "
-                f"FieldData requires {sorted(SUPPORTED_REALIZATION_FAMILIES)} "
+                f"FieldData requires {sorted(_SUPPORTED_REALIZATION_FAMILIES)} "
                 "(ADR-021 D5)"
             )
         if self._values is None:
