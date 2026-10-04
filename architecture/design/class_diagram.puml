@@ -11,7 +11,7 @@
 ' GUIDE   : see architecture/UML_GUIDE.md
 ' =============================================================================
 
-title CAEGraph Domain Abstractions (Design) - ADR-007-020
+title CAEGraph Domain Abstractions (Design) - ADR-007-021
 
 package "external ecosystem bases" {
   class "torch_geometric.data.Data" as PyGData <<external>>
@@ -65,6 +65,9 @@ package "caegraph.core (domain truth: CAEGraph + topology subsystem; torch-only,
     (ADR-020 D1): name, unit, association,
     component semantics - the single
     authoritative source (D3);
+    association REQUIRED - non-empty
+    entity family, None illegal
+    (ADR-021 D3);
     NO values, NO timestep; may legally
     exist without any FieldData
     (problem-before-solving, D4);
@@ -77,7 +80,11 @@ package "caegraph.core (domain truth: CAEGraph + topology subsystem; torch-only,
     semantic role only - exact
     member/API form not frozen;
     current Phase 2 implementation
-    uses the field-split member set
+    uses the field-split member set;
+    supported realization families:
+    node / cell - unsupported/typo
+    rejected at construction
+    (ADR-021 D5)
   }
   note right of FieldData
     Realization metadata examples
@@ -242,9 +249,9 @@ package "caegraph.graph (representation construction + backend adapter)" {
     (ADR-019 D5 as amended by ADR-020 D5):
     FieldData cardinality: leading entity
     axis == n_nodes (node) /
-    n_cells (cell); fail-fast
-    otherwise; only "node"/"cell"
-    associations are checked;
+    n_cells (cell); fail-fast otherwise;
+    unsupported realization families
+    rejected (ADR-021 D5);
     region membership out-of-bounds ->
     construction failure;
     NodeCategory is a construction-time
