@@ -72,6 +72,8 @@
 
 **展开解释**：取代先期 M5/Q4 "拒 cell" 草案（ISSUE-03 收口）；cell realizations 经构造期基数校验后为一等数据，其 backend 呈现以保真为原则（family 标记等形态细节归 gate 4b 派单）。declaration-only Field → DECISION-08。
 
+**Gate 4b 必答项（transforms 安全处理）**：gate 4b 派单必须明确 transforms 如何按 family 安全处理 node / cell data——node-family 键保持 node 对齐语义；cell-family 键携带不可丢失的 family 标记；**禁止在任何 transform 中丢失 association 或将其隐式重解释**（包括但不限于：把 cell 数据当 node 数据消费、静默插值、改写 family 归属）。
+
 ### DECISION-08 declaration-only backend 呈现不冻结
 
 **一句话结论**：declaration-only Field 的 backend 具体呈现不在本决策冻结——仅维持 ADR-020 D4 "不凭空产生 realization values"。
@@ -105,6 +107,12 @@
 - **YAML/registry**：本 ADR 属 implementation ADR；不变式登记延迟至 code dispatch 与证据同步创建（eligibility review 适用；候选：association 必填的结构事实——签名级可执行、DECISION-05 构造守卫）。
 - **不改变**：ADR-019 D5 statements（family 措辞已兼容）、ADR-020 D1–D4/D6、依赖分层与 PyG 边界（ADR-007）。
 
+## 风险（Risks）
+
+- **RISK-01（签名迁移遗漏）**：`association` 必填化涉及全部 Field 构造调用面（tests / docstrings / docs）。缓解：窄 dispatch 内全量 pytest + doctest 实测、`Field(` 调用点 grep 审计、mypy 签名检查兜底。
+- **RISK-02（开放声明与 realization 门控易误读）**："unsupported 声明可表达"与"其 realization 构造期拒绝"的两级规则易被误读为矛盾或遗漏。缓解：DECISION-02 与 DECISION-05 成对表述；FieldData/builder 拒绝信息指引（"该 family 尚无 cardinality contract"）；ADR-020/021 交叉引用。
+- **RISK-03（cell-associated data 与 PyG transforms 兼容风险）**：cell-family FieldData 以 family-tagged 形态进入 PyG Data 后，transforms / dataset 生态的默认 node 语义消费可能误用。缓解：DECISION-07 必答项强制 family 标记不可丢失；标记形态与 transforms 消费契约由 gate 4b 及后续派单显式声明。
+
 ## Invariant 登记策略
 
 - 登记**延迟至 code dispatch**，与测试证据同步创建（eligibility review 适用）；候选：DECISION-03 结构事实（Field 构造必须携带非空 association——签名级可执行，非缺席型）、DECISION-05 构造守卫（unsupported-family FieldData 创建即拒）。
@@ -113,3 +121,4 @@
 ## 修订历史（Revision history）
 
 - 2026-10-04 v1：草案（proposed）——Step A Planning Report（事实链 FACT-01..10、触点清单、Q1–Q7 方案矩阵、风险/兼容性分析、推荐结论压力测试）经人工裁决后成文；DECISION-01..08 按人工裁决撰写。
+- 2026-10-04 v2：审阅小修（决策语义零变化）——新增 RISK-01..03；DECISION-07 展开补 gate 4b transforms 必答项（禁止 association 丢失或隐式重解释）。
