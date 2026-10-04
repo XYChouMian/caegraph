@@ -4,7 +4,7 @@
 - 标题：冻结 Field（stable physical quantity declaration）与 FieldData（单次 realization data）的语义边界——1:0..* 关系、Field 为 name/unit/association/component semantics 唯一真源、FieldData 可缺席且位于 canonical data flow、adapter 领域输入唯一、基数校验对象迁移至 FieldData values 且位置不变（representation construction）、要求唯一 realization 的消费遇多个可用 FieldData 须显式选择或显式失败；不冻结 FieldData API/继承/identity 机制/ownership/container/存储组织/selection 机制
 - 日期：2026-10-01
 - 状态：**accepted（2026-10-02 经人工裁决采纳，Field declaration / realization 语义边界冻结；对 ADR-007/014/017/018/019 的同步注记随之生效）**
-- 关联：ADR-007（D6 Field 签名局部取代）、ADR-014（组成澄清——Mesh 不受影响）、ADR-015（canonical 表示——组成声明不变）、ADR-016（构造契约——校验位置不变）、ADR-017（适配主链不变；输入唯一性契约空隙封堵）、ADR-018（Fields / field data 词汇正式化）、ADR-019（D5 校验对象迁移；不变式登记同步）、Phase 2、Design UML `class_diagram.puml`（更新随 field-split implementation dispatch）
+- 关联：ADR-007（D6 Field 签名局部取代）、ADR-014（组成澄清——Mesh 不受影响）、ADR-015（canonical 表示——组成声明不变）、ADR-016（构造契约——校验位置不变）、ADR-017（适配主链不变；输入唯一性契约空隙封堵）、ADR-018（Fields / field data 词汇正式化）、ADR-019（D5 校验对象迁移；不变式登记同步）、Phase 2、Design UML `class_diagram.puml`（Field / FieldData 语义已同步）
 
 ## 背景（Context）
 
@@ -27,9 +27,10 @@ flowchart LR
 ## Terminology
 
 - **Field**：稳定物理量声明（stable physical quantity declaration）——name、unit、association、component semantics 的唯一载体；生命周期跨越该问题的全部 realization。
-- **FieldData**：某 Field 的一次 realization data——values + realization metadata；成员为示例性方向，精确集合不冻结（D2）。
+- **FieldData**：某 Field 的一次 realization data——values + realization metadata；当前 Phase 2 implementation 成员集见 D2，exact member/API form 不冻结（D2）。
 - **Declaration / realization**：声明回答「这个问题里有哪些物理量」；realization 回答「某次求解/观测/预测给了它什么数据」。
 - **Realization metadata**：随单次 realization 变化的标注（timestep / time / coverage / sample identity 等）；与 Field 的稳定语义相对。
+- **Component semantics**：物理量的分量维度语义——声明一个量是标量还是由分量构成（如向量分量）及其构成方式的概念维度。仅此概念定义；其 vocabulary、成员形式与存储承载均 deferred / NOT frozen（ADR-020 D1）。
 - **Silent selection（静默选择）**：消费/物化路径要求唯一 realization 时，面对同一 Field 的多个可用 FieldData 未经显式指定而隐式取其一（如隐式取最新）。
 
 ## 决策（Decision）
@@ -46,7 +47,7 @@ flowchart LR
 
 **一句话结论**：FieldData 是某 Field 的一次 realization data——values + realization metadata（timestep / time / coverage / sample identity 等）。
 
-**展开解释**：成员精确集合**不冻结**，随 field-split implementation 派单定稿，上列成员为示例性方向；realization 的 source/type 语义（solution / observation / prediction）不在本 ADR 冻结。
+**展开解释**：当前 Phase 2 implementation 已采用 `field` / `values` / `timestep` / `metadata`；这是已落地实现选择，exact member/API form 仍不冻结，time / coverage / sample identity 及扩展成员均 deferred / NOT frozen。realization 的 source/type 语义（solution / observation / prediction）不在本 ADR 冻结。
 
 ### D3 语义唯一真源与唯一对应
 
@@ -64,7 +65,7 @@ flowchart LR
 
 **一句话结论**：cardinality 校验对象由 field values 变为 **FieldData values**——leading entity axis 契约（ADR-019 D5）原样迁移；检查位置不变，仍属 representation construction。
 
-**展开解释**：`association == "node"` → FieldData values 首轴 == `n_nodes`；`association == "cell"` → == `n_cells`；继续不在 `associate_field` 类轻量挂载 API 上执行 topology-cardinality 校验（ADR-019 D5 状态声明不变）。
+**展开解释**：association 标识 **node entity family** → FieldData values 首轴 == `n_nodes`；标识 **cell entity family** → == `n_cells`。association 标签的具体 representation 与匹配方式、`None` 的语义均不由本 ADR 冻结——pending association microdecision（gate 4b 前裁决）。继续不在 `associate_field` 类轻量挂载 API 上执行 topology-cardinality 校验（ADR-019 D5 状态声明不变）。
 
 ### D6 唯一-realization 消费的条件触发
 
@@ -88,15 +89,15 @@ flowchart LR
 
 以上各项禁止提前实现接口等待未来确认；纳入决策范围须专门架构决策。
 
-## 退役契约登记（本 ADR 仅登记，执行属 field-split code dispatch）
+## 退役契约登记（已随 field-split implementation dispatch 执行）
 
-- 报错文案 `"values are required: a field without data is a declaration, not a field"`（`field.py`）——随拆分退役：Field 不再有 values 必填约束，待求解问题以无 FieldData 的 Field 表达。该文案的三个载体（实现 / 测试 / docstring）随 code dispatch 一并更新。
+- 报错文案 `"values are required: a field without data is a declaration, not a field"`（`field.py`）——随拆分退役：Field 不再有 values 必填约束，待求解问题以无 FieldData 的 Field 表达。该退役已执行，三个载体（实现 / 测试 / docstring）已清除（merge commit `4351c9e`，2026-10-03）。
 
 ## Invariant 登记策略
 
-- 本 ADR 属 implementation ADR，具备不变式登记资格；**登记创建延迟至 field-split implementation dispatch**——届时与测试证据同步创建 `ADR-020-invariants.yaml`，仅登记可执行子集（候选：Field 不持 values/timestep 成员；FieldData 语义唯一真源可达（经对应 Field）；FieldData values leading entity axis 构造期校验；要求唯一 realization 的路径遇多帧且无显式选择即失败）。ontology 决策（D1–D4 语义）始终以本 Markdown 为唯一决策真源，YAML 只作机器可读核验索引。
-- **eligibility review**：采纳时（及登记创建时）仅对真正可执行的不变式做资格评审——凡候选引用 deferred API 或机制（identity/reference 形态、ownership/container/storage、selection 机制）者一律不得登记；禁止 YAML 反向冻结本 ADR 的不冻结项。
-- `ADR-019-invariants.yaml` 的 D5-01/02 statement 随本 ADR 采纳同步为 FieldData 语义；旧 Field 语义守护测试降级为 `TEST_MISSING + missing_reason`，field-split 落地后经 PM 授权更新证据。
+- **登记实态（field-split dispatch 已落地）**：`ADR-020-invariants.yaml` 已创建，登记 **D1-01 / D4-01 / D6-01** 三条可执行不变式——Field 不持 values/timestep 成员、declaration-only field set 合法、construction 存多 realization 合法，各映射至守卫测试。ontology 决策（D1–D4 语义）始终以本 Markdown 为唯一决策真源，YAML 只作机器可读核验索引。
+- **eligibility review**：采纳时（及登记创建时）仅对真正可执行的不变式做资格评审——凡候选引用 deferred API 或机制（identity/reference 形态、ownership/container/storage、selection 机制）者一律不得登记；禁止 YAML 反向冻结本 ADR 的不冻结项。**D3 据此刻意不登记**——这是登记纪律的适用结论，而非「D3 不可测试」的判定：D3 的语义唯一真源与唯一对应由本 Markdown 冻结；依禁令，deferred reference 机制的形态缺席不转化为 executable invariant，故不为 D3 建立此类守卫（未来若出现非缺席型的可执行表达，可按 eligibility review 重新评估）。
+- **D5 evidence 归属**：leading-entity-axis 构造期校验的可执行证据登记于 `ADR-019-invariants.yaml`（D5-01/02，FieldData 语义，证据已随 field-split dispatch 恢复）——本 ADR 不重复登记。
 
 ## 备选方案（Options considered）
 
@@ -109,8 +110,8 @@ flowchart LR
 ## 影响（Consequences）
 
 - 新能力：problem-before-solving 可表达（只有 Field 而无 FieldData 的 CAEGraph 合法）；一个 Field 天然多 realization（瞬态 / 多源）。
-- 成本：**一个中型 field-split code dispatch**（Field 瘦身 + FieldData 新类 + builder / CAEGraph / 测试适配 + ADR-020 不变式登记）——本 ADR 仅登记，不执行。
-- gate 4b（backend adaptation）在 field-split dispatch 之后恢复；adapter 输入契约重确认：仅含 Field 声明的 CAEGraph——本 ADR 只冻结「不凭空生成 realization values」，其物化形态属 PyG schema、不冻结；要求唯一 realization 的物化路径遇多帧且无显式选择即拒绝（D6）；symmetric edge materialization 契约（ADR-019 C-01）不受影响。
+- 成本：**一个中型 field-split code dispatch**（Field 瘦身 + FieldData 新类 + builder / CAEGraph / 测试适配 + ADR-020 不变式登记）——已执行并合入 main（merge commit `4351c9e`，2026-10-03）。
+- gate 4b（backend adaptation）：field-split 阻塞已解除，association microdecision 收口后进入 implementation；adapter 输入契约重确认：仅含 Field 声明的 CAEGraph——本 ADR 只冻结「不凭空生成 realization values」，其物化形态属 PyG schema、不冻结；要求唯一 realization 的物化路径遇多帧且无显式选择即拒绝（D6）；symmetric edge materialization 契约（ADR-019 C-01）不受影响。
 - ADR-017 主链与 transforms / dataset 消费面零改动；不引入新依赖、不改变依赖分层与 PyG 边界（ADR-007 D2 不变）。
 
 ## 修订历史（Revision history）
@@ -118,3 +119,4 @@ flowchart LR
 - 2026-10-01 v1：草案（proposed）——Planning Report（事实链核验 + Option C 七维对抗性压力测试，零冲突零反例）经人工确认后成文；D1–D5 按人工冻结骨架撰写，D6（多个可用 realization 禁止静默选择）按 Phase 2 裁决补入；scope exclusions 含六项显式排除与五项机制不冻结。
 - 2026-10-01 v2：人工 Revision Planning 修正（语义收紧，非方向变更）——① D3 删除 `object identity` 冻结，仅保留「恰一个 Field + 语义唯一真源（authoritative source）」，identity/reference 机制（含只读代理/缓存/派生访问器）全部 defer；② 删除「CAEGraph 组合」表述，统一为 canonical data flow / canonical representation 可访问（ownership/container/storage 不冻结）；③ ADR-019 YAML D5-01/02 保持 FieldData statement，旧 Field 语义测试降级 TEST_MISSING + missing_reason，field-split 落地后经 PM 授权更新证据；④ D6 改为唯一-realization 消费条件触发，representation construction 保存多 realization 合法；⑤ 补 invariant eligibility review 条款（YAML 不得反向冻结 deferred API）；⑥ Consequences 去 PyG schema 预设，declaration-only CAEGraph 仅冻结「不凭空生成 realization values」。D1/D2/D5 语义不变。
 - 2026-10-02：accepted（人工审查通过并裁决采纳；本 ADR 与五处同步注记、`ADR-019-invariants.yaml` D5 同步一并生效）。
+- 2026-10-03 v3：clarification/sync（D1–D6 实质零变化，状态保持 accepted）——D2 记录当前 Phase 2 implementation 已采用的成员集（exact member/API form 仍不冻结）；Terminology 同步该事实并新增 Component semantics 最小概念定义（vocabulary / 成员形式 / 存储承载均 deferred）；D5 改为 node/cell entity-family 语义（representation / 匹配方式 / `None` 语义不由本 ADR 冻结，pending association microdecision）；Invariant 登记策略同步实际登记状态（D1-01/D4-01/D6-01；D3 经 eligibility review 刻意不登记；D5 evidence 归 ADR-019）；退役契约与 Consequences 同步 field-split 已落地事实（merge commit `4351c9e`，2026-10-03）；gate 4b 表述修正（阻塞解除、association microdecision 收口后进入 implementation）；关联行与 Design UML 措辞同步。

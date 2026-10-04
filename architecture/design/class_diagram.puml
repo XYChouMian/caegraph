@@ -75,9 +75,9 @@ package "caegraph.core (domain truth: CAEGraph + topology subsystem; torch-only,
     One realization of a Field
     (ADR-020 D2): values payload;
     semantic role only - exact
-    member/API form not frozen,
-    finalized at the field-split
-    implementation dispatch
+    member/API form not frozen;
+    current Phase 2 implementation
+    uses the field-split member set
   }
   note right of FieldData
     Realization metadata examples
