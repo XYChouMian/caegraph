@@ -3,7 +3,7 @@
 - 编号：ADR-021
 - 标题：冻结 Field.association 为 entity-family identifier——声明必须携带 entity family（`None` 非法）、supported realization families = node / cell、unsupported-family FieldData 构造期拒绝、representation 维持 `str` 类型化 deferred、gate 4b 关联保真原则（node 对齐 / cell 保留 association / 禁隐式插值）
 - 日期：2026-10-04
-- 状态：**proposed（草案——待人工裁决采纳；采纳后 ADR-020 D5 pending 项收口随本 ADR 生效）**
+- 状态：**accepted（2026-10-04 经人工裁决采纳；ADR-020 D5 pending 项收口随本 ADR 生效）**
 - 关联：ADR-020（D5 pending association microdecision 由本 ADR 收口）、ADR-019（D5 基数契约——node/cell family 键控，本 ADR 不改其 statements）、ADR-018（fields↔entities 关联原则 + 开放词汇——本 ADR 语义上游）、ADR-007（D6 Field 六抽象）、Phase 2、Design UML `class_diagram.puml`
 
 ## 背景（Context）
@@ -122,3 +122,4 @@
 
 - 2026-10-04 v1：草案（proposed）——Step A Planning Report（事实链 FACT-01..10、触点清单、Q1–Q7 方案矩阵、风险/兼容性分析、推荐结论压力测试）经人工裁决后成文；DECISION-01..08 按人工裁决撰写。
 - 2026-10-04 v2：审阅小修（决策语义零变化）——新增 RISK-01..03；DECISION-07 展开补 gate 4b transforms 必答项（禁止 association 丢失或隐式重解释）。
+- 2026-10-04：accepted（人工裁决采纳；ADR-020 D5 收口随本 ADR 生效）。
