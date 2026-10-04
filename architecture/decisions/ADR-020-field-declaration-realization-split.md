@@ -67,6 +67,8 @@ flowchart LR
 
 **展开解释**：association 标识 **node entity family** → FieldData values 首轴 == `n_nodes`；标识 **cell entity family** → == `n_cells`。association 标签的具体 representation 与匹配方式、`None` 的语义均不由本 ADR 冻结——pending association microdecision（gate 4b 前裁决）。继续不在 `associate_field` 类轻量挂载 API 上执行 topology-cardinality 校验（ADR-019 D5 状态声明不变）。
 
+> **Amendment（2026-10-04，ADR-021；随其采纳生效）**：上句 pending 项已由 ADR-021 裁决收口——association 的领域含义冻结为 entity-family identifier；`None` 非法（声明必须携带 entity family）；unsupported-family FieldData 构造期拒绝；标签 representation 细节仍不冻结。本 ADR 其余内容语义零变化。
+
 ### D6 唯一-realization 消费的条件触发
 
 **一句话结论**：仅当 consumer / materialization 要求**唯一 realization** 且存在多个 eligible FieldData 时，必须显式选择或显式失败；representation construction 可合法保存多个 realization。
@@ -120,3 +122,4 @@ flowchart LR
 - 2026-10-01 v2：人工 Revision Planning 修正（语义收紧，非方向变更）——① D3 删除 `object identity` 冻结，仅保留「恰一个 Field + 语义唯一真源（authoritative source）」，identity/reference 机制（含只读代理/缓存/派生访问器）全部 defer；② 删除「CAEGraph 组合」表述，统一为 canonical data flow / canonical representation 可访问（ownership/container/storage 不冻结）；③ ADR-019 YAML D5-01/02 保持 FieldData statement，旧 Field 语义测试降级 TEST_MISSING + missing_reason，field-split 落地后经 PM 授权更新证据；④ D6 改为唯一-realization 消费条件触发，representation construction 保存多 realization 合法；⑤ 补 invariant eligibility review 条款（YAML 不得反向冻结 deferred API）；⑥ Consequences 去 PyG schema 预设，declaration-only CAEGraph 仅冻结「不凭空生成 realization values」。D1/D2/D5 语义不变。
 - 2026-10-02：accepted（人工审查通过并裁决采纳；本 ADR 与五处同步注记、`ADR-019-invariants.yaml` D5 同步一并生效）。
 - 2026-10-03 v3：clarification/sync（D1–D6 实质零变化，状态保持 accepted）——D2 记录当前 Phase 2 implementation 已采用的成员集（exact member/API form 仍不冻结）；Terminology 同步该事实并新增 Component semantics 最小概念定义（vocabulary / 成员形式 / 存储承载均 deferred）；D5 改为 node/cell entity-family 语义（representation / 匹配方式 / `None` 语义不由本 ADR 冻结，pending association microdecision）；Invariant 登记策略同步实际登记状态（D1-01/D4-01/D6-01；D3 经 eligibility review 刻意不登记；D5 evidence 归 ADR-019）；退役契约与 Consequences 同步 field-split 已落地事实（merge commit `4351c9e`，2026-10-03）；gate 4b 表述修正（阻塞解除、association microdecision 收口后进入 implementation）；关联行与 Design UML 措辞同步。
+- 2026-10-04：ADR-021 adjudicated the association microdecision——D5 pending 项收口（association = entity-family identifier；`None` 非法；unsupported-family FieldData 构造期拒绝），详见 ADR-021；本 ADR 其余内容语义零变化。
