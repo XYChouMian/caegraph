@@ -239,7 +239,7 @@ class Mesh(BaseObject):
             entries: list[tuple[int, ...]] = []
             for entry in facet_cells:
                 for value in entry:
-                    if not isinstance(value, Integral):
+                    if isinstance(value, bool) or not isinstance(value, Integral):
                         raise TypeError("facet_cells entries must contain integers")
                 entries.append(tuple(int(value) for value in entry))
             self._facet_cells = tuple(entries)
