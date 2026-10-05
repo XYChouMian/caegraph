@@ -485,12 +485,16 @@ class CAEGraph(BaseObject):
         Snapshot; the original Snapshot keeps its own authoritative
         membership, ADR-023 D-03), eligible global realizations kept
         as new global FieldData objects with no membership, and every
-        Field ending with at most one realization. By-design aliasing:
-        Field declarations and the topology provider are referenced
-        non-owning objects (ADR-018/014) shared with the original;
-        graph-owned state (realization payloads and metadata, Snapshot
-        membership, the boundary manager and its regions/specs) is
-        newly built. The original graph is left completely unchanged.
+        Field ending with at most one realization. All state is
+        projection-materialized: Field declarations are **new** Field
+        objects (same name / unit / association, deep-copied metadata)
+        bound to the projected realizations, the topology provider is
+        rebuilt as a **new** Mesh when present (full canonical
+        reconstruction), realization payloads and metadata are
+        deep-copied, graph-level metadata is deep-copied, and the
+        boundary manager is rebuilt from copied regions and freshly
+        bound spec copies. The original graph is left completely
+        unchanged.
 
         The result satisfies the CAEGraph validation contract; its
         conformance to the ADR-022 adapter input contract is pending
@@ -555,29 +559,46 @@ class CAEGraph(BaseObject):
                 )
             if total == 1:
                 included.append(global_side[0] if global_side else snapshot_side[0])
+        # Graph data presence: the CAEGraph constructor treats
+        # None/None/None as "no graph data", while an explicit
+        # n_entities=0 would be rejected as graph data — keep that
+        # semantic exactly.
+        has_graph_data = self._n_entities > 0
+        projected_topology = (
+            self._rebuild_topology() if self._topology is not None else None
+        )
         projected = CAEGraph(
             self.name,
-            topology=self._topology,
-            n_entities=self._n_entities or None,
-            edges=self._edges or None,
-            node_categories=self._node_categories or None,
+            topology=projected_topology,
+            metadata=deepcopy(self.metadata),
+            n_entities=self._n_entities if has_graph_data else None,
+            edges=self._edges if has_graph_data else None,
+            node_categories=self._node_categories if has_graph_data else None,
         )
+        field_copies: dict[Field, Field] = {}
         for field in self._fields.values():
-            projected.associate_field(field)
+            projected_field = Field(
+                field.name,
+                unit=field.unit,
+                association=field.association,
+                metadata=deepcopy(field.metadata),
+            )
+            projected.associate_field(projected_field)
+            field_copies[field] = projected_field
         temporal_copies: list[FieldData] = []
         for data in included:
-            copy = FieldData(
-                data.field,
+            copied_data = FieldData(
+                field_copies[data.field],
                 deepcopy(data.values),
                 scope=data.scope,
                 timestep=data.timestep,
                 metadata=deepcopy(dict(data.metadata)),
             )
-            if copy.scope == _SNAPSHOT_SCOPE:
-                temporal_copies.append(copy)
+            if copied_data.scope == _SNAPSHOT_SCOPE:
+                temporal_copies.append(copied_data)
             else:
-                projected._validate_field_data_binding(copy)
-                projected._register_field_data(copy)
+                projected._validate_field_data_binding(copied_data)
+                projected._register_field_data(copied_data)
         projected.register_snapshot(
             physical_time=snapshot.physical_time,
             solver_step=snapshot.solver_step,
@@ -587,13 +608,41 @@ class CAEGraph(BaseObject):
         projected.validate()
         return projected
 
-    def _copy_boundaries_onto(self, projected: CAEGraph) -> None:
-        """Rebuild the boundary manager of ``projected`` from graph-owned copies.
+    def _rebuild_topology(self) -> Mesh:
+        """Rebuild the referenced topology provider as a new Mesh.
 
-        Regions and specs are graph-owned mutable state (BaseObject
+        Full canonical topology reconstruction through the Mesh
+        constructor — coercion / canonicalization / freeze semantics
+        preserved — with every input independently copied: nodes,
+        topo_dim, cell_types, cells, cell_offsets, facet_types,
+        facets, facet_offsets, facet_cells, domain_groups and
+        metadata.
+        """
+        topology = self._topology
+        assert topology is not None  # guarded by the caller
+        return Mesh(
+            topology.name,
+            nodes=deepcopy(topology.nodes),
+            topo_dim=topology.topo_dim,
+            cell_types=deepcopy(topology.cell_types),
+            cells=deepcopy(topology.cells),
+            cell_offsets=deepcopy(topology.cell_offsets),
+            facet_types=deepcopy(topology.facet_types),
+            facets=deepcopy(topology.facets),
+            facet_offsets=deepcopy(topology.facet_offsets),
+            facet_cells=deepcopy(topology.facet_cells),
+            domain_groups=deepcopy(dict(topology.domain_groups)),
+            metadata=deepcopy(topology.metadata),
+        )
+
+    def _copy_boundaries_onto(self, projected: CAEGraph) -> None:
+        """Rebuild the boundary manager of ``projected`` from copied state.
+
+        Regions and specs are projection-materialized state (BaseObject
         metadata channels / binding caches): the projection registers
-        **new** region objects and binds **new** unbound specs so that
-        no mutation path reaches the original manager.
+        **new** region objects and binds **new** unbound specs — which
+        re-resolve against the projected regions — so that no mutation
+        path reaches the original manager.
         """
         for region in self._boundaries.regions:
             projected._boundaries.register(
