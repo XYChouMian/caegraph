@@ -38,6 +38,10 @@ site/
 .vscode/
 *.swp
 
+# ZCode (AI agent workspace config & tool-local state)
+.zcode/
+.zcodeignore
+
 # OS
 .DS_Store
 Thumbs.db
