@@ -11,7 +11,7 @@
 ' GUIDE   : see architecture/UML_GUIDE.md
 ' =============================================================================
 
-title CAEGraph Domain Abstractions (Design) - ADR-007-021
+title CAEGraph Domain Abstractions (Design) - ADR-007-023
 
 package "external ecosystem bases" {
   class "torch_geometric.data.Data" as PyGData <<external>>
@@ -60,6 +60,40 @@ package "caegraph.core (domain truth: CAEGraph + topology subsystem; torch-only,
     backends or analysis engines,
     never the domain model
   }
+  note right of CAEGraph
+    Temporal organization responsibilities
+    (ADR-023 D-01/D-04/D-08): aggregate
+    boundary for Snapshot lifecycle and
+    organization; coordinates the single
+    mutation / consistency boundary of
+    membership; canonical temporal storage
+    does not duplicate global/static
+    realizations per Snapshot (D-08).
+    Selection chain: explicit Snapshot
+    temporal selection -> candidate
+    single-state (all members + eligible
+    global realizations) -> per-Field
+    0/1/>1: 0 = declaration-only (ADR-022
+    D-06 zero footprint); 1 = enters the
+    final state directly; >1 = residual
+    non-temporal multiplicity, explicit
+    select or fail per ADR-020 D6 (never
+    delegated to the adapter) -> final
+    single-state projection (CAEGraph
+    canonical state satisfying the ADR-022
+    input contract; copy / view / storage
+    form deferred to coding) -> existing
+    BackendAdapter unchanged (zero-selector).
+    Validation: physical_time presence &
+    uniqueness (D02-01), membership
+    single-valued (D03-01), scope dichotomy
+    (D04-01), per-Field scope exclusivity
+    (D04-02) enforced at the CAEGraph-
+    coordinated temporal write path
+    (container form deferred, D-04);
+    membership independence of timestep
+    (D07-01) is a semantic guard test only.
+  end note
   class Field {
     Stable physical quantity declaration
     (ADR-020 D1): name, unit, association,
@@ -84,7 +118,11 @@ package "caegraph.core (domain truth: CAEGraph + topology subsystem; torch-only,
     supported realization families:
     node / cell - unsupported/typo
     rejected at construction
-    (ADR-021 D5)
+    (ADR-021 D5);
+    explicit scope: global/static |
+    snapshot-scoped (ADR-023 D-04) -
+    never inferred from missing
+    time information
   }
   note right of FieldData
     Realization metadata examples
@@ -102,6 +140,60 @@ package "caegraph.core (domain truth: CAEGraph + topology subsystem; torch-only,
     canonical representation;
     ownership / container / storage
     NOT frozen (ADR-020 D4).
+    FieldData.timestep (current member):
+    legacy / compatibility member - NO
+    canonical temporal authority;
+    participates in no membership /
+    ordering / alignment / selection;
+    no defined mapping to physical_time
+    or solver_step (ADR-023 D-07);
+    long-term fate deferred.
+  end note
+  class Snapshot <<"temporal organization construct">> {
+    Canonical realization organization
+    construct (ADR-023 D-01): groups
+    existing FieldData into one
+    instantaneous physical state via
+    explicit membership; adds realization
+    temporal organization semantics only -
+    NOT a new physical-domain concept
+    category (no ADR-018 / ADR-007 count
+    increase); temporal organization is
+    optional - zero Snapshots legal (D-01);
+    instantaneous-state descriptor - holds
+    authoritative non-owning membership;
+    no selection / projection service
+    responsibilities (D-03/D-08)
+    identity : snapshot structural identity
+    physical_time : REQUIRED, unique within
+    the temporal organization - sole
+    global-ordering coordinate, non-uniform
+    spacing legal (D-02/D-08)
+    solver_step : optional provenance (D-02)
+    (conceptual properties only - member
+    names / types not frozen, D-02)
+  }
+  note right of Snapshot
+    Membership descriptor (ADR-023
+    D-03/D-04/D-06): this class holds the
+    authoritative non-owning membership of
+    its member FieldData; snapshot-scoped
+    FieldData -> exactly 1 Snapshot;
+    global/static realizations have no
+    membership; scope never inferred from
+    missing time information; per-Field
+    scope mixing rejected (the single
+    ADR-023 Phase 2 narrowing, D-04); no
+    (Snapshot, Field) cardinality cap -
+    multiple realizations of one Field in
+    one Snapshot are legal residual
+    non-temporal multiplicity, disambiguated
+    at projection formation (D-05/D-08);
+    empty Snapshot legal (D-06).
+    Reverse access (FieldData -> Snapshot),
+    if present, is derived only - no two
+    independently-modifiable membership
+    truth sources (D-03).
   end note
   enum BoundaryType {
     Mathematical BC categories (ADR-010):
@@ -291,7 +383,12 @@ package "caegraph.graph (representation construction + backend adapter)" {
     materialization requires a unique
     realization and multiple eligible
     FieldData exist, explicitly select
-    or fail (ADR-020 D6)
+    or fail (ADR-020 D6);
+    temporal projection path (ADR-023 D-08,
+    CAEGraph side) provides a single-state
+    CAEGraph input; the adapter performs no
+    temporal selection - ADR-022 D-05
+    fail-fast preserved unchanged
   }
 }
 
@@ -387,6 +484,8 @@ BoundarySpec "*" o--> "0..1" FieldFunction : optional value
 Field "1" <-- "0..*" FieldData : corresponds to declaration / Field is semantic authoritative source (identity/reference mechanism deferred - ADR-020 D3)
 CAEGraph ..> Field : associated quantity declarations (ADR-020 D1/D4)
 CAEGraph ..> FieldData : canonical data flow access - ownership / container / storage deferred (ADR-020 D4)
+CAEGraph "1" --> "0..*" Snapshot : temporal organization - aggregate boundary (lifecycle & organization); zero Snapshots legal; storage / container form deferred (ADR-023 D-01/D-04)
+Snapshot "0..1" --> "0..*" FieldData : authoritative non-owning membership - snapshot-scoped FieldData -> exactly 1 instantaneous state (0 = global/static); reverse access derived only; mutation / consistency coordinated by CAEGraph temporal responsibility (ADR-023 D-03/D-04)
 CAEGraph ..> Mesh : cell-based topology example (optional semantic provider; ADR-014/018)
 CAEGraph ..> BoundaryManager : uses semantic regions
 CAEGraph ..> NodeCategory : node-entity annotation only (Phase 2; cell entities excluded - ADR-019 D3)
