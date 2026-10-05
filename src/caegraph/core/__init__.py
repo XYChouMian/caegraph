@@ -6,7 +6,9 @@ representation :class:`~caegraph.core.CAEGraph` (ADR-015/018),
 contract for domain-truth objects such as ``Mesh`` and
 :class:`~caegraph.core.Field`), the field declaration /
 realization-data pair :class:`~caegraph.core.Field` and
-:class:`~caegraph.core.FieldData` (ADR-020), the semantic-region
+:class:`~caegraph.core.FieldData` (ADR-020, explicit realization
+scope per ADR-023), the Snapshot temporal organization construct
+:class:`~caegraph.core.Snapshot` (ADR-023), the semantic-region
 vocabulary of
 :mod:`caegraph.core.boundary` (regions, declarations, registry;
 ADR-010/011/018), the name-keyed :class:`~caegraph.core.Registry`
@@ -24,6 +26,7 @@ from caegraph.core.caegraph import CAEGraph
 from caegraph.core.enums import BoundaryType, NodeCategory
 from caegraph.core.field import Field, FieldData
 from caegraph.core.registry import Registry
+from caegraph.core.temporal import Snapshot
 from caegraph.core.topology import CellType, Mesh
 
 __all__ = [
@@ -39,4 +42,5 @@ __all__ = [
     "Mesh",
     "NodeCategory",
     "Registry",
+    "Snapshot",
 ]

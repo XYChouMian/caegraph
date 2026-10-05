@@ -1,4 +1,4 @@
-"""Field declaration and realization data (ADR-018/020/021)."""
+"""Field declaration and realization data (ADR-018/020/021/023)."""
 
 from __future__ import annotations
 
@@ -11,6 +11,9 @@ from caegraph.core.base import BaseObject
 __all__ = ["Field", "FieldData"]
 
 _SUPPORTED_REALIZATION_FAMILIES: frozenset[str] = frozenset({"node", "cell"})
+_GLOBAL_SCOPE: str = "global"
+_SNAPSHOT_SCOPE: str = "snapshot"
+_REALIZATION_SCOPES: frozenset[str] = frozenset({_GLOBAL_SCOPE, _SNAPSHOT_SCOPE})
 
 
 class Field(BaseObject):
@@ -132,9 +135,20 @@ class FieldData:
     realization-less and their realizations are rejected at
     construction.
 
+    Every realization carries an **explicit scope** (ADR-023 D-04):
+    ``"global"`` (global/static realization — belongs to no Snapshot)
+    or ``"snapshot"`` (snapshot-scoped realization — belongs to
+    exactly one Snapshot). Scope is a required keyword: it is never
+    inferred from timestep values, missing time information or
+    membership presence, and it is immutable after construction.
+
     Member set (current Phase 2 implementation choice): ``field``,
-    ``values``, ``timestep``, ``metadata``. Time, coverage and sample
-    identity are deferred / NOT frozen (ADR-020 D2).
+    ``values``, ``scope``, ``timestep``, ``metadata``. Time, coverage
+    and sample identity are deferred / NOT frozen (ADR-020 D2).
+    ``timestep`` is a legacy / compatibility member with **no
+    canonical temporal authority** (ADR-023 D-07): it participates in
+    no membership, ordering, alignment or selection, and no mapping
+    to ``physical_time`` or ``solver_step`` is defined.
 
     Args:
         field: The declaration this realization belongs to — its
@@ -143,27 +157,39 @@ class FieldData:
         values: Realization payload — any array-like object. A
             missing argument is a signature error (Python
             ``TypeError``); an explicit ``None`` payload is rejected.
+        scope: Explicit realization scope — ``"global"`` or
+            ``"snapshot"`` (required keyword, no default, ADR-023
+            D-04). Global/static realizations enter the canonical
+            registry through the representation builder;
+            snapshot-scoped realizations enter atomically with their
+            Snapshot membership via ``CAEGraph.register_snapshot``.
         timestep: Optional numeric temporal index of this
-            realization (``int`` or ``float``; bools rejected).
+            realization (``int`` or ``float``; bools rejected) —
+            legacy / compatibility member without canonical temporal
+            authority (ADR-023 D-07).
         metadata: Optional free-form key/value annotations.
 
     Raises:
         TypeError: If ``field`` is not a :class:`Field`, or
             ``timestep`` is not a number (bools rejected despite
-            being int subclasses).
-        ValueError: If ``values`` is explicitly ``None``, or
+            being int subclasses). A missing ``scope`` (or
+            ``values``) argument is likewise a signature error.
+        ValueError: If ``values`` is explicitly ``None``,
+            ``scope`` is not ``"global"`` / ``"snapshot"``, or
             ``field.association`` names an unsupported realization
             family (ADR-021 D5).
 
     Examples:
         >>> pressure = Field("pressure", unit="Pa", association="node")
-        >>> frame = FieldData(pressure, [0.1, 0.2], timestep=3)
+        >>> frame = FieldData(pressure, [0.1, 0.2], scope="global", timestep=3)
         >>> frame.field is pressure
         True
         >>> frame.field.unit
         'Pa'
         >>> frame.timestep
         3
+        >>> frame.scope
+        'global'
     """
 
     def __init__(
@@ -171,6 +197,7 @@ class FieldData:
         field: Field,
         values: Any,
         *,
+        scope: str,
         timestep: float | None = None,
         metadata: Mapping[str, Any] | None = None,
     ) -> None:
@@ -192,12 +219,18 @@ class FieldData:
             raise ValueError(
                 "values are required: a realization without data is not a realization"
             )
+        if not isinstance(scope, str) or scope not in _REALIZATION_SCOPES:
+            raise ValueError(
+                f"scope must be one of {sorted(_REALIZATION_SCOPES)} "
+                "(explicit realization scope — never inferred, ADR-023 D-04)"
+            )
         if timestep is not None and (
             not isinstance(timestep, (int, float)) or isinstance(timestep, bool)
         ):
             raise TypeError("timestep must be a number or None")
         self._field = field
         self._values = values
+        self._scope = scope
         self._timestep = timestep
         self._metadata: dict[str, Any] = dict(metadata) if metadata is not None else {}
         self.validate()
@@ -213,8 +246,13 @@ class FieldData:
         return self._values
 
     @property
+    def scope(self) -> str:
+        """Explicit realization scope: ``"global"`` or ``"snapshot"`` (ADR-023 D-04)."""
+        return self._scope
+
+    @property
     def timestep(self) -> float | None:
-        """Numeric temporal index of this realization, if declared."""
+        """Legacy temporal index without canonical temporal authority (ADR-023 D-07)."""
         return self._timestep
 
     @property
@@ -226,10 +264,10 @@ class FieldData:
         """Raise if the realization is in an invalid state.
 
         Internal consistency check: a :class:`Field` reference to a
-        supported realization family, a non-``None`` values payload
-        and a numeric (or absent) timestep. Mirrors the BaseObject
-        lifecycle pattern — ``__init__`` assigns and then delegates
-        to this method.
+        supported realization family, a non-``None`` values payload,
+        an explicit realization scope and a numeric (or absent)
+        timestep. Mirrors the BaseObject lifecycle pattern —
+        ``__init__`` assigns and then delegates to this method.
         """
         if not isinstance(self._field, Field):
             raise TypeError("field must be a Field declaration (ADR-020 D3)")
@@ -242,6 +280,11 @@ class FieldData:
         if self._values is None:
             raise ValueError(
                 "values are required: a realization without data is not a realization"
+            )
+        if not isinstance(self._scope, str) or self._scope not in _REALIZATION_SCOPES:
+            raise ValueError(
+                f"scope must be one of {sorted(_REALIZATION_SCOPES)} "
+                "(explicit realization scope, ADR-023 D-04)"
             )
         if self._timestep is not None and (
             not isinstance(self._timestep, (int, float))

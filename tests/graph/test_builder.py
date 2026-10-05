@@ -211,12 +211,12 @@ def test_node_field_length_is_validated():
         MeshRepresentationBuilder()(
             mesh,
             fields=[pressure],
-            field_data=[FieldData(pressure, [1.0, 2.0, 3.0])],
+            field_data=[FieldData(pressure, [1.0, 2.0, 3.0], scope="global")],
         )
     graph = MeshRepresentationBuilder()(
         mesh,
         fields=[pressure],
-        field_data=[FieldData(pressure, [1.0, 2.0, 3.0, 4.0])],
+        field_data=[FieldData(pressure, [1.0, 2.0, 3.0, 4.0], scope="global")],
     )
     assert [field.name for field in graph.associated_fields] == ["p"]
     assert len(graph.field_data) == 1
@@ -229,12 +229,12 @@ def test_cell_field_length_is_validated():
         MeshRepresentationBuilder()(
             mesh,
             fields=[volume],
-            field_data=[FieldData(volume, [1.0])],
+            field_data=[FieldData(volume, [1.0], scope="global")],
         )
     MeshRepresentationBuilder()(
         mesh,
         fields=[volume],
-        field_data=[FieldData(volume, [1.0, 2.0])],
+        field_data=[FieldData(volume, [1.0, 2.0], scope="global")],
     )
 
 
@@ -245,7 +245,7 @@ def test_unsized_values_for_sized_association_are_rejected():
         MeshRepresentationBuilder()(
             mesh,
             fields=[flag],
-            field_data=[FieldData(flag, 3.0)],
+            field_data=[FieldData(flag, 3.0, scope="global")],
         )
 
 
@@ -276,8 +276,8 @@ def test_multiple_field_data_per_field_are_stored():
     # (invariant registry ADR-020-D6-01).
     mesh = _two_triangle_mesh()
     pressure = Field("p", association="node")
-    frame0 = FieldData(pressure, [1.0, 2.0, 3.0, 4.0], timestep=0)
-    frame1 = FieldData(pressure, [2.0, 3.0, 4.0, 5.0], timestep=1)
+    frame0 = FieldData(pressure, [1.0, 2.0, 3.0, 4.0], timestep=0, scope="global")
+    frame1 = FieldData(pressure, [2.0, 3.0, 4.0, 5.0], timestep=1, scope="global")
     graph = MeshRepresentationBuilder()(
         mesh, fields=[pressure], field_data=[frame0, frame1]
     )
@@ -291,7 +291,7 @@ def test_dangling_field_data_is_rejected():
         MeshRepresentationBuilder()(
             mesh,
             fields=[],
-            field_data=[FieldData(pressure, [1.0, 2.0, 3.0, 4.0])],
+            field_data=[FieldData(pressure, [1.0, 2.0, 3.0, 4.0], scope="global")],
         )
 
 
@@ -308,7 +308,7 @@ def test_same_name_different_field_object_is_rejected():
         MeshRepresentationBuilder()(
             mesh,
             fields=[declared],
-            field_data=[FieldData(same_name, [1.0, 2.0, 3.0, 4.0])],
+            field_data=[FieldData(same_name, [1.0, 2.0, 3.0, 4.0], scope="global")],
         )
 
 
