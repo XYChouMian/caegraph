@@ -126,4 +126,4 @@ flowchart LR
 
 ## 修订历史（Revision history）
 
-- 2026-10-05 v1：草案并经 PM 裁决 accepted——Architecture Planning Report（gap 实证 FACT-01/02、D1–D4 压力测试、各实体语义共享性裁定）经 PM Request Changes 四项修订后批准成文：① D-02 / D02-01 作用域收敛为「projection operation 创建、保留或携带进入 projected representation 的 canonical state」（lifetime-wide defensive-copy 方案作为备选方案 D 显式否决）；② 对 Dispatch ② 现状的合规判断降级为「方向上对齐」，正式合规交由 Coding compliance review；③ BoundarySpec 潜在 channel 项经 contract 核实后删除（value / weight numeric-or-None、parameters numeric mapping + defensive copy、binding cache 重解析），仅保留 regression coverage 建议；④ ADR-023 → ADR-024 的 deferred-space 收窄关系显式化（兼容性核实表）。`ADR-024-invariants.yaml` 同批次创建 TEST_MISSING 初版（eligibility 见登记策略）。
+- 2026-10-05 v1：accepted——冻结 single-state temporal projection 的 representation / isolation / semantic-preservation contract；`ADR-024-invariants.yaml` 同批次创建 TEST_MISSING 初版。决策细节见 D-01..D-04、Options 与 Invariant 登记策略。

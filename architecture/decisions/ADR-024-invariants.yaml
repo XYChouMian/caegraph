@@ -36,7 +36,7 @@
 
 adr: "ADR-024"
 version: "v1"
-extracted_from: "v1 decision text (baseline commit c6f2838)"
+extracted_from: "v1 decision text (baseline commit cbb1fbf)"
 
 invariants:
   # --- D-02: formation-time mutable-alias isolation ----------------------------
@@ -51,14 +51,14 @@ invariants:
     statement: "In the projected representation the selected Snapshot and its snapshot-scoped FieldData are independently materialized: no snapshot-scoped FieldData instance is an authoritative member of both the source Snapshot and the projected Snapshot; the projection contains exactly one Snapshot carrying the selected state's temporal coordinates, and each of its members has exactly-one membership (ADR-023 D-03)."
     decision: "D-03"
     test_mapping: "TEST_MISSING"
-    missing_reason: "（同上）守卫测试随 contract 化 dispatch 落地后经 PM 授权回填，证据同步永不与 feat 同 commit。"
+    missing_reason: "当前尚无按 ADR-024 D-03 contract-level temporal membership 语义登记的守卫证据；随 Dispatch ② contract 化测试完成后，经 PM 授权回填 test_mapping，证据同步永不与 feat 同 commit。"
 
   # --- D-04: semantic preservation -------------------------------------------------
   - id: "ADR-024-D04-01"
     statement: "A single-state temporal projection preserves all realization-independent canonical content of the source representation: topology subsystem facts when present, every Field declaration (name / unit / association), boundary semantic regions and condition specs bound to the projection's own regions, graph-level identity / relation / category facts and metadata annotations, and the realization metadata of every realization entering the selected state; the only narrowing is the realization axis (non-selected realizations absent, exactly one Snapshot)."
     decision: "D-04"
     test_mapping: "TEST_MISSING"
-    missing_reason: "（同上）守卫测试随 contract 化 dispatch 落地后经 PM 授权回填，证据同步永不与 feat 同 commit。"
+    missing_reason: "当前尚无覆盖 ADR-024 D-04 semantic-preservation surface 的 contract-level 守卫证据；随 Dispatch ② contract 化测试完成后，经 PM 授权回填 test_mapping，证据同步永不与 feat 同 commit。"
 
 explicitly_not_frozen:
   - item: "materialization mechanism (one-shot copy / copy-on-write / lazy-materialization / shared immutable substrate / other) — ADR-024 narrows only the ADR-023 D-08 deferred implementation-form space: any mechanism is legal as long as the D-01/D-02 result contract holds; pure always-live mutable view is excluded"
