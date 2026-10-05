@@ -5,12 +5,20 @@
 # This registry is created by Architecture at the proposed-draft stage,
 # in the same commit as the ADR draft. Registration is the outcome of
 # an independent eligibility review, NOT precedent-following: only
-# constraints that are decidable now and reference no deferred API
-# form are registered, as a TEST_MISSING initial version. Its
-# normative force follows the ADR's acceptance; evidence backfill
-# happens with the future temporal-organization coding dispatch
-# under explicit PM authorization and NEVER lands in the same commit
-# as the feat change.
+# constraints that are decidable now and reference no deferred API,
+# container, view or projection form are registered, as a TEST_MISSING
+# initial version. Its normative force follows the ADR's acceptance;
+# evidence backfill happens with the future temporal-organization
+# coding dispatch under explicit PM authorization and NEVER lands in
+# the same commit as the feat change.
+#
+# v2 (final PM revision): the D-05 global-realization cap and the
+# solver_step == FieldData.timestep consistency guard were removed
+# from the registry per the decision text (the cap is withdrawn; the
+# guard would freeze an undefined semantic mapping between two
+# non-authoritative sources — see Revision history v2). D07-01 now
+# registers the semantic independence of membership from timestep
+# values.
 #
 # Rules:
 # - Every statement is decidable (true/false); no "should consider" or
@@ -29,8 +37,8 @@
 #   converted into executable invariants.
 
 adr: "ADR-023"
-version: "v1"
-extracted_from: "v1 decision text (baseline commit c8538ff)"
+version: "v2"
+extracted_from: "v2 decision text (supersedes v1 draft commit bcf264e)"
 
 invariants:
   # --- D-02: physical_time presence and uniqueness ------------------------------
@@ -42,7 +50,7 @@ invariants:
 
   # --- D-03: (Snapshot, Field) uniqueness ----------------------------------------
   - id: "ADR-023-D03-01"
-    statement: "For any Snapshot S and Field F, at most one FieldData of F is a member of S — a second realization of the same Field in the same Snapshot is rejected (fail-fast); membership is the only instantaneous-state criterion and involves no time value."
+    statement: "For any Snapshot S and Field F, at most one FieldData of F is a member of S — a second realization of the same Field in the same Snapshot is rejected (fail-fast)."
     decision: "D-03"
     test_mapping: "TEST_MISSING"
     missing_reason: "守卫测试随 temporal organization coding dispatch 落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
@@ -56,41 +64,36 @@ invariants:
 
   # --- D-04: per-Field scope exclusivity (Phase 2 temporal profile) ---------------
   - id: "ADR-023-D04-02"
-    statement: "A Field whose realizations mix global/static scope and snapshot-scoped scope is rejected (fail-fast) — an ADR-023 Phase 2 temporal-profile narrowing, not a pre-existing frozen fact."
+    statement: "A Field whose realizations mix global/static scope and snapshot-scoped scope is rejected (fail-fast) — the single ADR-023 Phase 2 temporal-profile narrowing, not a pre-existing frozen fact."
     decision: "D-04"
     test_mapping: "TEST_MISSING"
     missing_reason: "守卫测试随 temporal organization coding dispatch 落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
 
-  # --- D-05: global realization cap (Phase 2 temporal profile) ---------------------
-  - id: "ADR-023-D05-01"
-    statement: "A global/static-scoped Field carries at most one FieldData (zero is legal — declaration-only); a second global realization is rejected (fail-fast) as a Phase 2 limitation pending the deferred second realization axis."
-    decision: "D-05"
-    test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 temporal organization coding dispatch 落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
-
-  # --- D-07: solver_step / timestep both-present consistency guard -----------------
+  # --- D-07: membership independent of timestep (semantic invariant) --------------
   - id: "ADR-023-D07-01"
-    statement: "When a Snapshot's solver_step and a member FieldData's timestep are both present and unequal, construction/consistency validation fails fast; timestep participates in no other temporal validation (never compared against physical_time)."
+    statement: "Snapshot membership is independent of FieldData.timestep values — realizations holding identical timestep values may lawfully hold different memberships (different Snapshots, or membership vs none), and membership is never derived, validated or altered from timestep values."
     decision: "D-07"
     test_mapping: "TEST_MISSING"
     missing_reason: "守卫测试随 temporal organization coding dispatch 落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
 
 explicitly_not_frozen:
-  - item: "storage structure and container form of Snapshots and membership (list/dict/other, HDF5 layout, lazy loading, memory strategy)"
-    source: "D-01/D-04"
+  - item: "storage structure and container form of Snapshots and membership (list/dict/other, HDF5 layout, lazy loading, memory strategy); reference direction and accessor direction of membership (no two independently-modifiable membership truth sources may emerge, but their form is not frozen)"
+    source: "D-01/D-03/D-04"
   - item: "temporal write-entry mechanism (including whether and how MeshRepresentationBuilder participates) — only the structural obligations are frozen"
     source: "D-04"
   - item: "concrete APIs (add_snapshot/assign_snapshot/snapshot/iter_snapshots etc.) and view types (SnapshotView etc.); whole-frame registration vs per-FieldData assignment"
     source: "scope"
-  - item: "projection implementation form (copy / lazy view / other) and selection API form"
+  - item: "projection implementation form (copy / lazy view / shared topology / other) and selection API form"
     source: "D-08"
   - item: "member forms of snapshot identity / physical_time / solver_step"
     source: "D-02"
   - item: "Dataset window semantics (window size / stride / history / horizon / target / sampling) and Dataset implementation"
     source: "scope"
-  - item: "second realization axis (ensemble / multi-source / multi-fidelity; multiple realizations of one Field within one Snapshot)"
+  - item: "second realization axis (ensemble / multi-source / multi-fidelity) — only its organizing mechanism is deferred; the legal existence of such realizations is not restricted by this ADR"
     source: "D-03/D-05"
-  - item: "long-term removal or migration of FieldData.timestep"
+  - item: "long-term semantics, removal or migration of FieldData.timestep"
+    source: "D-07"
+  - item: "mapping relations between FieldData.timestep and physical_time / solver_step (undefined by this ADR; source-side equivalence checks are source normalization / migration contracts, not canonical invariants)"
     source: "D-07"
   - item: "PyG key presentation of single-frame time annotation (ADR-022 D-02 key set stays closed)"
     source: "D-08"
