@@ -72,11 +72,11 @@ flowchart TB
 
 **展开解释**：ensemble / multi-source / multi-fidelity 等第二 realization axis 的**组织机制**继续 deferred；**deferred 一个组织机制不等于禁止该类 realization 合法存在**。若 Snapshot temporal selection 完成后某 Field 仍有多个 eligible FieldData（residual non-temporal multiplicity），则依据 ADR-020 D6 在领域层**显式选择或显式失败**；adapter 不负责 residual non-temporal multiplicity 的选择（见 D-08）。跨时间的多 realization 由 Snapshot 组织承载（与 ADR-020 D6 的多 realization 存储合法性一致，见兼容性核实）。
 
-### D-06 Snapshot 缺 Field 合法
+### D-06 Snapshot 缺 Field 合法（scope 限定）
 
-**一句话结论**：Snapshot 内某 Field 无 realization 合法；**single-state projection 中该 Field 保持 declaration-only**，由 ADR-022 D-06 零足迹语义接管；**不要求不同 Snapshot 字段同构**。
+**一句话结论**：**snapshot-scoped Field 在所选 Snapshot 中无 realization 时**合法——single-state projection 中该 Field 保持 declaration-only，由 ADR-022 D-06 零足迹语义接管；**global-scoped Field 不以 Snapshot membership 判断缺失**——其 eligible realizations 按 D-08 进入 candidate state；**不要求不同 Snapshot 字段同构**。
 
-**展开解释**：canonical temporal state 的完整性要求归下游 consumer（Dataset / transforms 层自定充分性判定）；不得为 batching 或训练便利要求字段完全同构。
+**展开解释**：「Snapshot 中无成员」仅就 snapshot-scoped 而言，**不等同于**「projection 中 declaration-only」——global-scoped Field 的缺席判定与其是否属于任何 Snapshot 无关，二者不得混淆。canonical temporal state 的完整性要求归下游 consumer（Dataset / transforms 层自定充分性判定）；不得为 batching 或训练便利要求字段完全同构。
 
 ### D-07 `FieldData.timestep` = 无权威的 legacy / compatibility 成员
 
@@ -88,7 +88,7 @@ flowchart TB
 
 **一句话结论**：canonical global ordering = **同一 temporal organization 内按 physical_time 升序**（唯一性由 D-02 支撑；下标、注册顺序、solver_step 均不构成时间序）；single-state projection 的形成是一条**显式链路**——explicit Snapshot temporal selection → candidate state → residual multiplicity 消歧（ADR-020 D6）→ **final single-state canonical CAEGraph projection（必须满足 ADR-022 现有 input contract）**；**adapter 零修改、zero-selector**；projection 的实现形态（copy / lazy view / 共享 topology / 其他）不冻结。
 
-**展开解释**：**D-03 保证每个 snapshot-scoped FieldData 已被唯一归入一个瞬时状态**（`snapshot-scoped FieldData -> exactly 1 Snapshot`）——但这不消除同一状态内的 global / source / fidelity / ensemble 等 **non-temporal multiplicity**。形成过程：① **explicit Snapshot temporal selection**——candidate state 收集所选 Snapshot 的**全部成员**以及 **eligible global realizations**（global 不逐帧复制、各状态共享）；② 此时同一 Field 可以存在 **0 / 1 / >1** 个 eligible FieldData——**0**：合法，保持 declaration-only，由 ADR-022 D-06 zero-footprint 接管；**1**：合法，正常进入最终 state；**>1**：residual non-temporal multiplicity，依据 ADR-020 D6 在领域层**显式选择或显式失败**，**不允许把 >1 情况传给 adapter 再让 adapter 选择**；③ 消歧完成后才形成满足 ADR-022 input contract 的 **final single-state canonical CAEGraph projection**。final projection 满足 ADR-022 D-01 profile（CAEGraph canonical representation、`validate()` 通过、cell-based topology provider、`n_entities ≥ 1`）与 D-05 输入前提（每 Field 至多一个 realization，0 合法——由 ② 的消歧结果保证），因此**无需修改 ADR-022 任何条款**；多 realization 原图直接进入 adapter 仍 fail-fast（ADR-022 D-05 原样）。选择与消歧均发生在 adapter 之前；adapter 不知道也不需要知道「为什么这一帧被选择」。selection / ordering / projection 的具体 API 与视图类型 defer Design UML / implementation（不覆盖项）。
+**展开解释**：**D-03 保证每个 snapshot-scoped FieldData 已被唯一归入一个瞬时状态**（`snapshot-scoped FieldData -> exactly 1 Snapshot`）——但这不消除同一状态内的 global / source / fidelity / ensemble 等 **non-temporal multiplicity**。形成过程：① **explicit Snapshot temporal selection**——candidate state 收集所选 Snapshot 的**全部成员**以及 **eligible global realizations**（global 不逐帧复制、各状态共享）；② 此时同一 Field 可以存在 **0 / 1 / >1** 个 eligible FieldData——**0**：合法，保持 declaration-only，由 ADR-022 D-06 zero-footprint 接管；**1**：合法，正常进入最终 state；**>1**：residual non-temporal multiplicity，依据 ADR-020 D6 在领域层**显式选择或显式失败**，**不允许把 >1 情况传给 adapter 再让 adapter 选择**；③ 消歧完成后才形成满足 ADR-022 input contract 的 **final single-state canonical CAEGraph projection**。final projection 满足 ADR-022 D-01 profile（CAEGraph canonical representation、`validate()` 通过、cell-based topology provider、`n_entities ≥ 1`）与 **ADR-022 D-05** 输入前提（每 Field 至多一个 realization，0 合法——由 ② 的消歧结果保证），因此**无需修改 ADR-022 任何条款**；多 realization 原图直接进入 adapter 仍 fail-fast（ADR-022 D-05 原样）。选择与消歧均发生在 adapter 之前；adapter 不知道也不需要知道「为什么这一帧被选择」。selection / ordering / projection 的具体 API 与视图类型 defer Design UML / implementation（不覆盖项）。
 
 ## 义务分界（canonical temporal organization 与 Dataset / transforms）
 
@@ -106,7 +106,7 @@ flowchart TB
 | ADR-020 D4 canonical data flow | 「realization data 位于 CAEGraph canonical data flow……ownership / container / storage 不冻结」 | **承袭**——Snapshot membership 属 canonical organization 语义；存储 / 容器形态本 ADR 同样不冻结（D-04） |
 | ADR-020 D6 | 「representation construction 可合法保存多个 realization；要求唯一 realization 的消费须显式选择或显式失败」 | **保持并显式适用**——global / non-temporal multiple realizations 在 canonical representation 中继续合法；Snapshot 只组织 FieldData 属于哪个 instantaneous state，**不限制同一状态内的第二 realization axis**；temporal selection 后仍存在多个 eligible realization 时，继续依据 ADR-020 D6 显式选择或失败（D-05 / D-08）；D6 明文「eligible 判定与显式选择机制不冻结」，本 ADR 即其 temporal 轴裁决 |
 | ADR-018 六领域概念 / ADR-007 D6 六抽象 | 「Fields 仍为一个领域概念……FieldData 不构成第七领域概念」（ADR-018 注记）；「不新增计数」（ADR-007 D6） | **不变**——Snapshot 沿同一纪律，为 organization construct，不增两处计数（D-01 引用原文） |
-| ADR-022 D-05 / D-06 | 多 realization 一律 fail-fast、零 selector、无 timestep 豁免；declaration-only 零足迹 | **零修改**——selection 前置（D-08），原图直入 adapter 行为不变；缺 Field 由 D-06 零足迹接管 |
+| ADR-022 D-05 / D-06 | 多 realization 一律 fail-fast、零 selector、无 timestep 豁免；declaration-only 零足迹 | **零修改**——selection 前置（D-08），原图直入 adapter 行为不变；snapshot-scoped Field 在所选 Snapshot 中缺成员由 D-06 零足迹接管 |
 | ADR-022 不覆盖项 temporal view | 「另立 microdecision，立项触发：①②③满足其一即立项」 | **承接**——本 ADR 即该 microdecision 立项；ADR-022 正文零修改 |
 | **一处 Phase 2 收窄（显式披露，非既有冻结事实）** | — | 仅 D-04 per-Field global / snapshot scope 禁混——ADR-023 新增 profile 限制（D-04 正文已披露） |
 
