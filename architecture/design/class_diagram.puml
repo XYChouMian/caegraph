@@ -485,7 +485,7 @@ Field "1" <-- "0..*" FieldData : corresponds to declaration / Field is semantic 
 CAEGraph ..> Field : associated quantity declarations (ADR-020 D1/D4)
 CAEGraph ..> FieldData : canonical data flow access - ownership / container / storage deferred (ADR-020 D4)
 CAEGraph "1" --> "0..*" Snapshot : temporal organization - aggregate boundary (lifecycle & organization); zero Snapshots legal; storage / container form deferred (ADR-023 D-01/D-04)
-Snapshot "1" --> "0..*" FieldData : authoritative non-owning membership - snapshot-scoped FieldData -> exactly 1 instantaneous state (0 = global/static); reverse access derived only; mutation / consistency coordinated by CAEGraph temporal responsibility (ADR-023 D-03/D-04)
+Snapshot "0..1" --> "0..*" FieldData : authoritative non-owning membership - snapshot-scoped FieldData -> exactly 1 instantaneous state (0 = global/static); reverse access derived only; mutation / consistency coordinated by CAEGraph temporal responsibility (ADR-023 D-03/D-04)
 CAEGraph ..> Mesh : cell-based topology example (optional semantic provider; ADR-014/018)
 CAEGraph ..> BoundaryManager : uses semantic regions
 CAEGraph ..> NodeCategory : node-entity annotation only (Phase 2; cell entities excluded - ADR-019 D3)
