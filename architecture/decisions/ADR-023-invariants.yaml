@@ -12,23 +12,6 @@
 # coding dispatch under explicit PM authorization and NEVER lands in
 # the same commit as the feat change.
 #
-# Registry revision notes:
-# - v2: the D-05 global-realization cap and the solver_step ==
-#   FieldData.timestep consistency guard were removed from the
-#   registry per the decision text (the cap is withdrawn; the guard
-#   would freeze an undefined semantic mapping between two
-#   non-authoritative sources — see Revision history v2). D07-01
-#   registers the semantic independence of membership from timestep
-#   values.
-# - v3: D03-01 rewritten as the canonical temporal membership
-#   cardinality — snapshot-scoped FieldData belongs to exactly one
-#   Snapshot. No (Snapshot, Field) cap is registered: multiple
-#   realizations of one Field within one Snapshot are legal residual
-#   non-temporal multiplicity, disambiguated per ADR-020 D6 at
-#   projection formation. "Global-scoped FieldData is member of no
-#   Snapshot" is fully covered by D04-01 — deliberately not
-#   duplicated.
-#
 # Rules:
 # - Every statement is decidable (true/false); no "should consider" or
 #   "in principle" wording is allowed.
@@ -46,8 +29,8 @@
 #   converted into executable invariants.
 
 adr: "ADR-023"
-version: "v3"
-extracted_from: "v3 decision text (supersedes v2 revision commit b2f422c)"
+version: "v1"
+extracted_from: "v1 decision text (baseline commit c8538ff)"
 
 invariants:
   # --- D-02: physical_time presence and uniqueness ------------------------------
