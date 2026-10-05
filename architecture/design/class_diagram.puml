@@ -79,10 +79,25 @@ package "caegraph.core (domain truth: CAEGraph + topology subsystem; torch-only,
     non-temporal multiplicity, explicit
     select or fail per ADR-020 D6 (never
     delegated to the adapter) -> final
-    single-state projection (CAEGraph
-    canonical state satisfying the ADR-022
-    input contract; copy / view / storage
-    form deferred to coding) -> existing
+    single-state projection: a NEW
+    canonical CAEGraph representation,
+    not a mutable view of the source
+    (ADR-024 D-01); projection-formed
+    state is free of mutable canonical
+    alias to the source; sharing reserved
+    for non-mutation-channel (immutable)
+    state (ADR-024 D-02); selected
+    Snapshot + snapshot-scoped FieldData
+    independently materialized,
+    exactly-one membership preserved
+    (ADR-024 D-03, ADR-023 D-03);
+    realization-independent canonical
+    semantics preserved (ADR-024 D-04);
+    mechanism (copy / COW /
+    lazy-materialization / shared
+    immutable substrate) unfrozen -
+    narrows the ADR-023 D-08 deferred
+    space only -> existing
     BackendAdapter unchanged (zero-selector).
     Validation: physical_time presence &
     uniqueness (D02-01), membership
