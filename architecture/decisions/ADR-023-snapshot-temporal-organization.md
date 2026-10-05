@@ -3,7 +3,7 @@
 - 编号：ADR-023
 - 标题：冻结 canonical temporal organization over realizations——Snapshot（graph-level instantaneous-state organization construct）以显式 membership 作为瞬时状态唯一 authoritative relation（非拥有型 organization relation；temporal membership 核心映射 `snapshot-scoped FieldData -> exactly 1 Snapshot`）、snapshot identity / physical_time / solver_step 语义分离、scope 显式二分（global/static ‖ snapshot-scoped）、`FieldData.timestep` 为无 canonical temporal authority 的 legacy / compatibility 成员、explicit Snapshot temporal selection → candidate state → residual non-temporal multiplicity 依 ADR-020 D6 显式消歧 → final single-state canonical CAEGraph projection（满足 ADR-022 现有 input contract，adapter 零修改）；不冻结存储 / 容器 / 写入口 / API / 视图实现形态
 - 日期：2026-10-05
-- 状态：**proposed（2026-10-05 草案；本 ADR 止于 proposed 报 PM 裁决，不进入合入）**
+- 状态：**accepted（2026-10-05 经 PM 架构终审通过并授权合入裁决采纳，随任务分支合入 main）**
 - 关联：ADR-018（六领域概念组成——Snapshot 不新增概念计数，见 D-01 原文引用）、ADR-007（D6 六抽象清单——Snapshot 不新增计数）、ADR-020（1:0..* 语义基数不变、D4 canonical data flow、ownership / container / storage 不冻结、D6 显式选择纪律）、ADR-021（realization families——Snapshot 成员仍是 FieldData，family 语义不变）、ADR-022（D-05 zero-selector 与 D-06 declaration-only 零足迹零修改；其不覆盖项 temporal view microdecision 由本 ADR 承接）、Phase 2、Design UML `class_diagram.puml`（随未来 temporal coding dispatch 具体化）
 
 ## Mental Model
@@ -154,4 +154,4 @@ flowchart TB
 
 ## 修订历史（Revision history）
 
-- 2026-10-05 v1：草案（proposed）——经方向比较采纳 Snapshot membership 方案（timestep 数值分组派生 frame 前案否决，理由存档于备选方案表）；冻结 D-01..D-08 的 canonical temporal organization 契约，`ADR-023-invariants.yaml` 同 commit 创建 TEST_MISSING 初版（eligibility 判断见上文登记策略）。
+- 2026-10-05 v1：草案并经 PM 裁决 accepted（同批次随任务分支合入 main）——经方向比较采纳 Snapshot membership 方案（timestep 数值分组派生 frame 前案否决，理由存档于备选方案表）；冻结 D-01..D-08 的 canonical temporal organization 契约，`ADR-023-invariants.yaml` 同批次创建 TEST_MISSING 初版（eligibility 判断见上文登记策略）。
