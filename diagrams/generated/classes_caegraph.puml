@@ -47,6 +47,7 @@ class "CAEGraph" as caegraph.core.caegraph.CAEGraph {
   snapshots : tuple[Snapshot, ...]
   topology : Mesh | None
   associate_field(field: Field) -> None
+  project_snapshot(snapshot: Snapshot) -> CAEGraph
   register_snapshot() -> Snapshot
   validate() -> None
 }

@@ -76,6 +76,8 @@ caegraph.core.boundary.spec --> caegraph.core.boundary.region
 caegraph.core.boundary.spec --> caegraph.core.enums
 caegraph.core.caegraph --> caegraph.core.base
 caegraph.core.caegraph --> caegraph.core.boundary.manager
+caegraph.core.caegraph --> caegraph.core.boundary.region
+caegraph.core.caegraph --> caegraph.core.boundary.spec
 caegraph.core.caegraph --> caegraph.core.enums
 caegraph.core.caegraph --> caegraph.core.field
 caegraph.core.caegraph --> caegraph.core.temporal
