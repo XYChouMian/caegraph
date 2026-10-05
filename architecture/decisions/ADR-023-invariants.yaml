@@ -1,0 +1,93 @@
+# ADR-023 invariant registry — machine-auditable contract
+#
+# Source of truth for the decision text:
+#   architecture/decisions/ADR-023-snapshot-temporal-organization.md
+# This registry is created by Architecture at the proposed-draft stage,
+# in the same commit as the ADR draft. Registration is the outcome of
+# an independent eligibility review, NOT precedent-following: only
+# constraints that are decidable now and reference no deferred API,
+# container, view or projection form are registered, as a TEST_MISSING
+# initial version. Its normative force follows the ADR's acceptance;
+# evidence backfill happens with the future temporal-organization
+# coding dispatch under explicit PM authorization and NEVER lands in
+# the same commit as the feat change.
+#
+# Rules:
+# - Every statement is decidable (true/false); no "should consider" or
+#   "in principle" wording is allowed.
+# - test_mapping references the guarding tests under tests/ in the
+#   form "path::test_name". TEST_MISSING marks invariants that have no
+#   guarding test yet — they are registered explicitly here and must
+#   never be silently dropped. Entries stay TEST_MISSING with a
+#   missing_reason until the temporal-organization coding dispatch
+#   lands its guarding tests.
+# - explicitly_not_frozen lists the deliberate non-decisions of the
+#   ADR: implementation freedoms and deferred decisions that must NOT
+#   be treated as invariants.
+# - Eligibility review: only genuinely executable invariants are
+#   registered; the absence of deferred APIs/mechanisms must not be
+#   converted into executable invariants.
+
+adr: "ADR-023"
+version: "v1"
+extracted_from: "v1 decision text (baseline commit c8538ff)"
+
+invariants:
+  # --- D-02: physical_time presence and uniqueness ------------------------------
+  - id: "ADR-023-D02-01"
+    statement: "Within one temporal organization, every Snapshot carries a physical_time and no two Snapshots share the same physical_time value; a violation is rejected by construction/consistency validation (non-uniform spacing remains legal)."
+    decision: "D-02"
+    test_mapping: "TEST_MISSING"
+    missing_reason: "守卫测试随 temporal organization coding dispatch 落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
+
+  # --- D-03: canonical temporal membership cardinality -----------------------------
+  - id: "ADR-023-D03-01"
+    statement: "Every snapshot-scoped FieldData is an explicit member of exactly one Snapshot — membership is the sole authoritative instantaneous-state relation; a FieldData that is a member of two Snapshots is rejected (fail-fast). No (Snapshot, Field) cardinality cap exists: multiple realizations of one Field within one Snapshot are legal residual non-temporal multiplicity."
+    decision: "D-03"
+    test_mapping: "TEST_MISSING"
+    missing_reason: "守卫测试随 temporal organization coding dispatch 落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
+
+  # --- D-04: explicit scope dichotomy ---------------------------------------------
+  - id: "ADR-023-D04-01"
+    statement: "Every FieldData belongs to exactly one scope — either global/static (member of no Snapshot) or snapshot-scoped (member of exactly one Snapshot); a FieldData that is a member of two Snapshots is rejected (fail-fast)."
+    decision: "D-04"
+    test_mapping: "TEST_MISSING"
+    missing_reason: "守卫测试随 temporal organization coding dispatch 落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
+
+  # --- D-04: per-Field scope exclusivity (Phase 2 temporal profile) ---------------
+  - id: "ADR-023-D04-02"
+    statement: "A Field whose realizations mix global/static scope and snapshot-scoped scope is rejected (fail-fast) — the single ADR-023 Phase 2 temporal-profile narrowing, not a pre-existing frozen fact."
+    decision: "D-04"
+    test_mapping: "TEST_MISSING"
+    missing_reason: "守卫测试随 temporal organization coding dispatch 落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
+
+  # --- D-07: membership independent of timestep (semantic invariant) --------------
+  - id: "ADR-023-D07-01"
+    statement: "Snapshot membership is independent of FieldData.timestep values — realizations holding identical timestep values may lawfully hold different memberships (different Snapshots, or membership vs none), and membership is never derived, validated or altered from timestep values."
+    decision: "D-07"
+    test_mapping: "TEST_MISSING"
+    missing_reason: "守卫测试随 temporal organization coding dispatch 落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
+
+explicitly_not_frozen:
+  - item: "storage structure and container form of Snapshots and membership (list/dict/other, HDF5 layout, lazy loading, memory strategy); reference direction and accessor direction of membership (no two independently-modifiable membership truth sources may emerge, but their form is not frozen)"
+    source: "D-01/D-03/D-04"
+  - item: "temporal write-entry mechanism (including whether and how MeshRepresentationBuilder participates) — only the structural obligations are frozen"
+    source: "D-04"
+  - item: "concrete APIs (add_snapshot/assign_snapshot/snapshot/iter_snapshots etc.) and view types (SnapshotView etc.); whole-frame registration vs per-FieldData assignment"
+    source: "scope"
+  - item: "projection implementation form (copy / lazy view / shared topology / other) and selection API form"
+    source: "D-08"
+  - item: "member forms of snapshot identity / physical_time / solver_step"
+    source: "D-02"
+  - item: "Dataset window semantics (window size / stride / history / horizon / target / sampling) and Dataset implementation"
+    source: "scope"
+  - item: "second realization axis (ensemble / multi-source / multi-fidelity) — only its organizing mechanism is deferred; the legal existence of such realizations is not restricted by this ADR"
+    source: "D-03/D-05"
+  - item: "long-term semantics, removal or migration of FieldData.timestep"
+    source: "D-07"
+  - item: "mapping relations between FieldData.timestep and physical_time / solver_step (undefined by this ADR; source-side equivalence checks are source normalization / migration contracts, not canonical invariants)"
+    source: "D-07"
+  - item: "PyG key presentation of single-frame time annotation (ADR-022 D-02 key set stays closed)"
+    source: "D-08"
+  - item: "mesh / mesh-free representation form (independent topic, deliberately not opened)"
+    source: "scope"
