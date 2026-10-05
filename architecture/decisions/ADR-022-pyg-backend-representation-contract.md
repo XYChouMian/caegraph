@@ -3,7 +3,7 @@
 - 编号：ADR-022
 - 标题：冻结 Phase 2 PyG backend representation 契约——node-graph backend profile、schema 键集与保留键、`field_families` 保真映射与 gate 6 可判定验收义务、`node_category` 显式映射（append-only）、多 realization 一律拒绝、declaration-only 零足迹、义务分界判据（canonical 忠实呈现 vs transforms 派生编码）；接口形态不冻结；仅覆盖 Phase 2 / PyG，不构成通用 backend 契约
 - 日期：2026-10-04
-- 状态：**accepted（2026-10-04 经 PM 裁决采纳——v1.1 contract cleanup 完成后直接采纳；gate 4b 随之进入 Stage 2 Design UML 具体化）**
+- 状态：**accepted（2026-10-04 经 PM 于 v1.2 contract synchronization 完成后直接裁决采纳；gate 4b 进入 Stage 2 Design UML 具体化）**
 - 关联：ADR-017（适配链冻结——schema/mapping/batching 委托由本 ADR 在 PyG/Phase 2 范围内定稿，正文不改）、ADR-019（C-01 对称展开属 backend adaptation）、ADR-020（D4 领域输入唯一、D6 唯一-realization 纪律）、ADR-021（DECISION-07 family 保真原则——本 ADR 为其 gate 4b 必答项的回答）、ADR-007（D2 PyG 边界）、Phase 2、Design UML `class_diagram.puml`（Stage 2 具体化）
 
 ## 背景（Context）
@@ -17,7 +17,7 @@
 
 ## 范围（Scope）
 
-**本 ADR 仅覆盖 Phase 2 的 PyG backend representation，不构成通用 backend 契约**；未来 backend 仍按 ADR-017 门槛处理（改变 domain/boundary 或依赖方向才需 review）。ADR-017 本身只冻结适配边界（`CAEGraph → backend adapter → framework-specific representation`），并明确把 schema / mapping / batching 留给后续具体化——本 ADR 即该委托在 PyG / Phase 2 范围内的具体化，不改变 ADR-017 正文。
+**本 ADR 仅覆盖 Phase 2 的 PyG backend representation，不构成通用 backend 契约**；未来 backend 仅在其导致 **CAEGraph domain model 或 dependency direction 改变**时触发 architecture review（ADR-017 门槛）。ADR-017 本身只冻结适配边界（`CAEGraph → backend adapter → framework-specific representation`），并明确把 schema / mapping / batching 留给后续具体化——本 ADR 即该委托在 PyG / Phase 2 范围内的具体化，不改变 ADR-017 正文。
 
 ## 问题（Issues）
 
@@ -44,7 +44,7 @@
 
 **一句话结论**：**`Field.association` 是领域 authoritative source；`field_families` 是其在 PyG backend representation 中的保真映射**——`field_families: dict[str, str]` 将每个已挂载 field data 键映射到其 `"node"` / `"cell"` family；不改写 Field 名、不设双列表、不做前缀命名空间。
 
-**展开解释**：cell-family field data 以**原形**挂载（首轴 `n_cells`，零变换，禁隐式 cell→node interpolation）；node-family 保持 node 对齐。`field_families` 是**保真映射与统一查询面，不是领域真源**——association 等语义的 authoritative source 仍是 Field（ADR-020 D3）。每个已物化 field 的 family 必须可恢复、且与适配前的 association 一致。no-loss 为 **gate 6 可判定验收义务**（本 ADR 不宣称已证）：batching / transforms 之后 `field_families` 必须仍然存在、键集一致、值语义不变；**是否要求不同样本具有相同字段集合，本 ADR 不冻结**（留 dataset 层裁决）。
+**展开解释**：cell-family field data 以**原形**挂载（首轴 `n_cells`，零变换，禁隐式 cell→node interpolation）；node-family 保持 node 对齐。`field_families` 是**保真映射与统一查询面，不是领域真源**——association 等语义的 authoritative source 仍是 Field（ADR-020 D3）。每个已物化 field 的 family 必须可恢复、且与适配前的 association 一致。no-loss 为 **gate 6 可判定验收义务**（本 ADR 不宣称已证），且**键集一致仅针对单个 backend representation**：batching / transforms 之后，`field_families.keys()` 必须与该 representation 上实际物化的 field-data keys 对应、值语义不变；**不同样本之间的字段同构性不在本 ADR 冻结**（留 dataset 层裁决）。
 
 ### D-04 保留键 fail-fast
 
@@ -60,7 +60,7 @@
 
 ### D-06 declaration-only 零足迹
 
-**一句话结论**：只有声明而无 FieldData 的 Field 在 backend representation 上产生**零足迹**（无键、无 `field_families` 条目、不生成任何 values）——本 ADR 新增的 backend presentation decision。
+**一句话结论**：只有声明而无 FieldData 的 Field 在 backend representation 上产生**零足迹**——不为该 Field 生成数据键、不生成对应 mapping entry、不生成任何 values；而 `field_families` 作为固定 backend schema container **始终存在，可为 `{}`**。本条为 ADR-022 新增的 backend presentation decision。
 
 **展开解释**：与 ADR-020 D4 的 problem-before-solving 合法态相衔接；但「零足迹呈现」这一 backend 侧决策由本 ADR 独立作出并冻结。
 
@@ -68,7 +68,7 @@
 
 **一句话结论**：`node_category` 编码冻结为显式映射 `INTERIOR→0`、`BOUNDARY→1`、`CORNER→2`；该映射 **append-only**——只许追加新类别（追加于现有值之后），禁止重排或改值；数值稳定性依据本句，而非枚举声明序。
 
-**展开解释**：Phase 2 `NodeCategory` 本身为字符串枚举——显式 backend 数值映射因此比「依赖枚举声明序」更可靠（此即对原声明序方案的修正理由）。field data 与 `node_category` 均**不得无依据改变 dtype**（保留 canonical dtype；转换属 transforms）；未来新增类别（若有）只能追加新整数值，既有映射不变。
+**展开解释**：Phase 2 `NodeCategory` 本身为字符串枚举——显式 backend 数值映射因此比「依赖枚举声明序」更可靠（此即对原声明序方案的修正理由）。两类 dtype 行为区分：① field data **不做无依据 dtype cast**（保留其 canonical dtype；转换属 transforms）；② `node_category` 依据本 ADR 的显式映射（`INTERIOR→0` / `BOUNDARY→1` / `CORNER→2`）**合法物化为 `long`**——这是映射的物化形态，不是 dtype 改变。未来新增类别（若有）只能追加新整数值，既有映射不变。
 
 ### D-08 适配器形态不冻结
 
@@ -105,14 +105,14 @@
 
 ## 影响（Consequences）
 
-- gate 4b 序列：本 ADR 采纳 → Stage 2 Design UML 具体化（`BackendAdapter` → Phase 2 具体适配器）→ Stage 3 coding（含 **授权制** evidence 回填：YAML 编辑永不与 feat 同 commit）→ Stage 4 docs（含 ADR-019 C-01 追加落点、phase2 措辞澄清）。
+- **执行链（明确化）**：本 ADR 采纳 → **Stage 2 UML**（`BackendAdapter` 具体化为 Phase 2 适配器）→ **Stage 3 feat + tests（YAML 零触碰）** → **独立 evidence-sync commit**（ADR-022 evidence 回填 + ADR-019 C-01 追加；永不与 feat 同 commit）→ **Stage 4 docs**（含 ADR-019 C-01 追加落点、phase2 措辞澄清）。
 - transforms 层义务（gate 6 兑现）：`field_families` no-loss 可判定验收（存在性、键集一致、值语义不变）；读取 API 由 gate 6 设计。
 - temporal view microdecision 依三触发条件立项（不覆盖项）。
 - 不改变依赖分层与 PyG 边界（ADR-007 D2）；不改 ADR-017/019/020/021 正文（关联引用即可）。
 
 ## Invariant 登记策略
 
-- **采纳即创建** `ADR-022-invariants.yaml`（TEST_MISSING 初版，与本文档同 commit）——理由见备选方案末行。
+- **登记时点**：Architecture 在 proposed draft 阶段与本文档**同 commit** 创建 `ADR-022-invariants.yaml`（TEST_MISSING 初版）；其规范效力随本 ADR accepted 生效——accepted 仅为状态裁决，不再承担「创建登记」职能。Coding/Testing 后续仅在 PM 授权下回填 evidence（证据同步永不与 feat 同 commit）。
 - 三条件约束：① statement 用可判定断言；② YAML 治理三件套（字段 schema / 规则注释 / eligibility 纪律）与既定格式一致；③ Stage 3 回填仍走 PM 授权（证据同步永不与 feat 同 commit）。
 - 候选登记范围：D-02 schema 键集存在性、D-03 `field_families` 映射与 family 一致、D-04 保留键 fail-fast、D-05 多 realization 拒绝、D-06 declaration-only 零足迹、D-07 显式映射与 append-only；eligibility review 适用（凡引用 deferred 机制形态缺席者不登记）。
 - C-01 adapter 侧守卫**归 ADR-019** test_mapping（Stage 4 落点），本 ADR 不重复登记。
@@ -122,3 +122,5 @@
 - 2026-10-04 v1：草案（proposed）——契约内容经两轮裁决后成文；备选方案记录四组裁决及其排除理由。
 - 2026-10-04 v1.1：contract cleanup（12 项审阅修正，契约语义按裁决精化，方向零变化）——新增范围声明（仅 Phase 2 / PyG，非通用 backend 契约）；FACT-05 改为经核实的 Git 祖先事实；D-01 改 profile 可判定条件表述（不按 source provenance 判断）；明确 `field_families` 恒在可空、其为保真映射而非领域真源；D-04 fail-fast 限定于 backend adaptation；D-05 补 ADR-020 交叉引用；D-07 去 implementation primitive、补 NodeCategory 字符串枚举理由；义务分界精化（忠实物化 vs 派生编码）；修订历史与同 commit registry 的内部标号清理。
 - 2026-10-04：accepted（PM 审阅 v1.1 后裁决采纳——「修完后可以直接采纳」；gate 4b 进入 Stage 2 Design UML 具体化）。
+- 2026-10-04 v1.2：contract synchronization（语义零变化）——D-03「键集一致」限定于单个 backend representation（不冻结跨样本同构）；D-06 明确 `field_families` 为固定 schema container（恒在可空）；YAML 时点统一（Architecture 于 proposed draft 同 commit 创建，效力随 accepted）；D-07 区分 field data 无依据 cast 与 `node_category` 依显式映射合法物化为 `long`；Scope 门槛对齐 ADR-017 原文（CAEGraph domain model / dependency direction）；执行链明确化（Stage 3 YAML 零触碰 + 独立 evidence-sync commit）。
+- 2026-10-04：accepted（PM 于 v1.2 同步完成后直接裁决采纳；gate 4b 进入 Stage 2 Design UML 具体化）。
