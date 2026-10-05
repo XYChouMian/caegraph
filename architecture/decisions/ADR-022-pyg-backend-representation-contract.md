@@ -3,7 +3,7 @@
 - 编号：ADR-022
 - 标题：冻结 Phase 2 PyG backend representation 契约——node-graph backend profile、schema 键集与保留键、`field_families` 保真映射与 gate 6 可判定验收义务、`node_category` 显式映射（append-only）、多 realization 一律拒绝、declaration-only 零足迹、义务分界判据（canonical 忠实呈现 vs transforms 派生编码）；接口形态不冻结；仅覆盖 Phase 2 / PyG，不构成通用 backend 契约
 - 日期：2026-10-04
-- 状态：**proposed（草案——待 PM 裁决采纳；采纳后 gate 4b 进入 Design UML 具体化）**
+- 状态：**accepted（2026-10-04 经 PM 裁决采纳——v1.1 contract cleanup 完成后直接采纳；gate 4b 随之进入 Stage 2 Design UML 具体化）**
 - 关联：ADR-017（适配链冻结——schema/mapping/batching 委托由本 ADR 在 PyG/Phase 2 范围内定稿，正文不改）、ADR-019（C-01 对称展开属 backend adaptation）、ADR-020（D4 领域输入唯一、D6 唯一-realization 纪律）、ADR-021（DECISION-07 family 保真原则——本 ADR 为其 gate 4b 必答项的回答）、ADR-007（D2 PyG 边界）、Phase 2、Design UML `class_diagram.puml`（Stage 2 具体化）
 
 ## 背景（Context）
@@ -121,3 +121,4 @@
 
 - 2026-10-04 v1：草案（proposed）——契约内容经两轮裁决后成文；备选方案记录四组裁决及其排除理由。
 - 2026-10-04 v1.1：contract cleanup（12 项审阅修正，契约语义按裁决精化，方向零变化）——新增范围声明（仅 Phase 2 / PyG，非通用 backend 契约）；FACT-05 改为经核实的 Git 祖先事实；D-01 改 profile 可判定条件表述（不按 source provenance 判断）；明确 `field_families` 恒在可空、其为保真映射而非领域真源；D-04 fail-fast 限定于 backend adaptation；D-05 补 ADR-020 交叉引用；D-07 去 implementation primitive、补 NodeCategory 字符串枚举理由；义务分界精化（忠实物化 vs 派生编码）；修订历史与同 commit registry 的内部标号清理。
+- 2026-10-04：accepted（PM 审阅 v1.1 后裁决采纳——「修完后可以直接采纳」；gate 4b 进入 Stage 2 Design UML 具体化）。
