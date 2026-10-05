@@ -26,11 +26,11 @@ repos:
       - id: trailing-whitespace
         exclude: \.puml$
       - id: check-yaml
-        files: ^(docs|\.github)/
+        files: ^(docs|\.github|architecture/decisions)/.*\.ya?ml$
       - id: check-toml
         files: pyproject.toml
 
-  # --- Tests ----------------------------------------------------------------
+  # --- Tests (only when runtime or test inputs change) ----------------------
   - repo: local
     hooks:
       - id: pytest
@@ -38,5 +38,5 @@ repos:
         entry: pytest
         language: system
         pass_filenames: false
-        always_run: true
+        files: ^(src|tests)/|^(pyproject\.toml|environment\.yml|requirements[^/]*\.txt|\.github/workflows/test\.yml)$
         stages: [pre-commit]

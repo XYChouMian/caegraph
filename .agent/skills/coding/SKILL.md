@@ -14,7 +14,7 @@ Coding Agent 按已批准的派单和设计实现 `src/caegraph/` 中的功能�
 2. 只实现派单 `Scope` 内的行为；发现范围变化时退回 Project Management。
 3. 所有源码放在 `src/caegraph/`；公共模块、类、函数和方法提供英文 docstring 与类型标注。
 4. 同步完成与实现直接相关的测试和 docstring，再分别交接 Testing 与 Documentation。
-5. 提交前运行与变更相关的 Black、Ruff、Mypy 和 Pytest；合入前执行 Git Skill 规定的完整验收。
+5. 提交前运行 Git Skill 验证矩阵为本次最终 diff 选定的 Black、Ruff、Mypy、Pytest 与其他检查；不得因“代码很小”自行降级合入验收。
 
 ## 实现约束
 

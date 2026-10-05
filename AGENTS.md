@@ -81,8 +81,8 @@ Code ⇔ Architecture ⇔ UML ⇔ Documentation ⇔ Testing ⇔ Environment ⇔ 
 - 运行测试：`pytest`
 - 开发工具：`pip install -r requirements-dev.txt`（覆盖 pyproject `[dev] + [docs]` extras）
 - 格式化 / 检查：`black`、`ruff`、`mypy`
-- 提交前钩子：`pre-commit install` 后自动执行 black / ruff / pytest
-- 文档：`mkdocs`（Material + mkdocstrings），提交前 `mkdocs build --strict`
+- 提交前钩子：`pre-commit install` 后按变更路径执行格式、静态检查、YAML 语法或 pytest；具体选择以 `.agent/skills/git/SKILL.md` 的验证矩阵为准
+- 文档：`mkdocs`（Material + mkdocstrings）；仅当验证矩阵命中站点文档或 mkdocstrings 影响时，在 `docs/` 下运行 `mkdocs build --strict`
 - **Agent 规范语言**：`AGENTS.md`、`.agent/WORKFLOW.md` 与 `.agent/skills/*/SKILL.md` 以中文为主要说明语言；命令、路径、代码符号、API 名称、Git 提交格式及 `Approve` / `Request Changes` / `Reject`、`blocking` / `non-blocking` 等机器可识别状态保持英文
 - **ADR 语言**：ADR 的背景、决策、备选方案、影响和修订历史以中文为主要叙述语言；文件名、ADR 编号、英文短标题、`accepted` / `superseded` 状态值、代码与 API 标识及 canonical terminology 保持英文；关键冻结结论可以保留英文 canonical statement，但不创建内容重复的完整英文副本
 - **日期确认**：需要写入新日期时必须遵守 `.agent/skills/time/SKILL.md`，使用系统时钟确认真实当前日期；不涉及日期的任务不要求额外输出当前日期
