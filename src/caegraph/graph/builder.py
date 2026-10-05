@@ -8,6 +8,7 @@ from caegraph.core.boundary.manager import BoundaryManager
 from caegraph.core.caegraph import CAEGraph
 from caegraph.core.enums import NodeCategory
 from caegraph.core.field import (
+    _SNAPSHOT_SCOPE,
     _SUPPORTED_REALIZATION_FAMILIES,
     Field,
     FieldData,
@@ -123,6 +124,12 @@ class MeshRepresentationBuilder:
         if field_data is not None:
             declared = {field.name: field for field in graph.associated_fields}
             for data in field_data:
+                if data.scope == _SNAPSHOT_SCOPE:
+                    raise ValueError(
+                        "snapshot-scoped realizations enter through "
+                        "CAEGraph.register_snapshot, not the construction "
+                        "path (ADR-023 D-04)"
+                    )
                 self._validate_field_data(data, mesh, declared)
                 graph._register_field_data(data)
         return graph

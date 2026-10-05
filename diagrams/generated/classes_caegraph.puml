@@ -44,8 +44,10 @@ class "CAEGraph" as caegraph.core.caegraph.CAEGraph {
   field_data : tuple[FieldData, ...]
   n_entities : int
   node_categories : tuple[NodeCategory, ...]
+  snapshots : tuple[Snapshot, ...]
   topology : Mesh | None
   associate_field(field: Field) -> None
+  register_snapshot() -> Snapshot
   validate() -> None
 }
 class "CellType" as caegraph.core.topology.celltype.CellType {
@@ -57,13 +59,14 @@ class "CellType" as caegraph.core.topology.celltype.CellType {
   from_code(code: int) -> CellType
 }
 class "Field" as caegraph.core.field.Field {
-  association : str | None
+  association : str
   unit : str | None
   validate() -> None
 }
 class "FieldData" as caegraph.core.field.FieldData {
   field : Field
   metadata : Mapping[str, Any]
+  scope : str
   timestep : float | None
   values : Any
   validate() -> None
@@ -100,6 +103,11 @@ class "Registry" as caegraph.core.registry.Registry {
   names() -> list[str]
   register(name: str, factory: Callable[..., T] | None) -> Callable[..., T] | Callable[[Callable[..., T]], Callable[..., T]]
   unregister(name: str) -> None
+}
+class "Snapshot" as caegraph.core.temporal.Snapshot {
+  members : tuple[FieldData, ...]
+  physical_time : float
+  solver_step : float | None
 }
 class "_CellSpec" as caegraph.core.topology.celltype._CellSpec {
   code : int

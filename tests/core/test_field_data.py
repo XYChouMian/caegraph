@@ -13,52 +13,54 @@ def _declaration() -> Field:
 
 def test_construction_stores_payload_and_reference():
     field = _declaration()
-    data = FieldData(field, [0.1, 0.2], timestep=3)
+    data = FieldData(field, [0.1, 0.2], timestep=3, scope="global")
     assert data.field is field
     assert data.values == [0.1, 0.2]
     assert data.timestep == 3
 
 
 def test_optional_slots_default_to_none():
-    data = FieldData(_declaration(), [1.0])
+    data = FieldData(_declaration(), [1.0], scope="global")
     assert data.timestep is None
     assert data.metadata == {}
 
 
 def test_values_none_payload_is_rejected():
     with pytest.raises(ValueError, match="values are required"):
-        FieldData(_declaration(), None)  # type: ignore[arg-type]
+        FieldData(_declaration(), None, scope="global")  # type: ignore[arg-type]
 
 
 def test_missing_values_argument_is_a_signature_error():
     # The values parameter has no default: omitting it is Python's own
     # TypeError; only explicit illegal payloads get custom validation.
     with pytest.raises(TypeError):
-        FieldData(_declaration())  # type: ignore[call-arg]
+        FieldData(_declaration(), scope="global")  # type: ignore[call-arg]
 
 
 def test_non_field_reference_is_rejected():
     with pytest.raises(TypeError, match="Field"):
-        FieldData("pressure", [1.0])  # type: ignore[arg-type]
+        FieldData("pressure", [1.0], scope="global")  # type: ignore[arg-type]
 
 
 def test_non_numeric_timestep_is_rejected():
     with pytest.raises(TypeError, match="number"):
-        FieldData(_declaration(), [1.0], timestep="t0")  # type: ignore[arg-type]
+        FieldData(_declaration(), [1.0], timestep="t0", scope="global")  # type: ignore[arg-type]
 
 
 def test_bool_timestep_is_rejected():
     with pytest.raises(TypeError, match="number"):
-        FieldData(_declaration(), [1.0], timestep=True)  # type: ignore[arg-type]
+        FieldData(_declaration(), [1.0], timestep=True, scope="global")  # type: ignore[arg-type]
 
 
 def test_int_timestep_is_accepted():
-    data = FieldData(_declaration(), [1.0], timestep=2)
+    data = FieldData(_declaration(), [1.0], timestep=2, scope="global")
     assert data.timestep == 2
 
 
 def test_metadata_is_carried_through():
-    data = FieldData(_declaration(), [1.0], metadata={"source": "probe"})
+    data = FieldData(
+        _declaration(), [1.0], metadata={"source": "probe"}, scope="global"
+    )
     assert data.metadata == {"source": "probe"}
 
 
@@ -66,7 +68,7 @@ def test_semantics_resolve_through_the_field_reference():
     # ADR-020 D3 usage contract: consumers resolve name/unit/association
     # semantics through the referenced declaration (Markdown-frozen
     # semantics; deliberately not an attribute-absence invariant).
-    data = FieldData(_declaration(), [1.0])
+    data = FieldData(_declaration(), [1.0], scope="global")
     assert data.field.name == "pressure"
     assert data.field.unit == "Pa"
     assert data.field.association == "node"
@@ -79,14 +81,14 @@ def test_unsupported_family_rejected_at_creation():
     # (invariant registry ADR-021-D05-01).
     particle = Field("count", association="particle")
     with pytest.raises(ValueError, match="unsupported realization family"):
-        FieldData(particle, [1.0])
+        FieldData(particle, [1.0], scope="global")
 
 
 def test_validate_rechecks_the_realization_state():
     # FieldData mirrors the BaseObject lifecycle pattern: __init__
     # assigns and delegates to validate(); the same checks are
     # reachable on an existing instance.
-    data = FieldData(_declaration(), [1.0], timestep=2)
+    data = FieldData(_declaration(), [1.0], timestep=2, scope="global")
     data.validate()  # valid state — no exception
     data._values = None  # type: ignore[assignment]
     with pytest.raises(ValueError, match="values are required"):

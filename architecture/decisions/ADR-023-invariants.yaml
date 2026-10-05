@@ -31,42 +31,62 @@
 adr: "ADR-023"
 version: "v1"
 extracted_from: "v1 decision text (baseline commit c8538ff)"
+# Test evidence synced under explicit PM authorization (Dispatch ①
+# evidence commit, 2026-10-05); the evidence never lands in the same
+# commit as the feat change.
 
 invariants:
   # --- D-02: physical_time presence and uniqueness ------------------------------
   - id: "ADR-023-D02-01"
     statement: "Within one temporal organization, every Snapshot carries a physical_time and no two Snapshots share the same physical_time value; a violation is rejected by construction/consistency validation (non-uniform spacing remains legal)."
     decision: "D-02"
-    test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 temporal organization coding dispatch 落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
+    test_mapping:
+      - "tests/core/test_temporal.py::test_snapshot_physical_time_is_required"
+      - "tests/core/test_temporal.py::test_snapshot_rejects_non_numeric_physical_time"
+      - "tests/core/test_temporal.py::test_snapshot_rejects_nan_physical_time"
+      - "tests/core/test_temporal.py::test_bool_physical_time_reports_type_before_duplicate"
+      - "tests/core/test_temporal.py::test_register_snapshot_rejects_duplicate_physical_time"
+      - "tests/core/test_temporal.py::test_register_snapshot_int_and_float_compare_equal"
+      - "tests/core/test_temporal.py::test_snapshots_order_by_physical_time_ascending"
+      - "tests/core/test_temporal.py::test_non_uniform_physical_time_spacing_is_legal"
 
   # --- D-03: canonical temporal membership cardinality -----------------------------
   - id: "ADR-023-D03-01"
     statement: "Every snapshot-scoped FieldData is an explicit member of exactly one Snapshot — membership is the sole authoritative instantaneous-state relation; a FieldData that is a member of two Snapshots is rejected (fail-fast). No (Snapshot, Field) cardinality cap exists: multiple realizations of one Field within one Snapshot are legal residual non-temporal multiplicity."
     decision: "D-03"
-    test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 temporal organization coding dispatch 落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
+    test_mapping:
+      - "tests/core/test_temporal.py::test_snapshot_scoped_member_belongs_to_exactly_one_snapshot"
+      - "tests/core/test_temporal.py::test_duplicate_membership_is_rejected"
+      - "tests/core/test_temporal.py::test_duplicate_member_within_one_registration_is_rejected"
+      - "tests/core/test_temporal.py::test_snapshot_seal_is_once_only"
+      - "tests/core/test_temporal.py::test_failed_registration_leaves_no_partial_state"
 
   # --- D-04: explicit scope dichotomy ---------------------------------------------
   - id: "ADR-023-D04-01"
     statement: "Every FieldData belongs to exactly one scope — either global/static (member of no Snapshot) or snapshot-scoped (member of exactly one Snapshot); a FieldData that is a member of two Snapshots is rejected (fail-fast)."
     decision: "D-04"
-    test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 temporal organization coding dispatch 落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
+    test_mapping:
+      - "tests/core/test_temporal.py::test_field_data_scope_is_required"
+      - "tests/core/test_temporal.py::test_field_data_rejects_invalid_scope"
+      - "tests/core/test_temporal.py::test_field_data_scope_is_immutable"
+      - "tests/core/test_temporal.py::test_register_snapshot_rejects_global_scoped_member"
 
   # --- D-04: per-Field scope exclusivity (Phase 2 temporal profile) ---------------
   - id: "ADR-023-D04-02"
     statement: "A Field whose realizations mix global/static scope and snapshot-scoped scope is rejected (fail-fast) — the single ADR-023 Phase 2 temporal-profile narrowing, not a pre-existing frozen fact."
     decision: "D-04"
-    test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 temporal organization coding dispatch 落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
+    test_mapping:
+      - "tests/core/test_temporal.py::test_scope_mixing_within_one_field_is_rejected"
+      - "tests/core/test_temporal.py::test_builder_rejects_snapshot_scoped_field_data"
 
   # --- D-07: membership independent of timestep (semantic invariant) --------------
   - id: "ADR-023-D07-01"
     statement: "Snapshot membership is independent of FieldData.timestep values — realizations holding identical timestep values may lawfully hold different memberships (different Snapshots, or membership vs none), and membership is never derived, validated or altered from timestep values."
     decision: "D-07"
-    test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 temporal organization coding dispatch 落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
+    test_mapping:
+      - "tests/core/test_temporal.py::test_membership_independent_of_timestep_values"
+      - "tests/core/test_temporal.py::test_identical_timestep_values_do_not_interfere"
+      - "tests/core/test_temporal.py::test_snapshot_order_follows_physical_time_not_timestep"
 
 explicitly_not_frozen:
   - item: "storage structure and container form of Snapshots and membership (list/dict/other, HDF5 layout, lazy loading, memory strategy); reference direction and accessor direction of membership (no two independently-modifiable membership truth sources may emerge, but their form is not frozen)"

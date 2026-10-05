@@ -8,7 +8,14 @@ from typing import Any
 from caegraph.core.base import BaseObject
 from caegraph.core.boundary.manager import BoundaryManager
 from caegraph.core.enums import NodeCategory
-from caegraph.core.field import Field, FieldData
+from caegraph.core.field import (
+    _GLOBAL_SCOPE,
+    _SNAPSHOT_SCOPE,
+    _SUPPORTED_REALIZATION_FAMILIES,
+    Field,
+    FieldData,
+)
+from caegraph.core.temporal import Snapshot
 from caegraph.core.topology.mesh import Mesh
 
 __all__ = ["CAEGraph"]
@@ -182,6 +189,7 @@ class CAEGraph(BaseObject):
 
         self._fields: dict[str, Field] = {}
         self._field_data: list[FieldData] = []
+        self._snapshots: list[Snapshot] = []
         self._boundaries = BoundaryManager()
         super().__init__(name, metadata)
 
@@ -217,14 +225,16 @@ class CAEGraph(BaseObject):
 
     @property
     def field_data(self) -> tuple[FieldData, ...]:
-        """Realization data in the canonical data flow (read-only view, ADR-020 D4).
+        """Canonical FieldData registry, read-only view (ADR-020 D4 / ADR-023).
 
-        FieldData enters this representation exclusively through the
-        representation builder (cardinality, dangling-declaration and
-        reference-consistency checks live there, ADR-019 D5 /
-        ADR-020 D5); no public registration API exists — an ADR-020
-        scope-exclusion implementation microdecision, re-evaluable at
-        gate 4b.
+        The registry holds **every** realization of this
+        representation — global/static realizations (registered
+        through the representation builder, the only global write
+        path) and snapshot-scoped realizations (registered atomically
+        with their Snapshot membership via
+        :meth:`register_snapshot`, ADR-023). Snapshot membership is
+        the authoritative temporal organization relation and never
+        replaces this registry.
         """
         return tuple(self._field_data)
 
@@ -265,6 +275,175 @@ class CAEGraph(BaseObject):
         """
         self._field_data.append(data)
 
+    @property
+    def snapshots(self) -> tuple[Snapshot, ...]:
+        """Snapshots of this temporal organization (ADR-023).
+
+        Ordered by ascending ``physical_time`` — the sole canonical
+        temporal ordering coordinate (ADR-023 D-02/D-08); registration
+        order, list indices and ``solver_step`` never define order.
+        Non-uniform spacing is legal. An empty tuple denotes a
+        steady-only / zero-Snapshot representation (legal, D-01).
+        """
+        return tuple(sorted(self._snapshots, key=lambda item: item.physical_time))
+
+    def register_snapshot(
+        self,
+        *,
+        physical_time: float,
+        solver_step: float | None = None,
+        members: Iterable[FieldData] = (),
+    ) -> Snapshot:
+        """Atomically register a Snapshot with its authoritative membership.
+
+        This is the single temporal mutation entry of the
+        representation (ADR-023 D-03/D-04): all consistency checks run
+        first, then the members enter the canonical FieldData
+        registry, the Snapshot membership is sealed and the Snapshot
+        is registered — any failure leaves the representation
+        unchanged (no partial state).
+
+        Checks (fail-fast): ``physical_time`` is a number and unique
+        within this temporal organization (D-02); every member is a
+        snapshot-scoped :class:`~caegraph.core.FieldData`
+        (``"global"`` realizations have no membership, D-04)
+        referencing the associated declaration object itself
+        (no dangling / same-name-distinct-object realizations,
+        ADR-020 D3 guard) with a supported family and a correct
+        leading-entity-axis cardinality (node → ``n_entities``;
+        cell → ``topology.n_cells`` — a cell-family member requires
+        an attached topology provider, otherwise cardinality is
+        unverifiable and registration fails); no member of a Field
+        that already has global realizations (per-Field scope
+        exclusivity — the single ADR-023 Phase 2 narrowing, D-04);
+        no FieldData already belonging to another Snapshot and no
+        duplicate object within ``members`` (membership is
+        single-valued, D-03). Membership never reads or compares
+        ``FieldData.timestep`` values (D-07).
+
+        Args:
+            physical_time: Required physical time of the
+                instantaneous state (``int`` / ``float``; bools
+                rejected).
+            solver_step: Optional solver / data-source step number
+                (provenance only, never identity — ADR-023 D-02).
+            members: Snapshot-scoped realizations forming the
+                instantaneous state. May be empty (empty Snapshot is
+                legal, ADR-023 D-06); a Snapshot may also miss Fields
+                that exist elsewhere in the organization.
+
+        Returns:
+            The registered :class:`~caegraph.core.Snapshot`
+            (immutable after this atomic registration).
+
+        Raises:
+            TypeError: If ``physical_time`` / ``solver_step`` are not
+                numbers or a member is not a
+                :class:`~caegraph.core.FieldData`.
+            ValueError: If any structural temporal invariant would be
+                violated (see the check list above).
+
+        Examples:
+            >>> graph = CAEGraph("flow", n_entities=2, edges=[(0, 1)])
+            >>> field = Field("pressure", association="node")
+            >>> graph.associate_field(field)
+            >>> frame = FieldData(field, [1.0, 2.0], scope="snapshot")
+            >>> snapshot = graph.register_snapshot(physical_time=0.5, members=[frame])
+            >>> snapshot.members[0] is frame
+            True
+            >>> [item.physical_time for item in graph.snapshots]
+            [0.5]
+        """
+        member_list = list(members)
+        for member in member_list:
+            if not isinstance(member, FieldData):
+                raise TypeError("snapshot members must be FieldData objects")
+        # Construct first: the Snapshot validates the physical_time type
+        # and value (incl. NaN) *before* any duplicate comparison — a
+        # bool physical_time must report a TypeError, never a
+        # duplicate mismatch (ADR-023 D-02).
+        snapshot = Snapshot(physical_time=physical_time, solver_step=solver_step)
+        for registered in self._snapshots:
+            if registered.physical_time == physical_time:
+                raise ValueError(
+                    f"physical_time {physical_time!r} duplicates an existing "
+                    "Snapshot of this temporal organization (ADR-023 D-02)"
+                )
+        for index, member in enumerate(member_list):
+            for other in member_list[index + 1 :]:
+                if member is other:
+                    raise ValueError(
+                        "duplicate FieldData object in snapshot members "
+                        "(membership is single-valued, ADR-023 D-03)"
+                    )
+        for member in member_list:
+            if member.scope != _SNAPSHOT_SCOPE:
+                raise ValueError(
+                    "snapshot members must be snapshot-scoped FieldData - "
+                    "global/static realizations have no membership (ADR-023 D-04)"
+                )
+            field = member.field
+            declared = self._fields.get(field.name)
+            if declared is None:
+                raise ValueError(
+                    f"field data for {field.name!r} has no associated "
+                    "declaration — declare the Field first (ADR-020 D3)"
+                )
+            if declared is not field:
+                raise ValueError(
+                    f"field data for {field.name!r} must reference the "
+                    "declared Field object itself, not a distinct object "
+                    "that merely shares the name (Phase 2 implementation "
+                    "consistency guard)"
+                )
+            association = field.association
+            if association not in _SUPPORTED_REALIZATION_FAMILIES:
+                raise ValueError(
+                    f"field data for {field.name!r} references unsupported "
+                    f"realization family {association!r} (ADR-021 D5)"
+                )
+            try:
+                length = len(member.values)  # type: ignore[arg-type]
+            except TypeError as error:
+                raise ValueError(
+                    f"field data for {field.name!r} with association "
+                    f"{association!r} must carry a sized leading entity axis"
+                ) from error
+            if association == "node":
+                expected = self._n_entities
+            else:
+                if self._topology is None:
+                    raise ValueError(
+                        f"cell-family realization for {field.name!r} requires "
+                        "an attached topology provider to validate cardinality "
+                        "(ADR-019 D5 / ADR-020 D5)"
+                    )
+                expected = self._topology.n_cells
+            if length != expected:
+                raise ValueError(
+                    f"field data for {field.name!r} has a leading entity "
+                    f"axis of {length} entries but association "
+                    f"{association!r} requires {expected}"
+                )
+            for data in self._field_data:
+                if data.scope == _GLOBAL_SCOPE and data.field is field:
+                    raise ValueError(
+                        f"field {field.name!r} mixes global and "
+                        "snapshot-scoped realizations (ADR-023 D-04, the "
+                        "single Phase 2 temporal-profile narrowing)"
+                    )
+            for existing_snapshot in self._snapshots:
+                for existing in existing_snapshot.members:
+                    if existing is member:
+                        raise ValueError(
+                            "FieldData already belongs to another Snapshot "
+                            "(membership is single-valued, ADR-023 D-03)"
+                        )
+        self._field_data.extend(member_list)
+        snapshot._seal(member_list)
+        self._snapshots.append(snapshot)
+        return snapshot
+
     def validate(self) -> None:
         """Raise if the representation is in an invalid state.
 
@@ -303,6 +482,9 @@ class CAEGraph(BaseObject):
         for data in self._field_data:
             if not isinstance(data, FieldData):
                 raise TypeError("field_data entries must be FieldData objects")
+        for snapshot in self._snapshots:
+            if not isinstance(snapshot, Snapshot):
+                raise TypeError("snapshots entries must be Snapshot objects")
         if self._edges != tuple(sorted(set(self._edges))):
             raise ValueError("edges must be sorted and deduplicated")
         for low, high in self._edges:
