@@ -358,8 +358,13 @@ class CAEGraph(BaseObject):
         for member in member_list:
             if not isinstance(member, FieldData):
                 raise TypeError("snapshot members must be FieldData objects")
-        for snapshot in self._snapshots:
-            if snapshot.physical_time == physical_time:
+        # Construct first: the Snapshot validates the physical_time type
+        # and value (incl. NaN) *before* any duplicate comparison — a
+        # bool physical_time must report a TypeError, never a
+        # duplicate mismatch (ADR-023 D-02).
+        snapshot = Snapshot(physical_time=physical_time, solver_step=solver_step)
+        for registered in self._snapshots:
+            if registered.physical_time == physical_time:
                 raise ValueError(
                     f"physical_time {physical_time!r} duplicates an existing "
                     "Snapshot of this temporal organization (ADR-023 D-02)"
@@ -371,7 +376,6 @@ class CAEGraph(BaseObject):
                         "duplicate FieldData object in snapshot members "
                         "(membership is single-valued, ADR-023 D-03)"
                     )
-        snapshot = Snapshot(physical_time=physical_time, solver_step=solver_step)
         for member in member_list:
             if member.scope != _SNAPSHOT_SCOPE:
                 raise ValueError(

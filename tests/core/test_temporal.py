@@ -66,6 +66,18 @@ def test_snapshot_rejects_non_numeric_physical_time(bad: object) -> None:
         Snapshot(physical_time=bad)  # type: ignore[arg-type]
 
 
+def test_snapshot_rejects_nan_physical_time() -> None:
+    with pytest.raises(ValueError, match="NaN"):
+        Snapshot(physical_time=float("nan"))
+
+
+def test_bool_physical_time_reports_type_before_duplicate() -> None:
+    graph = _graph(_node_field())
+    graph.register_snapshot(physical_time=1)
+    with pytest.raises(TypeError):
+        graph.register_snapshot(physical_time=True)
+
+
 @pytest.mark.parametrize("bad", ["s0", True])
 def test_snapshot_rejects_non_numeric_solver_step(bad: object) -> None:
     with pytest.raises(TypeError):

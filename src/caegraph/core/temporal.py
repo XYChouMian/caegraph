@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Iterable
 
 from caegraph.core.field import FieldData
@@ -54,6 +55,8 @@ class Snapshot:
     Raises:
         TypeError: If ``physical_time`` is missing or not a number,
             or ``solver_step`` is neither a number nor ``None``.
+        ValueError: If ``physical_time`` is NaN (uniqueness and
+            canonical ordering would be undefined, ADR-023 D-02).
 
     Examples:
         >>> snapshot = Snapshot(physical_time=1.25)
@@ -76,6 +79,11 @@ class Snapshot:
             physical_time, bool
         ):
             raise TypeError("physical_time must be a number")
+        if isinstance(physical_time, float) and math.isnan(physical_time):
+            raise ValueError(
+                "physical_time must not be NaN - uniqueness and the "
+                "canonical ordering would be undefined (ADR-023 D-02)"
+            )
         if solver_step is not None and (
             not isinstance(solver_step, (int, float)) or isinstance(solver_step, bool)
         ):
