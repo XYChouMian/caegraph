@@ -12,13 +12,22 @@
 # coding dispatch under explicit PM authorization and NEVER lands in
 # the same commit as the feat change.
 #
-# v2 (final PM revision): the D-05 global-realization cap and the
-# solver_step == FieldData.timestep consistency guard were removed
-# from the registry per the decision text (the cap is withdrawn; the
-# guard would freeze an undefined semantic mapping between two
-# non-authoritative sources — see Revision history v2). D07-01 now
-# registers the semantic independence of membership from timestep
-# values.
+# Registry revision notes:
+# - v2: the D-05 global-realization cap and the solver_step ==
+#   FieldData.timestep consistency guard were removed from the
+#   registry per the decision text (the cap is withdrawn; the guard
+#   would freeze an undefined semantic mapping between two
+#   non-authoritative sources — see Revision history v2). D07-01
+#   registers the semantic independence of membership from timestep
+#   values.
+# - v3: D03-01 rewritten as the canonical temporal membership
+#   cardinality — snapshot-scoped FieldData belongs to exactly one
+#   Snapshot. No (Snapshot, Field) cap is registered: multiple
+#   realizations of one Field within one Snapshot are legal residual
+#   non-temporal multiplicity, disambiguated per ADR-020 D6 at
+#   projection formation. "Global-scoped FieldData is member of no
+#   Snapshot" is fully covered by D04-01 — deliberately not
+#   duplicated.
 #
 # Rules:
 # - Every statement is decidable (true/false); no "should consider" or
@@ -37,8 +46,8 @@
 #   converted into executable invariants.
 
 adr: "ADR-023"
-version: "v2"
-extracted_from: "v2 decision text (supersedes v1 draft commit bcf264e)"
+version: "v3"
+extracted_from: "v3 decision text (supersedes v2 revision commit b2f422c)"
 
 invariants:
   # --- D-02: physical_time presence and uniqueness ------------------------------
@@ -48,9 +57,9 @@ invariants:
     test_mapping: "TEST_MISSING"
     missing_reason: "守卫测试随 temporal organization coding dispatch 落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
 
-  # --- D-03: (Snapshot, Field) uniqueness ----------------------------------------
+  # --- D-03: canonical temporal membership cardinality -----------------------------
   - id: "ADR-023-D03-01"
-    statement: "For any Snapshot S and Field F, at most one FieldData of F is a member of S — a second realization of the same Field in the same Snapshot is rejected (fail-fast)."
+    statement: "Every snapshot-scoped FieldData is an explicit member of exactly one Snapshot — membership is the sole authoritative instantaneous-state relation; a FieldData that is a member of two Snapshots is rejected (fail-fast). No (Snapshot, Field) cardinality cap exists: multiple realizations of one Field within one Snapshot are legal residual non-temporal multiplicity."
     decision: "D-03"
     test_mapping: "TEST_MISSING"
     missing_reason: "守卫测试随 temporal organization coding dispatch 落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
