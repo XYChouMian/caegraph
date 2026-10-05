@@ -2,12 +2,13 @@
 #
 # Source of truth for the decision text:
 #   architecture/decisions/ADR-022-pyg-backend-representation-contract.md
-# Semantics were extracted from the v1 decision text (this registry is
-# created together with the ADR draft commit as a TEST_MISSING initial
-# version, per the U6 ruling: the forward-looking D-02..D-07 contracts
-# are decidable now and give the Stage 3 tests their acceptance
-# counterpart. Evidence backfill happens in Stage 3 under explicit PM
-# authorization and NEVER lands in the same commit as the feat change.)
+# This registry is created by Architecture at the proposed-draft stage,
+# in the same commit as the ADR draft, as a TEST_MISSING initial
+# version: the forward-looking D-02..D-07 contracts are decidable now
+# and give the Stage 3 tests their acceptance counterpart. `accepted`
+# is only a status ruling and does not mean "creating the registry".
+# Evidence backfill happens in Stage 3 under explicit PM authorization
+# and NEVER lands in the same commit as the feat change.
 #
 # Rules:
 # - Every statement is decidable (true/false); no "should consider" or
@@ -15,9 +16,9 @@
 # - test_mapping references the guarding tests under tests/ in the
 #   form "path::test_name". TEST_MISSING marks invariants that have no
 #   guarding test yet — they are registered explicitly here and must
-#   never be silently dropped. Per the U6 ruling, entries stay
-#   TEST_MISSING with a missing_reason until the gate 4b coding
-#   dispatch lands its guarding tests.
+#   never be silently dropped. Entries stay TEST_MISSING with a
+#   missing_reason until the gate 4b coding dispatch lands its
+#   guarding tests.
 # - explicitly_not_frozen lists the deliberate non-decisions of the
 #   ADR: implementation freedoms and deferred decisions that must NOT
 #   be treated as invariants.
@@ -36,42 +37,42 @@ invariants:
     statement: "Adapting a node-graph-profile CAEGraph yields a PyG Data whose adapter-written key set is exactly {edge_index, num_nodes, pos, node_category, field_families} plus one key per mounted field data entry; edge_index is a symmetric directed [2, 2E] long tensor and num_nodes equals n_entities."
     decision: "D-02"
     test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit（U6 裁决）。"
+    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
 
   # --- D-03: field_families fidelity mapping --------------------------------------
   - id: "ADR-022-D03-01"
     statement: "Every mounted field data key appears in field_families with value equal to its Field.association ('node' or 'cell'); node-family entries keep a node-aligned leading axis and cell-family entries keep their n_cells leading axis without any transformation (no implicit cell-to-node interpolation)."
     decision: "D-03"
     test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit（U6 裁决）。"
+    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
 
   # --- D-04: reserved-key fail-fast -----------------------------------------------
   - id: "ADR-022-D04-01"
     statement: "A Field whose name collides with a reserved key ({edge_index, num_nodes, pos, node_category, field_families, x, y, edge_attr, batch, ptr}) causes adaptation to fail with ValueError; mask keys (train_mask/val_mask/test_mask) are not reserved."
     decision: "D-04"
     test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit（U6 裁决）。"
+    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
 
   # --- D-05: multi-realization rejection ------------------------------------------
   - id: "ADR-022-D05-01"
     statement: "When a Field has more than one FieldData realization (regardless of timestep values), adaptation fails with ValueError; the adapter implements no selection mechanism."
     decision: "D-05"
     test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit（U6 裁决）。"
+    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
 
   # --- D-06: declaration-only zero footprint ---------------------------------------
   - id: "ADR-022-D06-01"
-    statement: "A Field with no FieldData realization produces no Data key, no field_families entry and no values on the backend representation (zero footprint)."
+    statement: "A Field with no FieldData realization produces no per-field data attribute and no field_families entry on the backend representation; the field_families mapping itself remains present (possibly empty)."
     decision: "D-06"
     test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit（U6 裁决）。"
+    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
 
   # --- D-07: node_category explicit mapping -----------------------------------------
   - id: "ADR-022-D07-01"
     statement: "node_category encodes INTERIOR as 0, BOUNDARY as 1 and CORNER as 2 (explicit mapping, append-only — the mapping never reorders or renumbers existing categories)."
     decision: "D-07"
     test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit（U6 裁决）。"
+    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
 
 explicitly_not_frozen:
   - item: "adapter class name and call-interface form (Design UML concretization + coding dispatch, D-08)"
