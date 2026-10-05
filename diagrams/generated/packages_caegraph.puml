@@ -24,6 +24,8 @@ package "caegraph.core.field" as caegraph.core.field {
 }
 package "caegraph.core.registry" as caegraph.core.registry {
 }
+package "caegraph.core.temporal" as caegraph.core.temporal {
+}
 package "caegraph.core.topology" as caegraph.core.topology {
 }
 package "caegraph.core.topology.celltype" as caegraph.core.topology.celltype {
@@ -62,6 +64,7 @@ caegraph.core --> caegraph.core.caegraph
 caegraph.core --> caegraph.core.enums
 caegraph.core --> caegraph.core.field
 caegraph.core --> caegraph.core.registry
+caegraph.core --> caegraph.core.temporal
 caegraph.core --> caegraph.core.topology
 caegraph.core.boundary --> caegraph.core.boundary.manager
 caegraph.core.boundary --> caegraph.core.boundary.region
@@ -75,8 +78,10 @@ caegraph.core.caegraph --> caegraph.core.base
 caegraph.core.caegraph --> caegraph.core.boundary.manager
 caegraph.core.caegraph --> caegraph.core.enums
 caegraph.core.caegraph --> caegraph.core.field
+caegraph.core.caegraph --> caegraph.core.temporal
 caegraph.core.caegraph --> caegraph.core.topology.mesh
 caegraph.core.field --> caegraph.core.base
+caegraph.core.temporal --> caegraph.core.field
 caegraph.core.topology --> caegraph.core.topology.celltype
 caegraph.core.topology --> caegraph.core.topology.mesh
 caegraph.core.topology.mesh --> caegraph.core.base
