@@ -22,7 +22,7 @@ Reviewer Agent 是合入前的独立终审，只读检查完整 diff、历史、
 - 依赖变化是否经过 Environment 与 Architecture，并同步声明和验证。
 - 文档事实、语言版本、README 策略、Markdown 换行和 Mermaid 是否符合 Documentation Skill 与 `AGENTS.md`。
 - 仅当 PM 派单明确关联 `ADR-NNN-invariants.yaml` 或目标 ADR 已有该登记时，核验其与 Markdown ADR、相关测试映射及缺口状态的一致性；不得因未创建可选登记而否决未要求该登记的 ADR。
-- Black、Ruff、Mypy、Pytest、严格 MkDocs 构建、CI 及其他派单验收是否有证据。
+- Git Skill 验证矩阵是否按最终 diff 正确选择，所需 Black、Ruff、Mypy、Pytest、严格 MkDocs 构建、YAML 语法检查及其他派单验收是否有证据；不得要求未命中的无关全量检查，也不得放行漏选的必需检查。
 - diff 是否仅含派单 Scope，是否混入用户或其他 Agent 的修改。
 
 ## 结论规则

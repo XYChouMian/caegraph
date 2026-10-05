@@ -24,7 +24,7 @@ API 页面只放 `::: caegraph.xxx` 指令和必要的语言化导语，不手�
 2. 只更新派单 `Scope` 内的文档；未实现能力必须明确标记为 planned。
 3. 新增 MkDocs 页面时创建中英文文件对并在 `docs/mkdocs.yml` 注册导航与翻译。
 4. README 任务中同步两个语言版本；不能同步时保持任务未完成，不允许默认为非 blocking。
-5. 文档变更后在 `docs/` 下运行 `mkdocs build --strict`，并检查站内链接、Mermaid 和语言配对。
+5. 当最终 diff 涉及 MkDocs 站点页面、`docs/mkdocs.yml` 或影响 mkdocstrings 的公共 API/docstring 时，在 `docs/` 下运行 `mkdocs build --strict`，并检查站内链接、Mermaid 和语言配对；ADR、架构文本、README 或 Agent 规范本身不触发该构建，除非同时命中前述条件。
 
 ## Markdown 与图示
 

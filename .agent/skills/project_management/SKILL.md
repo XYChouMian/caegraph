@@ -23,9 +23,9 @@ Phase 判断以 `architecture/phases/CURRENT.md`、`architecture/ARCHITECTURE.md
 
 ## 派单输出
 
-每次派单必须输出：`Type`、`Scope`、`Phase`、`Route`、`Skipped`、`Acceptance`、`Git`。`Scope` 必须同时列出允许修改范围和明确排除项；`Skipped` 必须写明理由和判断者。
+每次派单必须输出：`Type`、`Scope`、`Phase`、`Route`、`Skipped`、`Acceptance`、`Git`。`Scope` 必须同时列出允许修改范围和明确排除项；`Skipped` 必须写明理由和判断者；`Acceptance` 必须按 Git Skill 的验证矩阵列出预计执行的命令，以及不适用检查的理由。
 
-范围实质变化、发现新的架构或依赖影响、或验收标准无法覆盖需求时，必须重新派单。不得把多个独立类型压入一个不可分别验收的任务。
+范围实质变化、最终 diff 触发比预计更高的验证等级、发现新的架构或依赖影响、或验收标准无法覆盖需求时，必须重新派单并补齐相应验证。不得把多个独立类型压入一个不可分别验收的任务。
 
 任务 Scope 涉及日期字段、Phase 记录、CHANGELOG、Release 记录或修订历史时，PM 派单必须要求下游角色读取并执行 `.agent/skills/time/SKILL.md`；纯状态查询或不写入日期的任务标记为 `Skipped: Time Skill — no date write`。
 

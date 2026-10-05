@@ -128,7 +128,24 @@ Agent 身份绑定 worktree，任务绑定分支，二者不得混同。以下�
 - `ci(test): enforce formatting checks`
 - `release: prepare v0.2.0`
 
-每个提交只表达一个可审查的逻辑变化。禁止使用 `update`、`fix`、`modify`、`changes` 等无法说明意图的孤立提交信息。提交前运行与变更相关的检查；合入前必须完成全量验收。
+每个提交只表达一个可审查的逻辑变化。禁止使用 `update`、`fix`、`modify`、`changes` 等无法说明意图的孤立提交信息。提交前运行验证矩阵为最终 diff 选定的检查；只有命中完整验收条件的任务才运行完整验收。
+
+## 验证矩阵
+
+本节是 Agent 本地验证选择的唯一真源。GitHub CI 在 PR 与 `main` 推送时仍执行全量集成检查，不因本矩阵而修改或跳过。PM 在派单 `Acceptance` 中根据预计 Scope 列出验证集；提交和 Reviewer 前必须根据最终 diff 重新核对。多个条件同时命中时取并集；最终 diff 扩大到更高等级时，退回 PM 重新派单并补齐检查。
+
+| 最终 diff 或语义影响 | 合入前必须提供的本地证据 |
+| --- | --- |
+| 所有写入任务 | `git diff --check`，以及与变更类型对应的角色语义审查。 |
+| `src/`、`tests/`、`pyproject.toml`、`environment.yml`、运行时依赖、测试配置或测试 CI 逻辑 | `black --check src tests`、`ruff check src tests`、`mypy src`、完整 `pytest`。开发中可先运行受影响测试，但不能替代该完整验收。 |
+| MkDocs 站点页面、`docs/mkdocs.yml`，或影响 mkdocstrings 的公共 API/docstring | 在 `docs/` 下运行 `mkdocs build --strict`；同时检查适用的链接、Mermaid 与中英文配对。 |
+| ADR Markdown、`architecture/ARCHITECTURE.md`、Phase 文本或 Design UML，且不同时命中代码或站点文档条件 | `git diff --check` 与 Architecture 对相关 ADR、Design UML、Generated UML 或 Phase 约束的一致性审查；不运行 Python 全量检查或 MkDocs 构建。 |
+| `architecture/decisions/*.yaml` | 在上述适用检查外，对变更文件运行 `pre-commit run check-yaml --files <file>`；不因 YAML 登记本身运行 Python 全量检查。 |
+| `.agent/` 下的 Workflow 或 Skill、`AGENTS.md`、`.pre-commit-config.yaml`，且不同时命中其他条件 | `git diff --check`；若任一 `SKILL.md` 变更，运行 `python .agent/skills/aggregate_skills.py` 并确认生成物不含手工修改；若修改 pre-commit 配置，运行 `pre-commit validate-config`；不运行 Python 全量检查或 MkDocs 构建。 |
+| 根 README、CHANGELOG 或其他不参与 MkDocs 的 Markdown | `git diff --check`、语言与事实一致性审查；不运行 MkDocs 构建，除非同时命中站点文档条件。 |
+| 依赖、环境、CI 或 Release 任务 | 按受影响的产品、站点与配置条件取并集；Release 始终运行完整 Python 验收和严格 MkDocs 构建。 |
+
+“语义影响”优先于路径：例如公共 docstring 影响 API 页面时，即使只改 `src/` 也必须加入 MkDocs 构建；结构性代码变更仍须遵守 Architecture 的 Design/Generated UML 一致性流程。不得把未触及产品运行、站点构建或 YAML 的 ADR、治理文本任务伪装成代码任务，也不得用“文档任务”规避实际代码或依赖变更。
 
 ## Pull Request 与合入
 
@@ -136,12 +153,8 @@ Pull Request 描述必须包含 `.agent/WORKFLOW.md` 规定的 PM 派单与角�
 
 合入 `main` 前必须满足：
 
-- `black --check src tests`
-- `ruff check src tests`
-- `mypy src`
-- `pytest`
-- 在 `docs/` 下运行 `mkdocs build --strict`
-- 未参与本任务写入的独立 Reviewer 给出 `Approve`，且 CI 通过
+- Git Skill 验证矩阵要求的全部本地检查都有通过证据，且最终 diff 与 PM 派单的验证选择一致。
+- 未参与本任务写入的独立 Reviewer 给出 `Approve`，且 CI 通过。
 
 Agent 只有在用户明确批准后才能创建远程 PR 或执行 merge/push。
 
