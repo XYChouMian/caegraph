@@ -32,7 +32,7 @@
 
 **一句话结论**：adapter 唯一领域输入为 CAEGraph；仅接受满足本 ADR 所定义 **node-graph backend profile** 的 canonical state，不满足则 fail-fast。
 
-**展开解释**：profile 为可判定条件组，**全部满足方可适配，否则 `ValueError`**（按 canonical state 判定，不按 source provenance 判断）：① 输入为 `CAEGraph` canonical representation（类型检查先于一切）；② 通过 `graph.validate()`；③ 携带满足 ADR-019/020 的 cell-based `Mesh` topology provider；④ 携带构造期图数据（`n_entities >= 1`）。不满足本 profile 的 canonical state（含未来 mesh-free 表示）不在本 ADR 覆盖范围（见不覆盖项）。
+**展开解释**：profile 为可判定条件组，**全部满足方可适配，否则 `ValueError`**（按 canonical state 判定，不按 source provenance 判断）：① 输入为 `CAEGraph` canonical representation（类型检查先于一切）；② 通过 `graph.validate()`；③ 携带满足 ADR-019/020 的 cell-based `Mesh` topology provider，且 **`topology.n_nodes == n_entities`**——node entity ID = Mesh node index（ADR-019 D1）；该等式是 D-02 的 `num_nodes = n_entities` 与 `pos = topology nodes` 可同时忠实满足的前提，违反即 `ValueError`；④ 携带构造期图数据（`n_entities >= 1`）。不满足本 profile 的 canonical state（含未来 mesh-free 表示）不在本 ADR 覆盖范围（见不覆盖项）。**披露：`topology.n_nodes == n_entities` 是 Phase 2 backend profile 的收窄（2026-10-06，Stage 3 readiness gap 裁决），不改变 CAEGraph construction contract**——direct construction 的不交叉检查与 ADR-019 deferred 的 multi-graph 议题维持原状；违反等式的 canonical state 仍合法存在，仅不在本 ADR 的 node-graph backend profile 覆盖范围内（适配期 fail-fast）。未来 multi-graph construction 落地时须专门决策其 backend profile。
 
 ### D-02 schema 键集
 
@@ -124,3 +124,4 @@
 - 2026-10-04：accepted（PM 审阅 v1.1 后裁决采纳——「修完后可以直接采纳」；gate 4b 进入 Stage 2 Design UML 具体化）。
 - 2026-10-04 v1.2：contract synchronization（语义零变化）——D-03「键集一致」限定于单个 backend representation（不冻结跨样本同构）；D-06 明确 `field_families` 为固定 schema container（恒在可空）；YAML 时点统一（Architecture 于 proposed draft 同 commit 创建，效力随 accepted）；D-07 区分 field data 无依据 cast 与 `node_category` 依显式映射合法物化为 `long`；Scope 门槛对齐 ADR-017 原文（CAEGraph domain model / dependency direction）；执行链明确化（Stage 3 YAML 零触碰 + 独立 evidence-sync commit）。
 - 2026-10-04：accepted（PM 于 v1.2 同步完成后直接裁决采纳；gate 4b 进入 Stage 2 Design UML 具体化）。
+- 2026-10-06 v1.3：profile clarification（经 Stage 3 readiness gap 裁决采纳）——D-01 ③ 显式补入 `topology.n_nodes == n_entities`（node entity ID = Mesh node index，ADR-019 D1；D-02 `num_nodes` / `pos` 联立可满足性前提），并披露：仅收窄 Phase 2 backend profile，CAEGraph construction contract 与 ADR-019 deferred multi-graph 议题不变。
