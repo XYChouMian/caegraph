@@ -8,9 +8,10 @@
 # result-level constraints that are decidable now and reference no
 # deferred API, mechanism, or concrete shared object are registered,
 # as a TEST_MISSING initial version. Its normative force follows the
-# ADR's acceptance; evidence backfill happens with the future
-# contract-alignment coding dispatch under explicit PM authorization
-# and NEVER lands in the same commit as the feat change.
+# ADR's acceptance; evidence backfill happened on 2026-10-06 under
+# explicit PM authorization, as an independent commit after the
+# Dispatch ② change landed — the evidence NEVER lands in the same
+# commit as the feat change.
 #
 # Rules:
 # - Every statement is decidable (true/false); no "should consider" or
@@ -18,11 +19,9 @@
 # - test_mapping references the guarding tests under tests/ in the
 #   form "path::test_name". TEST_MISSING marks invariants that have no
 #   guarding test yet — they are registered explicitly here and must
-#   never be silently dropped. Entries stay TEST_MISSING with a
-#   missing_reason until the contract-alignment coding dispatch lands
-#   its guarding tests (the existing tests/core/test_projection.py
-#   guards assert the current mechanism and must be realigned to the
-#   contract level before evidence backfill).
+#   never be silently dropped. An entry stays TEST_MISSING with a
+#   missing_reason only while no guarding test exists; no entry below
+#   is in that state.
 # - explicitly_not_frozen lists the deliberate non-decisions of the
 #   ADR: implementation freedoms and deferred decisions that must NOT
 #   be treated as invariants.
@@ -37,28 +36,49 @@
 adr: "ADR-024"
 version: "v1"
 extracted_from: "v1 decision text (baseline commit cbb1fbf)"
+# Test evidence synced under explicit PM authorization (Dispatch ②
+# contract-alignment evidence commit, 2026-10-06); the evidence never
+# lands in the same commit as the feat change.
 
 invariants:
   # --- D-02: formation-time mutable-alias isolation ----------------------------
   - id: "ADR-024-D02-01"
     statement: "At single-state projection formation, no canonical state that the projection operation creates, retains, or carries into the projected representation is a mutable channel to the source representation: no legal public mutation of projection-produced or projection-preserved state is observable in the source representation's canonical state. Post-formation consumer re-injection of source-owned mutable objects is outside this invariant."
     decision: "D-02"
-    test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 ADR-024 落地 dispatch 对齐 contract 层（formation-time alias 检查 + projection-owned state 回写 battery，无 API 枚举）后经 PM 授权回填，证据同步永不与 feat 同 commit。"
+    test_mapping:
+      - "tests/core/test_projection.py::test_original_state_unchanged"
+      - "tests/core/test_projection.py::test_projected_payloads_are_deep_copies"
+      - "tests/core/test_projection.py::test_graph_metadata_preserved_and_isolated"
+      - "tests/core/test_projection.py::test_topology_rebuilt_as_new_mesh_preserving_canonical_state"
+      - "tests/core/test_projection.py::test_boundary_manager_copied_not_shared"
 
   # --- D-03: temporal realization isolation --------------------------------------
   - id: "ADR-024-D03-01"
     statement: "In the projected representation the selected Snapshot and its snapshot-scoped FieldData are independently materialized: no snapshot-scoped FieldData instance is an authoritative member of both the source Snapshot and the projected Snapshot; the projection contains exactly one Snapshot carrying the selected state's temporal coordinates, and each of its members has exactly-one membership (ADR-023 D-03)."
     decision: "D-03"
-    test_mapping: "TEST_MISSING"
-    missing_reason: "当前尚无按 ADR-024 D-03 contract-level temporal membership 语义登记的守卫证据；随 Dispatch ② contract 化测试完成后，经 PM 授权回填 test_mapping，证据同步永不与 feat 同 commit。"
+    test_mapping:
+      - "tests/core/test_projection.py::test_no_shared_temporal_member_objects"
+      - "tests/core/test_projection.py::test_projected_members_single_membership"
+      - "tests/core/test_projection.py::test_projected_graph_exactly_one_snapshot"
+      - "tests/core/test_projection.py::test_projected_snapshot_coordinates_copied"
+      - "tests/core/test_projection.py::test_selected_realizations_keep_snapshot_scope"
 
   # --- D-04: semantic preservation -------------------------------------------------
   - id: "ADR-024-D04-01"
     statement: "A single-state temporal projection preserves all realization-independent canonical content of the source representation: topology subsystem facts when present, every Field declaration (name / unit / association), boundary semantic regions and condition specs bound to the projection's own regions, graph-level identity / relation / category facts and metadata annotations, and the realization metadata of every realization entering the selected state; the only narrowing is the realization axis (non-selected realizations absent, exactly one Snapshot)."
     decision: "D-04"
-    test_mapping: "TEST_MISSING"
-    missing_reason: "当前尚无覆盖 ADR-024 D-04 semantic-preservation surface 的 contract-level 守卫证据；随 Dispatch ② contract 化测试完成后，经 PM 授权回填 test_mapping，证据同步永不与 feat 同 commit。"
+    test_mapping:
+      - "tests/core/test_projection.py::test_topology_rebuilt_as_new_mesh_preserving_canonical_state"
+      - "tests/core/test_projection.py::test_graph_level_facts_preserved"
+      - "tests/core/test_projection.py::test_projected_declaration_binding_uses_new_field_objects"
+      - "tests/core/test_projection.py::test_boundary_manager_copied_not_shared"
+      - "tests/core/test_projection.py::test_periodic_spec_retargets_projected_regions"
+      - "tests/core/test_projection.py::test_graph_metadata_preserved_and_isolated"
+      - "tests/core/test_projection.py::test_timestep_copied_unchanged"
+      - "tests/core/test_projection.py::test_globals_preserved_as_global_without_membership"
+      - "tests/core/test_projection.py::test_declaration_only_field_stays_declaration_only"
+      - "tests/core/test_projection.py::test_field_only_in_unselected_snapshot_stays_declaration_only"
+      - "tests/core/test_projection.py::test_projected_graph_validates"
 
 explicitly_not_frozen:
   - item: "materialization mechanism (one-shot copy / copy-on-write / lazy-materialization / shared immutable substrate / other) — ADR-024 narrows only the ADR-023 D-08 deferred implementation-form space: any mechanism is legal as long as the D-01/D-02 result contract holds; pure always-live mutable view is excluded"
