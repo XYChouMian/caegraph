@@ -395,8 +395,9 @@ def test_graph_level_facts_preserved() -> None:
     projected = graph.project_snapshot(graph.snapshots[0])
     # ADR-024 D-04: graph-level identity / relation / category facts are
     # realization-independent canonical content, so projection must carry
-    # them over unchanged. The non-vacuity check keeps this test honest
-    # about the categories it claims to guard.
+    # them over unchanged. The non-vacuity checks keep this test honest
+    # about the facts it claims to guard.
+    assert graph.n_entities > 0 and graph.edges
     assert set(graph.node_categories) != {NodeCategory.INTERIOR}
     assert projected.n_entities == graph.n_entities
     assert projected.edges == graph.edges
