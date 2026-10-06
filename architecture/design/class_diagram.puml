@@ -11,7 +11,7 @@
 ' GUIDE   : see architecture/UML_GUIDE.md
 ' =============================================================================
 
-title CAEGraph Domain Abstractions (Design) - ADR-007-023
+title CAEGraph Domain Abstractions (Design) - ADR-007-024
 
 package "external ecosystem bases" {
   class "torch_geometric.data.Data" as PyGData <<external>>

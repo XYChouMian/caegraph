@@ -148,7 +148,7 @@ flowchart BT
 Notes on `physics` placement:
 
 - `physics` sits **below** `models` deliberately: physics-informed models (e.g. a PINN model in `models`) consume PDE residuals and physics losses from `physics` (e.g. a `PhysicsLoss`), never the reverse.
-- `physics` depends only on `core`/`utils` (plus `graph` for graph-structured inputs); it must never import `models`.
+- `physics` may use `core`/`utils` (plus `graph` for graph-structured inputs); the enforced rule is the layer order above — it must never import a higher layer (`models`, `assimilation`, `workflow`, `inference`, `visualization`), in particular never `models`.
 - PyG boundary: `torch_geometric` may be imported from `caegraph.graph` upward; `core`/`geometry`/`io` never import it (ADR-007 D2).
 - `assimilation` is consumed in two modes: by `workflow` (training-constraint mode — observation loss terms) and by `inference` (post-prediction correction).
 - If future physics-informed learning needs force a richer structure, the preferred evolution is splitting `physics` into submodules (`equations`, `constraints`, ...) inside the same layer — recorded via an ADR — not reordering the layers.
@@ -303,6 +303,6 @@ Strategy layer: `ROADMAP.md` mirrors this table for users/contributors. Per-phas
 
 - Architecture changes: edit this file + design UML in the same PR, and record an Architecture Decision Record in `architecture/decisions/` (see `ADR-000-template.md`).
 - **Positioning freeze (ADR-008)**: no solver abstraction, no trainer abstraction, no alternative graph backend layer — without a new ADR.
-- **ADR status semantics**: accepted ADRs (ADR-015/016/017/018/019) define frozen architecture; a proposed ADR is not frozen until accepted.
+- **ADR status semantics**: an ADR whose status is `accepted` defines frozen architecture (ADR-015 … ADR-024 today); a proposed ADR is not frozen until accepted.
 - Every user-visible change: update `CHANGELOG.md`.
 - Versioning: [Semantic Versioning](https://semver.org). While `0.x`, minor releases may break APIs; from `1.0` the public API is frozen per policy.
