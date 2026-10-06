@@ -19,8 +19,8 @@ from __future__ import annotations
 import pytest
 
 from caegraph.core import CAEGraph, Field, FieldData, Snapshot
-from caegraph.core.boundary import BoundaryRegion, BoundarySpec
-from caegraph.core.enums import BoundaryType
+from caegraph.core.boundary import BoundaryManager, BoundaryRegion, BoundarySpec
+from caegraph.core.enums import BoundaryType, NodeCategory
 from caegraph.core.topology.celltype import CellType
 from caegraph.core.topology.mesh import Mesh
 from caegraph.graph import MeshRepresentationBuilder
@@ -379,6 +379,28 @@ def test_topology_rebuilt_as_new_mesh_preserving_canonical_state() -> None:
     assert rebuilt.facet_cells == original.facet_cells
     assert dict(rebuilt.domain_groups) == dict(original.domain_groups)
     assert rebuilt.metadata == original.metadata
+
+
+def test_graph_level_facts_preserved() -> None:
+    boundaries = BoundaryManager()
+    boundaries.register(BoundaryRegion("wall", [0, 1]))
+    boundaries.register(BoundaryRegion("inlet", [3, 4]))
+    field = _node_field()
+    graph = MeshRepresentationBuilder()(
+        _two_triangle_mesh(), boundaries, fields=[field]
+    )
+    graph.register_snapshot(
+        physical_time=0.5, members=[_member(field, [1.0, 2.0, 3.0, 4.0])]
+    )
+    projected = graph.project_snapshot(graph.snapshots[0])
+    # ADR-024 D-04: graph-level identity / relation / category facts are
+    # realization-independent canonical content, so projection must carry
+    # them over unchanged. The non-vacuity check keeps this test honest
+    # about the categories it claims to guard.
+    assert set(graph.node_categories) != {NodeCategory.INTERIOR}
+    assert projected.n_entities == graph.n_entities
+    assert projected.edges == graph.edges
+    assert projected.node_categories == graph.node_categories
 
 
 def test_boundary_manager_copied_not_shared() -> None:
