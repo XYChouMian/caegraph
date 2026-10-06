@@ -40,6 +40,8 @@ package "caegraph.graph" as caegraph.graph {
 }
 package "caegraph.graph.builder" as caegraph.graph.builder {
 }
+package "caegraph.graph.pyg" as caegraph.graph.pyg {
+}
 package "caegraph.inference" as caegraph.inference {
 }
 package "caegraph.io" as caegraph.io {
@@ -89,10 +91,12 @@ caegraph.core.topology --> caegraph.core.topology.mesh
 caegraph.core.topology.mesh --> caegraph.core.base
 caegraph.core.topology.mesh --> caegraph.core.topology.celltype
 caegraph.graph --> caegraph.graph.builder
+caegraph.graph --> caegraph.graph.pyg
 caegraph.graph.builder --> caegraph.core.boundary.manager
 caegraph.graph.builder --> caegraph.core.caegraph
 caegraph.graph.builder --> caegraph.core.enums
 caegraph.graph.builder --> caegraph.core.field
 caegraph.graph.builder --> caegraph.core.topology.mesh
+caegraph.graph.pyg --> caegraph.core
 caegraph.utils --> caegraph.utils.logging
 @enduml
