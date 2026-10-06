@@ -14,7 +14,7 @@
 
 | 包 | 职责 | 依赖 |
 | --- | --- | --- |
-| `caegraph.core` | 工程真源：BaseObject、CAEGraph（canonical 领域表示）、topology subsystem（Mesh，cell-based）、Field；边界词汇、注册机制、共享枚举 | — |
+| `caegraph.core` | 工程真源：BaseObject、CAEGraph（canonical 领域表示）、topology subsystem（Mesh，cell-based）、Field；边界词汇、注册机制、共享枚举 | utils |
 | `caegraph.geometry` | 几何服务：度量、边特征、插值 | core |
 | `caegraph.io` | 加载器（gmsh 首发）与写回（VTK）；格式注册表 | core |
 | `caegraph.graph` | 表示构造（source discretization → CAEGraph；构造契约见 ADR-016）+ backend adapter（CAEGraph → 框架侧表示；Phase 2 形态为 PyG Data；ADR-017） | core, geometry |
