@@ -26,6 +26,10 @@ repos:
       - id: trailing-whitespace
         exclude: \.puml$
       - id: check-yaml
+        # --unsafe = 只解析语法、不加载：docs/mkdocs.yml 使用 MkDocs 必需的
+        # `!!python/name:` 扩展标签，默认的 safe load 无法构造它（钩子在已提交
+        # 文件上必然失败）；语法错误仍会被拦截。
+        args: [--unsafe]
         files: ^(docs|\.github|architecture/decisions)/.*\.ya?ml$
       - id: check-toml
         files: pyproject.toml
