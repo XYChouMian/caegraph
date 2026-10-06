@@ -8,11 +8,11 @@ CAEGraph connects **CAE data → canonical graph representation → GNN training
 
 > **Status: Pre-Alpha (Phase 2 — CAE Data Pipeline, in progress).** Phase 0 (foundation) and Phase 1 (core vocabulary: `BaseObject`, registry, shared enums, logging) are complete. The architecture baseline is ADR-015~020 (CAEGraph as the canonical domain representation; topology subsystem, construction, backend-adaptation, domain-composition, entity/relation model and field declaration/realization contracts). Coding gates 1–3 plus the mesh representation builder and the ADR-020 field split have landed: the CAEGraph domain core (`CAEGraph`, `Field`/`FieldData`, boundary vocabulary), the topology subsystem (`Mesh`, `CellType`) and node-graph construction with NodeCategory derivation (`caegraph.graph.MeshRepresentationBuilder`). The remaining data band (loaders, backend adapter, transforms, dataset) is in progress; GNN training utilities remain planned.
 
-## Features (planned)
+## Features
 
-- **CAE data band** — CAEGraph canonical representation with topology (Mesh, cell-based), Field/FieldData (declaration + realization, ADR-020) and boundary vocabularies; loaders, geometry services, representation construction (meshes, grids, particles), backend adapters (PyG), transforms and datasets
-- **Physics AI utilities** — physics losses, observation assimilation and CAE-aware training workflow components without replacing user training loops
-- **Neural simulation** — pretrained models across different discretizations, field reconstruction and VTK write-back
+- **CAE data band** — landed: the CAEGraph canonical representation with topology (Mesh, cell-based), `Field`/`FieldData` (declaration + realization, ADR-020), the boundary vocabularies and mesh representation construction (`caegraph.graph.MeshRepresentationBuilder`); planned: loaders (gmsh first), geometry services, representation construction for grids and particles, the PyG backend adapter, transforms and datasets
+- **Physics AI utilities (planned)** — physics losses, observation assimilation and CAE-aware training workflow components without replacing user training loops
+- **Neural simulation (planned)** — pretrained models across different discretizations, field reconstruction and VTK write-back
 - Built on [PyTorch](https://pytorch.org) and [PyTorch Geometric](https://pyg.org), without introducing an alternative graph backend, Trainer or solver abstraction
 
 ## Installation
