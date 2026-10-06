@@ -31,7 +31,8 @@
 #   registered as a standalone entry: its executable residue (the
 #   product is a CAEGraph, passes validate(), contains exactly one
 #   Snapshot) is covered by D02-01/D03-01, and the operational content
-#   of "not a view" is the D-02 formation-time check.
+#   of "not a view" is the D-02 formation-time check. The residue's own
+#   guard is tests/core/test_projection.py::test_projected_graph_validates.
 
 adr: "ADR-024"
 version: "v1"
@@ -78,7 +79,7 @@ invariants:
       - "tests/core/test_projection.py::test_globals_preserved_as_global_without_membership"
       - "tests/core/test_projection.py::test_declaration_only_field_stays_declaration_only"
       - "tests/core/test_projection.py::test_field_only_in_unselected_snapshot_stays_declaration_only"
-      - "tests/core/test_projection.py::test_projected_graph_validates"
+      - "tests/core/test_projection.py::test_single_realization_enters_projection"
 
 explicitly_not_frozen:
   - item: "materialization mechanism (one-shot copy / copy-on-write / lazy-materialization / shared immutable substrate / other) — ADR-024 narrows only the ADR-023 D-08 deferred implementation-form space: any mechanism is legal as long as the D-01/D-02 result contract holds; pure always-live mutable view is excluded"
