@@ -40,7 +40,7 @@ Git 是所有 CAEGraph Agent 共享的基础工程能力，不是独立交付角
 | Coding | 已批准设计对应的 `src/` 与配套测试 | 未批准的架构或依赖变更 |
 | Testing | `tests/` 与测试配置 | 为通过测试而削弱断言、擅改生产实现 |
 | Validation | 科学验证测试与验证记录 | 用主观判断代替量化验证、擅改实现 |
-| Documentation | `docs/`、README、经协调后的 docstring | 改变实现行为、宣称不存在的功能 |
+| Documentation | `docs/`、README、用户可见变更的 CHANGELOG 条目、经协调后的 docstring | 改变实现行为、宣称不存在的功能 |
 | Environment | 依赖与环境声明、相关 CI 配置 | 换环境、未经批准调整 PyTorch/CUDA |
 | Reviewer | 只读检查 diff、历史与提交 | 审查时静默修改或提交代码 |
 | Release | 经批准的版本、CHANGELOG、发布分支、tag 与产物准备 | 未经批准发布或跳过检查 |
