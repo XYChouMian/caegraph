@@ -303,6 +303,6 @@ Strategy layer: `ROADMAP.md` mirrors this table for users/contributors. Per-phas
 
 - Architecture changes: edit this file + design UML in the same PR, and record an Architecture Decision Record in `architecture/decisions/` (see `ADR-000-template.md`).
 - **Positioning freeze (ADR-008)**: no solver abstraction, no trainer abstraction, no alternative graph backend layer — without a new ADR.
-- **ADR status semantics**: an ADR whose status is `accepted` defines frozen architecture (ADR-015 … ADR-024 today); a proposed ADR is not frozen until accepted.
+- **ADR status semantics**: an ADR whose status is `accepted` defines frozen architecture; a proposed ADR is not frozen until accepted.
 - Every user-visible change: update `CHANGELOG.md`.
 - Versioning: [Semantic Versioning](https://semver.org). While `0.x`, minor releases may break APIs; from `1.0` the public API is frozen per policy.
