@@ -6,7 +6,7 @@
 
 CAEGraph 打通 **CAE 数据 → canonical 图表示 → GNN 训练 → 跨离散神经仿真 → 实验数据同化**。它将异构 CAE 数据源规范化为 **CAEGraph**——graph-native 的 canonical 领域表示（ADR-015），并通过 backend adapter 对接学习后端（当前为 PyTorch Geometric），保持工程真值与框架无关。
 
-> **状态：Pre-Alpha（Phase 2 — CAE 数据管线，进行中）。** Phase 0（地基）与 Phase 1（核心词汇：`BaseObject`、注册表、共享枚举、日志）已完成。架构基线为 ADR-015~024（CAEGraph 为 canonical 领域表示；topology subsystem、构造、后端适配、领域组成、实体/关系模型、field 声明/实现数据与 association family 契约、PyG backend 表示契约，以及 snapshot 时间组织与 single-state projection）。Coding gate 1–4a 已落地：CAEGraph 领域核心（`CAEGraph`、`Field`/`FieldData`、boundary 词汇）、topology subsystem（`Mesh`、`CellType`）、带 NodeCategory 推导的 node-graph 构造（`caegraph.graph.MeshRepresentationBuilder`）、snapshot 时间组织（`Snapshot`、`CAEGraph.register_snapshot`）与 single-state projection（`CAEGraph.project_snapshot`）。其余数据带（loaders、backend adapter、transforms、dataset）实现中；GNN 训练能力仍为规划功能。
+> **状态：Pre-Alpha（Phase 2 — CAE 数据管线，进行中）。** Phase 0（地基）与 Phase 1（核心词汇：`BaseObject`、注册表、共享枚举、日志）已完成。架构基线为 ADR-015~024（CAEGraph 为 canonical 领域表示；topology subsystem、构造、后端适配、领域组成、实体/关系模型、field 声明/实现数据与 association family 契约、PyG backend 表示契约，以及 snapshot 时间组织与 single-state projection）。Coding gate 1–4a 已落地：CAEGraph 领域核心（`CAEGraph`、`Field`/`FieldData`、boundary 词汇）、topology subsystem（`Mesh`、`CellType`）与带 NodeCategory 推导的 node-graph 构造（`caegraph.graph.MeshRepresentationBuilder`）；另有 ADR-020 field 拆分、ADR-021 association family 契约、ADR-023 snapshot 时间组织（Dispatch ①：`Snapshot`、`CAEGraph.register_snapshot`）与 ADR-024 single-state projection（Dispatch ②：`CAEGraph.project_snapshot`）。其余数据带（loaders、backend adapter、transforms、dataset）实现中；GNN 训练能力仍为规划功能。
 
 ## 功能（规划中）
 
