@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
+from copy import deepcopy
 from typing import Any
 
 from caegraph.core.base import BaseObject
 from caegraph.core.boundary.manager import BoundaryManager
+from caegraph.core.boundary.region import BoundaryRegion
+from caegraph.core.boundary.spec import BoundarySpec
 from caegraph.core.enums import NodeCategory
 from caegraph.core.field import (
     _GLOBAL_SCOPE,
@@ -382,49 +385,8 @@ class CAEGraph(BaseObject):
                     "snapshot members must be snapshot-scoped FieldData - "
                     "global/static realizations have no membership (ADR-023 D-04)"
                 )
+            self._validate_field_data_binding(member)
             field = member.field
-            declared = self._fields.get(field.name)
-            if declared is None:
-                raise ValueError(
-                    f"field data for {field.name!r} has no associated "
-                    "declaration — declare the Field first (ADR-020 D3)"
-                )
-            if declared is not field:
-                raise ValueError(
-                    f"field data for {field.name!r} must reference the "
-                    "declared Field object itself, not a distinct object "
-                    "that merely shares the name (Phase 2 implementation "
-                    "consistency guard)"
-                )
-            association = field.association
-            if association not in _SUPPORTED_REALIZATION_FAMILIES:
-                raise ValueError(
-                    f"field data for {field.name!r} references unsupported "
-                    f"realization family {association!r} (ADR-021 D5)"
-                )
-            try:
-                length = len(member.values)  # type: ignore[arg-type]
-            except TypeError as error:
-                raise ValueError(
-                    f"field data for {field.name!r} with association "
-                    f"{association!r} must carry a sized leading entity axis"
-                ) from error
-            if association == "node":
-                expected = self._n_entities
-            else:
-                if self._topology is None:
-                    raise ValueError(
-                        f"cell-family realization for {field.name!r} requires "
-                        "an attached topology provider to validate cardinality "
-                        "(ADR-019 D5 / ADR-020 D5)"
-                    )
-                expected = self._topology.n_cells
-            if length != expected:
-                raise ValueError(
-                    f"field data for {field.name!r} has a leading entity "
-                    f"axis of {length} entries but association "
-                    f"{association!r} requires {expected}"
-                )
             for data in self._field_data:
                 if data.scope == _GLOBAL_SCOPE and data.field is field:
                     raise ValueError(
@@ -443,6 +405,266 @@ class CAEGraph(BaseObject):
         snapshot._seal(member_list)
         self._snapshots.append(snapshot)
         return snapshot
+
+    def _validate_field_data_binding(self, data: FieldData) -> None:
+        """Validate the declaration / family / cardinality binding of ``data``.
+
+        Fail-fast checks re-used by the snapshot-registration and
+        projection paths (ADR-019 D5 / ADR-020 D3 / ADR-021 D5): the
+        realization must reference the explicitly associated Field
+        declaration **object itself** (no dangling realizations, no
+        same-named distinct object), name a supported realization
+        family and carry a sized leading entity axis of the correct
+        length (node → ``n_entities``; cell → topology ``n_cells``,
+        requiring an attached topology provider). Pure move of the
+        checks originally inlined in :meth:`register_snapshot`.
+        """
+        field = data.field
+        declared = self._fields.get(field.name)
+        if declared is None:
+            raise ValueError(
+                f"field data for {field.name!r} has no associated "
+                "declaration — declare the Field first (ADR-020 D3)"
+            )
+        if declared is not field:
+            raise ValueError(
+                f"field data for {field.name!r} must reference the "
+                "declared Field object itself, not a distinct object "
+                "that merely shares the name (Phase 2 implementation "
+                "consistency guard)"
+            )
+        association = field.association
+        if association not in _SUPPORTED_REALIZATION_FAMILIES:
+            raise ValueError(
+                f"field data for {field.name!r} references unsupported "
+                f"realization family {association!r} (ADR-021 D5)"
+            )
+        try:
+            length = len(data.values)  # type: ignore[arg-type]
+        except TypeError as error:
+            raise ValueError(
+                f"field data for {field.name!r} with association "
+                f"{association!r} must carry a sized leading entity axis"
+            ) from error
+        if association == "node":
+            expected = self._n_entities
+        else:
+            if self._topology is None:
+                raise ValueError(
+                    f"cell-family realization for {field.name!r} requires "
+                    "an attached topology provider to validate cardinality "
+                    "(ADR-019 D5 / ADR-020 D5)"
+                )
+            expected = self._topology.n_cells
+        if length != expected:
+            raise ValueError(
+                f"field data for {field.name!r} has a leading entity "
+                f"axis of {length} entries but association "
+                f"{association!r} requires {expected}"
+            )
+
+    def project_snapshot(self, snapshot: Snapshot) -> CAEGraph:
+        """Materialize the single-state canonical projection of ``snapshot``.
+
+        Implements the ADR-023 D-08 consumption chain on the canonical
+        temporal layer: explicit selection of a **registered** Snapshot
+        (object-reference handle only — selection never reads
+        ``FieldData.timestep``), candidate collection (per declared
+        Field: eligible global realizations + the Field's members of
+        the selected Snapshot, counted jointly with no source
+        priority), the per-Field 0 / 1 / >1 branches (0 → the Field
+        stays declaration-only, 1 → enters the projection, >1 →
+        fail-fast per ADR-020 D6 — explicit failure only, automatic
+        selection of any kind is forbidden) and the materialized
+        single-state result.
+
+        The projection is a **new** :class:`CAEGraph` — exactly one
+        Snapshot with the selected Snapshot's temporal coordinates,
+        temporal realizations kept as snapshot-scoped **new** FieldData
+        objects (each belonging exactly once to the projected
+        Snapshot; the original Snapshot keeps its own authoritative
+        membership, ADR-023 D-03), eligible global realizations kept
+        as new global FieldData objects with no membership, and every
+        Field ending with at most one realization. All state is
+        projection-materialized: Field declarations are **new** Field
+        objects (same name / unit / association, deep-copied metadata)
+        bound to the projected realizations, the topology provider is
+        rebuilt as a **new** Mesh when present (full canonical
+        reconstruction), realization payloads and metadata are
+        deep-copied, graph-level metadata is deep-copied, and the
+        boundary manager is rebuilt from copied regions and freshly
+        bound spec copies. The original graph is left completely
+        unchanged.
+
+        The result satisfies the CAEGraph validation contract; its
+        conformance to the ADR-022 adapter input contract is pending
+        the ADR-022 Stage 3 adapter implementation (deferred
+        regression, see the dispatch ledger).
+
+        Args:
+            snapshot: A Snapshot registered in this temporal
+                organization.
+
+        Returns:
+            The materialized single-state canonical projection.
+
+        Raises:
+            ValueError: If ``snapshot`` is not registered here, or a
+                Field has more than one candidate realization in the
+                selected state (ADR-020 D6 explicit failure — the
+                explicit-selection branch is not implemented).
+
+        Examples:
+            >>> graph = CAEGraph("flow", n_entities=2, edges=[(0, 1)])
+            >>> field = Field("pressure", association="node")
+            >>> graph.associate_field(field)
+            >>> _ = graph.register_snapshot(
+            ...     physical_time=0.5,
+            ...     members=[FieldData(field, [1.0, 2.0], scope="snapshot")],
+            ... )
+            >>> projected = graph.project_snapshot(graph.snapshots[0])
+            >>> len(projected.snapshots)
+            1
+            >>> projected.field_data[0].scope
+            'snapshot'
+            >>> projected.field_data[0] is graph.field_data[0]
+            False
+        """
+        if not any(registered is snapshot for registered in self._snapshots):
+            raise ValueError(
+                "Snapshot is not registered in this temporal organization - "
+                "selection accepts registered Snapshot references only "
+                "(ADR-023 D-08)"
+            )
+        globals_by_field: dict[Field, list[FieldData]] = {}
+        for data in self._field_data:
+            if data.scope == _GLOBAL_SCOPE:
+                globals_by_field.setdefault(data.field, []).append(data)
+        members_by_field: dict[Field, list[FieldData]] = {}
+        for member in snapshot.members:
+            members_by_field.setdefault(member.field, []).append(member)
+        included: list[FieldData] = []
+        for field in self._fields.values():
+            global_side = globals_by_field.get(field, [])
+            snapshot_side = members_by_field.get(field, [])
+            total = len(global_side) + len(snapshot_side)
+            if total > 1:
+                raise ValueError(
+                    f"field {field.name!r} has {total} candidate "
+                    "realizations in the selected instantaneous state "
+                    f"({len(global_side)} global + {len(snapshot_side)} "
+                    "snapshot-scoped) - explicit selection is required "
+                    "before projection and automatic selection is "
+                    "forbidden (ADR-020 D6)"
+                )
+            if total == 1:
+                included.append(global_side[0] if global_side else snapshot_side[0])
+        # Graph data presence: the CAEGraph constructor treats
+        # None/None/None as "no graph data", while an explicit
+        # n_entities=0 would be rejected as graph data — keep that
+        # semantic exactly.
+        has_graph_data = self._n_entities > 0
+        projected_topology = (
+            self._rebuild_topology() if self._topology is not None else None
+        )
+        projected = CAEGraph(
+            self.name,
+            topology=projected_topology,
+            metadata=deepcopy(self.metadata),
+            n_entities=self._n_entities if has_graph_data else None,
+            edges=self._edges if has_graph_data else None,
+            node_categories=self._node_categories if has_graph_data else None,
+        )
+        field_copies: dict[Field, Field] = {}
+        for field in self._fields.values():
+            projected_field = Field(
+                field.name,
+                unit=field.unit,
+                association=field.association,
+                metadata=deepcopy(field.metadata),
+            )
+            projected.associate_field(projected_field)
+            field_copies[field] = projected_field
+        temporal_copies: list[FieldData] = []
+        for data in included:
+            copied_data = FieldData(
+                field_copies[data.field],
+                deepcopy(data.values),
+                scope=data.scope,
+                timestep=data.timestep,
+                metadata=deepcopy(dict(data.metadata)),
+            )
+            if copied_data.scope == _SNAPSHOT_SCOPE:
+                temporal_copies.append(copied_data)
+            else:
+                projected._validate_field_data_binding(copied_data)
+                projected._register_field_data(copied_data)
+        projected.register_snapshot(
+            physical_time=snapshot.physical_time,
+            solver_step=snapshot.solver_step,
+            members=temporal_copies,
+        )
+        self._copy_boundaries_onto(projected)
+        projected.validate()
+        return projected
+
+    def _rebuild_topology(self) -> Mesh:
+        """Rebuild the referenced topology provider as a new Mesh.
+
+        Full canonical topology reconstruction through the Mesh
+        constructor — coercion / canonicalization / freeze semantics
+        preserved — with every input independently copied: nodes,
+        topo_dim, cell_types, cells, cell_offsets, facet_types,
+        facets, facet_offsets, facet_cells, domain_groups and
+        metadata.
+        """
+        topology = self._topology
+        assert topology is not None  # guarded by the caller
+        return Mesh(
+            topology.name,
+            nodes=deepcopy(topology.nodes),
+            topo_dim=topology.topo_dim,
+            cell_types=deepcopy(topology.cell_types),
+            cells=deepcopy(topology.cells),
+            cell_offsets=deepcopy(topology.cell_offsets),
+            facet_types=deepcopy(topology.facet_types),
+            facets=deepcopy(topology.facets),
+            facet_offsets=deepcopy(topology.facet_offsets),
+            facet_cells=deepcopy(topology.facet_cells),
+            domain_groups=deepcopy(dict(topology.domain_groups)),
+            metadata=deepcopy(topology.metadata),
+        )
+
+    def _copy_boundaries_onto(self, projected: CAEGraph) -> None:
+        """Rebuild the boundary manager of ``projected`` from copied state.
+
+        Regions and specs are projection-materialized state (BaseObject
+        metadata channels / binding caches): the projection registers
+        **new** region objects and binds **new** unbound specs — which
+        re-resolve against the projected regions — so that no mutation
+        path reaches the original manager.
+        """
+        for region in self._boundaries.regions:
+            projected._boundaries.register(
+                BoundaryRegion(
+                    region.name,
+                    region.membership,
+                    metadata=deepcopy(region.metadata),
+                )
+            )
+        for spec in self._boundaries.specs:
+            projected._boundaries.bind(
+                BoundarySpec(
+                    spec.region,
+                    spec.boundary_type,
+                    value=spec.value,
+                    weight=spec.weight,
+                    paired_region=spec.paired_region,
+                    parameters=dict(spec.parameters) if spec.parameters else None,
+                    time_dependent=spec.time_dependent,
+                    space_dependent=spec.space_dependent,
+                )
+            )
 
     def validate(self) -> None:
         """Raise if the representation is in an invalid state.
