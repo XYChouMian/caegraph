@@ -24,6 +24,7 @@ dependencies:
       # Testing
       - pytest
       - pytest-cov
+      - packaging
       # Code quality
       - black
       - ruff
