@@ -2,7 +2,7 @@
 site_name: CAEGraph
 site_author: xychoumian
 site_description: >-
-  A PyG-style graph computation framework for CAE data.
+  A CAE-to-Physics-AI workflow framework: CAE data → canonical graph representation → GNN training → neural simulation → experimental-data assimilation.
 # site_url: http://expfluid.bond/ # 以后绑定域名用
 
 # 2. Theme: Material for MkDocs（原生支持 i18n 语言切换器）
