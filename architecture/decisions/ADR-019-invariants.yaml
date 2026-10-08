@@ -132,6 +132,7 @@ invariants:
     decision: "Consequences / D3"
     test_mapping:
       - "tests/core/test_caegraph.py::test_graph_data_is_normalized_at_construction"
+      - "tests/graph/test_pyg_adapter.py::test_symmetric_directed_edge_index_expansion"
 
 explicitly_not_frozen:
   - item: "edge container form (tuple-of-pairs vs CSR) — implementation detail"

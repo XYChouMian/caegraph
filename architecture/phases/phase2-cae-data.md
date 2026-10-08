@@ -1,6 +1,6 @@
 # Phase 2 — CAE Data Pipeline
 
-Status: In progress — ADR-015~024 accepted; coding gates 1–4a landed (1 domain core, 2 Field/semantic regions, 3 topology subsystem, 4a representation construction with the node-graph builder per ADR-019), plus the ADR-020 field split (Field declaration / `FieldData` realization, builder-only write path), the ADR-021 association-family contract, the ADR-023 temporal organization (Dispatch ① `Snapshot` / `register_snapshot`) and the ADR-024 single-state projection (Dispatch ② `CAEGraph.project_snapshot`); gate 4b (backend adaptation per the ADR-022 PyG backend representation contract) is next on the post-split, projection-capable model, then 5 source IO vertical slice, 6 transforms/dataset/write-back, 7 end-to-end validation + benchmark. Completion is defined by the Definition of Done below, not by module completeness.
+Status: In progress — ADR-015~024 accepted; coding gates 1–4b landed (1 domain core, 2 Field/semantic regions, 3 topology subsystem, 4a representation construction with the node-graph builder per ADR-019, 4b backend adaptation per the ADR-022 PyG backend representation contract on the post-split, projection-capable model), plus the ADR-020 field split (Field declaration / `FieldData` realization, builder-only write path), the ADR-021 association-family contract, the ADR-023 temporal organization (Dispatch ① `Snapshot` / `register_snapshot`) and the ADR-024 single-state projection (Dispatch ② `CAEGraph.project_snapshot`); gate 5 source IO vertical slice is next, then 6 transforms/dataset/write-back, 7 end-to-end validation + benchmark. Completion is defined by the Definition of Done below, not by module completeness.
 
 Goal: implement **R1** — the CAE → GNN data band (ADR-007/008): the domain-core objects plus geometry / io / graph / transforms / dataset.
 
@@ -167,8 +167,8 @@ Coding order follows the ADR-015 hierarchy — CAEGraph core first, topology/dis
 3. **Topology subsystem** — FEM: Mesh topology + CellType (CellType foundation landed in Phase 1, migrated per ADR-015) — *landed*
 4. **Representation construction + backend adaptation** — two adjacent but distinct conversion boundaries (construction is not the prelude of adaptation, ADR-016 vs ADR-017):
    - **4a. Representation construction** — `MeshRepresentationBuilder`, node-graph construction per ADR-019 — *landed*
-   - **4b. Backend adaptation** — PyG Data as the Phase 2 framework representation (ADR-017) — *next*. ADR-019 executable invariants relevant to backend adaptation must be guarded before this gate closes; D1-01 remains an explicitly registered architecture-level scope invariant (`TEST_MISSING`) unless a non-artificial executable surface emerges — the invariant registry serves the architecture, never the reverse
-5. **Source IO vertical slice** — `AbstractMeshLoader` + gmsh adapter; format registry on the core registry (ADR-012/013)
+   - **4b. Backend adaptation** — PyG Data as the Phase 2 framework representation (ADR-017) — *landed*. ADR-019 executable invariants relevant to backend adaptation must be guarded before this gate closes; D1-01 remains an explicitly registered architecture-level scope invariant (`TEST_MISSING`) unless a non-artificial executable surface emerges — the invariant registry serves the architecture, never the reverse
+5. **Source IO vertical slice** — `AbstractMeshLoader` + gmsh adapter; format registry on the core registry (ADR-012/013) — *next*
 6. **Transforms / dataset / write-back** — geometry/feature/physics transforms, `CAEDataset`, VTK writer
 7. **End-to-end validation + benchmark** — the first full Gmsh → GNN-ready pipeline per the Definition of Done; R1 proven as a whole
 

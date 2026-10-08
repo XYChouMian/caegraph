@@ -31,20 +31,31 @@ adr: "ADR-022"
 version: "v1"
 extracted_from: "v1 decision text (baseline commit 6153268)"
 
+# Test evidence synced under explicit PM authorization (gate 4b Stage 3
+# evidence commit, 2026-10-08); the evidence never lands in the same
+# commit as the feat change. ADR-022-D04-01 stays TEST_MISSING per PM
+# ruling: the existing guard covers only 5 of the 10 frozen reserved
+# keys (partial evidence).
+
 invariants:
   # --- D-02: schema key set ------------------------------------------------------
   - id: "ADR-022-D02-01"
     statement: "Adapting a node-graph-profile CAEGraph yields a PyG Data whose adapter-written key set is exactly {edge_index, num_nodes, pos, node_category, field_families} plus one key per mounted field data entry; edge_index is a symmetric directed [2, 2E] long tensor and num_nodes equals n_entities."
     decision: "D-02"
-    test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
+    test_mapping:
+      - "tests/graph/test_pyg_adapter.py::test_valid_graph_materializes_frozen_schema_without_extras"
+      - "tests/graph/test_pyg_adapter.py::test_symmetric_directed_edge_index_expansion"
+      - "tests/graph/test_pyg_adapter.py::test_num_nodes_equals_n_entities"
+      - "tests/graph/test_pyg_adapter.py::test_empty_edge_graph_produces_2x0_edge_index"
 
   # --- D-03: field_families fidelity mapping --------------------------------------
   - id: "ADR-022-D03-01"
     statement: "Every mounted field data key appears in field_families with value equal to its Field.association ('node' or 'cell'); node-family entries keep a node-aligned leading axis and cell-family entries keep their n_cells leading axis without any transformation (no implicit cell-to-node interpolation)."
     decision: "D-03"
-    test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
+    test_mapping:
+      - "tests/graph/test_pyg_adapter.py::test_field_families_matches_materialized_payload"
+      - "tests/graph/test_pyg_adapter.py::test_node_field_data_keyed_by_field_name"
+      - "tests/graph/test_pyg_adapter.py::test_cell_field_data_carried_as_is_without_interpolation"
 
   # --- D-04: reserved-key fail-fast -----------------------------------------------
   - id: "ADR-022-D04-01"
@@ -57,22 +68,23 @@ invariants:
   - id: "ADR-022-D05-01"
     statement: "When a Field has more than one FieldData realization (regardless of timestep values), adaptation fails with ValueError; the adapter implements no selection mechanism."
     decision: "D-05"
-    test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
+    test_mapping:
+      - "tests/graph/test_pyg_adapter.py::test_multiple_realizations_of_one_field_are_rejected"
+      - "tests/graph/test_pyg_adapter.py::test_adapter_output_is_independent_of_timestep_values"
 
   # --- D-06: declaration-only zero footprint ---------------------------------------
   - id: "ADR-022-D06-01"
     statement: "A Field with no FieldData realization produces no per-field data attribute and no field_families entry on the backend representation; the field_families mapping itself remains present (possibly empty)."
     decision: "D-06"
-    test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
+    test_mapping:
+      - "tests/graph/test_pyg_adapter.py::test_declaration_only_fields_leave_zero_footprint"
 
   # --- D-07: node_category explicit mapping -----------------------------------------
   - id: "ADR-022-D07-01"
     statement: "node_category encodes INTERIOR as 0, BOUNDARY as 1 and CORNER as 2 (explicit mapping, append-only — the mapping never reorders or renumbers existing categories)."
     decision: "D-07"
-    test_mapping: "TEST_MISSING"
-    missing_reason: "守卫测试随 gate 4b coding dispatch（Stage 3）落地；届时经 PM 授权回填证据，证据同步永不与 feat 同 commit。"
+    test_mapping:
+      - "tests/graph/test_pyg_adapter.py::test_node_category_explicit_mapping_is_long"
 
 explicitly_not_frozen:
   - item: "adapter class name and call-interface form (Design UML concretization + coding dispatch, D-08)"
