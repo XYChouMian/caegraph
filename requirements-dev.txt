@@ -6,6 +6,7 @@
 # Keep this file aligned with pyproject.toml [dev] + [docs] extras.
 pytest
 pytest-cov
+packaging
 black
 ruff
 mypy
