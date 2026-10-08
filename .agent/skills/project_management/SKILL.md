@@ -21,6 +21,8 @@ Project Management Agent 是所有请求的唯一入口，负责分类、限定�
 
 Phase 判断以 `architecture/phases/CURRENT.md`、`architecture/ARCHITECTURE.md` §6 和 `ROADMAP.md` 为依据。任务名称不能替代影响分析；只要影响结构、依赖或科学结果，就必须补入对应角色。
 
+涉及 ADR 的派单在 `Scope` 中先写明一个待裁决的架构问题、最小冻结边界和需拆出的独立问题；实现、测试、审查或 Git 细节不得作为 ADR 正文 Scope，分别交由既有角色和工件承载。
+
 ## 派单输出
 
 每次派单必须输出：`Type`、`Scope`、`Phase`、`Route`、`Skipped`、`Acceptance`、`Git`。`Scope` 必须同时列出允许修改范围和明确排除项；`Skipped` 必须写明理由和判断者；`Acceptance` 必须按 Git Skill 的验证矩阵列出预计执行的命令，以及不适用检查的理由。

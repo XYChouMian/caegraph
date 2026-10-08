@@ -14,7 +14,7 @@ Reviewer Agent 是合入前的独立终审，只读检查完整 diff、历史、
 
 ## 检查清单
 
-- 结构变更是否由 Architecture 先行，并同步必要的 Architecture、ADR、Design UML 与工具生成的 Generated UML。
+- 结构变更是否由 Architecture 先行，并同步必要的 Architecture、ADR、Design UML 与工具生成的 Generated UML；ADR 是否只记录冻结决策和必要理由，未机械重复“结论 + 展开解释”、混入实现/测试/审查细节或合并独立决定，否则 `Request Changes`。
 - 代码位置和依赖方向是否符合包地图；是否存在循环、反向、同层互依或非法 helper。
 - 公共 API 是否具有英文 docstring 与类型标注；已发布或 ADR 冻结的 import path 是否稳定。
 - 删除、重命名、签名或返回契约变化是否具有版本计划、迁移说明和 CHANGELOG；未发布 API 是否误加兼容层。
