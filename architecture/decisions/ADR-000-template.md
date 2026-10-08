@@ -1,6 +1,6 @@
 # ADR-000: ADR 模板（Template）
 
-> 复制本文件为 `ADR-NNN-短标题.md`（NNN 三位递增编号），删除本说明后填写。由 Architecture Agent 在重大架构决策时创建；状态只有 accepted / superseded（被 ADR-XXX 取代）两种。编号必须单调递增且不得复用已删除或合并的历史编号；当前下一编号为 ADR-020。
+> 复制本文件为 `ADR-NNN-短标题.md`（NNN 三位递增编号），删除本说明后填写。由 Architecture Agent 在重大架构决策时创建；状态只有 accepted / superseded（被 ADR-XXX 取代）两种。编号必须单调递增且不得复用已删除或合并的历史编号；下一编号取 `architecture/decisions/` 现有编号的最大值加一，不在本模板中硬编码（避免随新增 ADR 陈旧）。
 
 - 编号：ADR-NNN
 - 标题：<一句话决策>
@@ -55,3 +55,7 @@ explicitly_not_frozen:
 - 无测试证据时使用 `TEST_MISSING`；若 Phase 收尾时仍保留，必须提供中文 `missing_reason`。该理由、是否保留缺口及是否升格待办属于 Architecture 判断。
 - `explicitly_not_frozen` 只记录 ADR 明确保留的自由度，不能被实现或测试当作约束。
 - 初始登记及任何语义内容都从 ADR 的架构判断得出，不能从 diff 自动生成。经 PM 明确授权时，执行 Agent 只能依据同一任务中客观可验证的测试 diff，同步既有条目的 `test_mapping`；测试证据以外的内容必须交回 Architecture。
+
+## 修订历史（Revision history）
+
+<一行一条，形如 `YYYY-MM-DD vN：本次合入的结果摘要`。版本口径与条目写法以 [Architecture Agent Skill](../../.agent/skills/architecture/SKILL.md) 为唯一真源；日期按 `.agent/skills/time/SKILL.md` 确认后填写。>
