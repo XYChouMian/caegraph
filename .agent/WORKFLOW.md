@@ -34,11 +34,12 @@ flowchart TD
     D -->|"全部完成"| L["独立 Reviewer"]
     L -->|"Approve"| M{"发布任务？"}
     L -->|"Request Changes"| N["退回具体上游角色"]
+    L -->|"Reject"| S["不实现：记录到既有 Phase backlog 并给出合规替代路径"]
     N --> D
     M -->|"否"| O["等待用户批准 merge / push"]
     M -->|"是"| P["Release"]
 
-    class A,B,C,D,E,F,G,H,I,J,L,M,N,O,P,Q,R nowrap
+    class A,B,C,D,E,F,G,H,I,J,L,M,N,O,P,Q,R,S nowrap
 ```
 
 路由由影响范围决定，不由任务名称决定。只读状态查询、解释、审查或方案报告不创建分支、不修改仓库，也不进入合入 Reviewer；一旦用户要求落实修改，必须重新派单并创建任务分支。写入任务可以进入多个角色；不适用的角色可以跳过，但 Project Management Agent 必须记录跳过理由。
