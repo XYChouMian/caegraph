@@ -26,7 +26,16 @@ repos:
       - id: trailing-whitespace
         exclude: \.puml$
       - id: check-yaml
+        alias: check-yaml-strict
+        exclude: ^docs/mkdocs\.yml$
         files: ^(docs|\.github|architecture/decisions)/.*\.ya?ml$
+      - id: check-yaml
+        alias: check-yaml-mkdocs-tags
+        # docs/mkdocs.yml 使用 MkDocs 必需的 `!!python/name:` 扩展标签，strict load
+        # 无法构造它；仅该文件放宽为 parse-only。代价（显式记录）：不再检测重复键、
+        # 允许多文档、无跨实现可移植性保证；其余被覆盖文件保持 strict 不变。
+        args: [--unsafe]
+        files: ^docs/mkdocs\.yml$
       - id: check-toml
         files: pyproject.toml
 
