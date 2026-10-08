@@ -46,4 +46,4 @@ src/caegraph/workflow/
 
 ## Depends on
 
-Phase 2 (graphs/datasets/transforms); `physics` depends only on core/graph.
+Phase 2 (graphs/datasets/transforms); `physics` may use `core`/`utils` (plus `graph` for graph-structured inputs) and never imports a higher layer (ADR-007 D7).
