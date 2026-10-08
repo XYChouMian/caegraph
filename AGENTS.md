@@ -43,7 +43,7 @@ which python          # 应指向 .../envs/caegraph-dev/bin/python
 - 项目：CAEGraph —— 连接 CAE 仿真与 Physics AI 的工作流框架（CAE 数据 → 图表示 → GNN 训练 → 新网格神经仿真 → 实验数据同化）
 - 定位冻结（ADR-008）：未经新 ADR 不得引入 solver 抽象、trainer 抽象、替代图后端层
 - 当前阶段以 `architecture/phases/CURRENT.md` 指针为准（绑定表格：`architecture/ARCHITECTURE.md` §6；战略总览：根目录 `ROADMAP.md`）；禁止实现当前 Phase 之外的功能
-- 阶段红线（Phase 0）：不实现 CAE 算法、GNN 模型、数据处理功能，不创建临时工具脚本
+- 阶段红线：任何阶段都不得在仓库内创建临时工具脚本；阶段专属约束以 `architecture/phases/CURRENT.md` 指向的阶段设计文档（`architecture/phases/phaseN-*.md`）与 `architecture/ARCHITECTURE.md` §6 绑定表格为准。历史阶段红线（例如 Phase 0 的“不实现 CAE 算法、GNN 模型、数据处理功能”，见 `architecture/phases/phase0-foundation.md`）随该阶段结束失效，不得当作现行约束
 
 ---
 
