@@ -12,10 +12,10 @@ dependencies:
   - pip
   - pip:
       # Core scientific stack (mirrors pyproject.toml dependencies)
-      - numpy
-      - meshio
-      - torch
-      - torch-geometric
+      - numpy>=1.24
+      - meshio>=5.3
+      - torch>=2.5
+      - torch-geometric>=2.5,<3.0
       # Documentation
       - mkdocs
       - mkdocs-material
