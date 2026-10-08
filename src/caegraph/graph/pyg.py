@@ -57,6 +57,21 @@ _RESERVED_SCHEMA_KEYS = frozenset(
 def to_pyg_data(graph: CAEGraph) -> Data:
     """Materialize a CAEGraph as the Phase 2 PyG backend representation.
 
+    The returned :class:`~torch_geometric.data.Data` carries exactly
+    the frozen Phase 2 schema (ADR-022 D-02): ``edge_index`` — long
+    ``[2, 2E]`` symmetric directed expansion of the canonical
+    undirected pairs (``[2, 0]`` when edge-free, ADR-019 C-01);
+    ``num_nodes`` — the graph's ``n_entities``; ``pos`` — topology
+    node coordinates, float64 ``[n, 3]``; ``node_category`` — long
+    codes via the D-07 explicit mapping; one key per materialized
+    FieldData, keyed by its Field name; and ``field_families`` —
+    always present, possibly empty (D-03/D-06), mapping every
+    materialized field key to its ``node`` / ``cell`` association
+    family. Declaration-only fields leave zero footprint — no key, no
+    mapping entry, no fabricated values (D-06). Cell-family payloads
+    are carried in original form: no implicit interpolation and no
+    dtype cast (D-03/D-07).
+
     The node-graph backend profile (ADR-022 D-01, v1.3) is checked
     before anything is materialized. Its five decidable conditions are:
     ① the input is a :class:`~caegraph.core.CAEGraph`; ② the graph
@@ -64,8 +79,15 @@ def to_pyg_data(graph: CAEGraph) -> Data:
     system propagates verbatim; ③ a cell-based ``Mesh`` topology
     provider is attached; ④ ``topology.n_nodes == n_entities`` — a
     Phase 2 backend-profile condition only, never written back into
-    :meth:`CAEGraph.validate`; ⑤ ``n_entities >= 1``. Any profile
-    failure raises :class:`ValueError`.
+    :meth:`CAEGraph.validate`; ⑤ ``n_entities >= 1``. Adapter-owned
+    profile checks raise :class:`ValueError`.
+
+    Materialization additionally requires every FieldData payload to
+    be losslessly representable as a ``torch.Tensor``. This is a Phase
+    2 PyG backend-profile condition only: it restricts neither the
+    backend-agnostic ``FieldData`` vocabulary nor the canonical
+    legality of a CAEGraph state — unsupported payload forms simply
+    fail fast at adaptation (D-01/D-03).
 
     Materialization is by-value: every tensor is built through
     ``torch.tensor``, which copies its input, so no returned tensor
@@ -78,29 +100,21 @@ def to_pyg_data(graph: CAEGraph) -> Data:
             node-graph backend profile.
 
     Returns:
-        A :class:`torch_geometric.data.Data` carrying exactly the
-        frozen Phase 2 schema (ADR-022 D-02): ``edge_index`` (long,
-        ``[2, 2E]`` symmetric directed expansion of the canonical
-        undirected pairs; ``[2, 0]`` for an edge-free graph),
-        ``num_nodes`` (== ``n_entities``), ``pos`` (float64
-        ``[n, 3]`` from the topology provider), ``node_category``
-        (long, explicit mapping per D-07), one key per materialized
-        FieldData keyed by its Field name, and ``field_families``
-        (always present, possibly empty, per D-03/D-06) mapping each
-        materialized field key to its ``node`` / ``cell`` association
-        family. Declaration-only fields leave zero footprint — no key,
-        no mapping entry, no fabricated values (D-06). Cell-family
-        payloads are carried as-is: no implicit interpolation and no
-        dtype cast (D-03/D-07).
+        The materialized Phase 2 backend representation as a
+        :class:`~torch_geometric.data.Data`.
 
     Raises:
-        ValueError: If the input violates the node-graph backend
-            profile (non-CAEGraph input included, D-01); if a Field
-            name collides with a reserved schema key (D-04); or if a
-            Field carries more than one FieldData realization — the
-            adapter implements no selection mechanism (D-05, ADR-020
-            D6). Exceptions raised by ``graph.validate()`` propagate
-            verbatim.
+        ValueError: If an adapter-owned profile check fails — a
+            non-CAEGraph input; a missing topology provider;
+            ``topology.n_nodes != n_entities``; ``n_entities < 1``; a
+            Field name colliding with a reserved schema key (D-04);
+            more than one FieldData realization for one Field (D-05 —
+            the adapter implements no selection mechanism, ADR-020
+            D6); or a FieldData payload that cannot be losslessly
+            represented as a ``torch.Tensor`` (a PyG backend-profile
+            condition; the canonical legality of the FieldData is
+            unaffected). ``graph.validate()`` is invoked directly and
+            its exceptions propagate verbatim.
     """
     if not isinstance(graph, CAEGraph):
         raise ValueError(
@@ -163,7 +177,19 @@ def to_pyg_data(graph: CAEGraph) -> Data:
                 f"field name {name!r} collides with a reserved PyG schema "
                 "key; fail-fast at backend adaptation (ADR-022 D-04)"
             )
-        payload[name] = torch.tensor(np.asarray(data.values))
+        # PyG backend-profile condition: the payload must be losslessly
+        # representable as a torch Tensor. Unsupported backend-agnostic
+        # payload forms fail fast here without touching canonical
+        # legality (ADR-020 D4 vocabulary; ADR-022 D-01/D-03).
+        try:
+            payload[name] = torch.tensor(np.asarray(data.values))
+        except (TypeError, ValueError, RuntimeError) as error:
+            raise ValueError(
+                f"field {name!r} payload cannot be materialized as a "
+                "torch Tensor - a Phase 2 PyG backend profile condition; "
+                "the canonical legality of the FieldData is unaffected "
+                "(ADR-022 D-01/D-03)"
+            ) from error
         field_families[name] = data.field.association
 
     return Data(

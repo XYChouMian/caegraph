@@ -252,6 +252,23 @@ def test_non_caegraph_input_is_rejected():
         to_pyg_data("two_tri")  # type: ignore[arg-type]
 
 
+def test_unrepresentable_payload_fails_fast_as_backend_profile_condition():
+    # A PyG backend-profile condition only: a payload that cannot be
+    # losslessly represented as a torch Tensor fails fast at adaptation;
+    # the canonical legality of the FieldData / CAEGraph is unaffected.
+    mesh = _two_triangle_mesh()
+    label = Field("label", association="node")
+    graph = MeshRepresentationBuilder()(
+        mesh,
+        fields=[label],
+        field_data=[FieldData(label, ["a", "b", "c", "d"], scope="global")],
+    )
+    graph.validate()  # the canonical state itself remains legal
+    with pytest.raises(ValueError, match="backend profile condition"):
+        to_pyg_data(graph)
+    assert graph.field_data[0].values == ["a", "b", "c", "d"]
+
+
 def test_adapter_output_is_independent_of_timestep_values():
     # Zero-selector evidence (ADR-022 D-05): graphs differing only in
     # legacy timestep values produce identical backend representations;
