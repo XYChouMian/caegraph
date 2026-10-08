@@ -14,7 +14,7 @@ This page summarizes the architecture; the binding specification lives in [`arch
 
 | Package | Responsibility | Depends on |
 | --- | --- | --- |
-| `caegraph.core` | domain truth: BaseObject, CAEGraph (canonical domain representation), topology subsystem (Mesh, cell-based), Field; boundary vocabulary, registries, shared enums | — |
+| `caegraph.core` | domain truth: BaseObject, CAEGraph (canonical domain representation), topology subsystem (Mesh, cell-based), Field; boundary vocabulary, registries, shared enums | utils |
 | `caegraph.geometry` | geometric services: metrics, edge features, interpolation | core |
 | `caegraph.io` | loaders (gmsh first) and writers (VTK); format registry | core |
 | `caegraph.graph` | representation construction (source discretization → CAEGraph; construction contract in ADR-016) + backend adapter (CAEGraph → framework representation; PyG Data in Phase 2; ADR-017) | core, geometry |
