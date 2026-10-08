@@ -294,7 +294,7 @@ package "caegraph.geometry" {
 }
 
 package "caegraph.io" {
-  abstract class MeshLoader {
+  abstract class AbstractMeshLoader {
     Cross-format loading pipeline
     (ADR-012): __call__(path) -> Mesh is
     stable; per-format protected hooks are
@@ -312,7 +312,7 @@ package "caegraph.io" {
     categories come from user specs only
   }
   class GmshLoader {
-    First concrete MeshLoader for gmsh
+    First concrete AbstractMeshLoader for gmsh
     source named groups via meshio
     (provisional engine, ADR-013; types
     never leak past io); performs the
@@ -486,7 +486,7 @@ BaseObject <|-- CAEGraph
 BaseObject <|-- Mesh
 BaseObject <|-- Field
 BaseObject <|-- BoundaryRegion
-MeshLoader <|-- GmshLoader
+AbstractMeshLoader <|-- GmshLoader
 
 CAEDataset ..> PyGDataset : Phase 2 implementation binding (ADR-009)
 Model ..> TorchModule : Phase 2 implementation binding (ADR-009)
@@ -506,7 +506,7 @@ CAEGraph ..> BoundaryManager : uses semantic regions
 CAEGraph ..> NodeCategory : node-entity annotation only (Phase 2; cell entities excluded - ADR-019 D3)
 BoundaryRegion ..> Mesh : references facet namespace (cell-based; does not own topology)
 
-MeshLoader ..> Mesh : produces topology input
+AbstractMeshLoader ..> Mesh : produces topology input
 MeshWriter ..> Mesh : consumes
 MeshRepresentationBuilder ..> Mesh : cell-based source example (ADR-016)
 MeshRepresentationBuilder ..> GeometryProcessor : future geometry feature integration (deferred - ADR-019 not-covered items)
