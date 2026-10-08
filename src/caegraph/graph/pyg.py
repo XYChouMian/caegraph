@@ -83,11 +83,11 @@ def to_pyg_data(graph: CAEGraph) -> Data:
     profile checks raise :class:`ValueError`.
 
     Materialization additionally requires every FieldData payload to
-    be losslessly representable as a ``torch.Tensor``. This is a Phase
-    2 PyG backend-profile condition only: it restricts neither the
-    backend-agnostic ``FieldData`` vocabulary nor the canonical
-    legality of a CAEGraph state — unsupported payload forms simply
-    fail fast at adaptation (D-01/D-03).
+    be faithfully materializable as a ``torch.Tensor``. Payloads that
+    cannot be faithfully materialized as a tensor cause the adapter to
+    fail fast — a Stage 3 implementation necessity, not an ADR-022
+    contract condition; the canonical legality of the FieldData is
+    unaffected.
 
     Materialization is by-value: every tensor is built through
     ``torch.tensor``, which copies its input, so no returned tensor
@@ -110,11 +110,12 @@ def to_pyg_data(graph: CAEGraph) -> Data:
             Field name colliding with a reserved schema key (D-04);
             more than one FieldData realization for one Field (D-05 —
             the adapter implements no selection mechanism, ADR-020
-            D6); or a FieldData payload that cannot be losslessly
-            represented as a ``torch.Tensor`` (a PyG backend-profile
-            condition; the canonical legality of the FieldData is
-            unaffected). ``graph.validate()`` is invoked directly and
-            its exceptions propagate verbatim.
+            D6); or a FieldData payload that cannot be faithfully
+            materialized as a ``torch.Tensor`` — the adapter fails
+            fast; a Stage 3 implementation necessity, not an ADR-022
+            contract condition, and the canonical legality of the
+            FieldData is unaffected. ``graph.validate()`` is invoked
+            directly and its exceptions propagate verbatim.
     """
     if not isinstance(graph, CAEGraph):
         raise ValueError(
@@ -177,18 +178,18 @@ def to_pyg_data(graph: CAEGraph) -> Data:
                 f"field name {name!r} collides with a reserved PyG schema "
                 "key; fail-fast at backend adaptation (ADR-022 D-04)"
             )
-        # PyG backend-profile condition: the payload must be losslessly
-        # representable as a torch Tensor. Unsupported backend-agnostic
-        # payload forms fail fast here without touching canonical
-        # legality (ADR-020 D4 vocabulary; ADR-022 D-01/D-03).
+        # Stage 3 implementation necessity: payloads that cannot be
+        # faithfully materialized as a tensor cause the adapter to fail
+        # fast; not an ADR-022 contract condition, and the canonical
+        # legality of the FieldData is unaffected.
         try:
             payload[name] = torch.tensor(np.asarray(data.values))
         except (TypeError, ValueError, RuntimeError) as error:
             raise ValueError(
-                f"field {name!r} payload cannot be materialized as a "
-                "torch Tensor - a Phase 2 PyG backend profile condition; "
-                "the canonical legality of the FieldData is unaffected "
-                "(ADR-022 D-01/D-03)"
+                f"field {name!r} payload cannot be faithfully "
+                "materialized as a tensor - a Stage 3 implementation "
+                "necessity, not an ADR-022 contract condition; the "
+                "canonical legality of the FieldData is unaffected"
             ) from error
         field_families[name] = data.field.association
 

@@ -252,10 +252,11 @@ def test_non_caegraph_input_is_rejected():
         to_pyg_data("two_tri")  # type: ignore[arg-type]
 
 
-def test_unrepresentable_payload_fails_fast_as_backend_profile_condition():
-    # A PyG backend-profile condition only: a payload that cannot be
-    # losslessly represented as a torch Tensor fails fast at adaptation;
-    # the canonical legality of the FieldData / CAEGraph is unaffected.
+def test_unrepresentable_payload_fails_fast_as_implementation_necessity():
+    # Payloads that cannot be faithfully materialized as a tensor cause
+    # the adapter to fail fast — a Stage 3 implementation necessity, not
+    # an ADR-022 contract condition; the canonical legality of the
+    # FieldData / CAEGraph is unaffected.
     mesh = _two_triangle_mesh()
     label = Field("label", association="node")
     graph = MeshRepresentationBuilder()(
@@ -264,7 +265,7 @@ def test_unrepresentable_payload_fails_fast_as_backend_profile_condition():
         field_data=[FieldData(label, ["a", "b", "c", "d"], scope="global")],
     )
     graph.validate()  # the canonical state itself remains legal
-    with pytest.raises(ValueError, match="backend profile condition"):
+    with pytest.raises(ValueError, match="implementation necessity"):
         to_pyg_data(graph)
     assert graph.field_data[0].values == ["a", "b", "c", "d"]
 
