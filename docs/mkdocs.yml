@@ -66,11 +66,13 @@ plugins:
             概览: Overview
             教程: Tutorials
             示例: Examples
-  # API 文档自动生成（caegraph 需可导入：安装包或将 src 加入 PYTHONPATH）
+  # API 文档自动生成：paths 指向本仓库的 src-layout 源码目录（相对本文件），
+  # 使 API 页始终渲染当前 checkout 的 docstring，而不是已安装包（可能是
+  # 另一个 worktree 的 editable 安装）的 docstring
   - mkdocstrings:
       handlers:
         python:
-          paths: [..]
+          paths: [../src]
           options:
             docstring_style: google
             show_source: true
