@@ -46,6 +46,12 @@ package "caegraph.inference" as caegraph.inference {
 }
 package "caegraph.io" as caegraph.io {
 }
+package "caegraph.io.base" as caegraph.io.base {
+}
+package "caegraph.io.gmsh" as caegraph.io.gmsh {
+}
+package "caegraph.io.registry" as caegraph.io.registry {
+}
 package "caegraph.models" as caegraph.models {
 }
 package "caegraph.physics" as caegraph.physics {
@@ -98,5 +104,15 @@ caegraph.graph.builder --> caegraph.core.enums
 caegraph.graph.builder --> caegraph.core.field
 caegraph.graph.builder --> caegraph.core.topology.mesh
 caegraph.graph.pyg --> caegraph.core
+caegraph.io --> caegraph.io.base
+caegraph.io --> caegraph.io.gmsh
+caegraph.io --> caegraph.io.registry
+caegraph.io.base --> caegraph.core.topology.celltype
+caegraph.io.base --> caegraph.core.topology.mesh
+caegraph.io.gmsh --> caegraph.core.topology.celltype
+caegraph.io.gmsh --> caegraph.io.base
+caegraph.io.registry --> caegraph.core
+caegraph.io.registry --> caegraph.io.base
+caegraph.io.registry --> caegraph.io.gmsh
 caegraph.utils --> caegraph.utils.logging
 @enduml
