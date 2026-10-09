@@ -1,5 +1,7 @@
 @startuml classes_caegraph
 set namespaceSeparator none
+class "AbstractMeshLoader" as caegraph.io.base.AbstractMeshLoader {
+}
 class "BaseObject" as caegraph.core.base.BaseObject {
   metadata : dict[str, Any]
   name : str
@@ -72,6 +74,8 @@ class "FieldData" as caegraph.core.field.FieldData {
   values : Any
   validate() -> None
 }
+class "GmshLoader" as caegraph.io.gmsh.GmshLoader {
+}
 class "Mesh" as caegraph.core.topology.mesh.Mesh {
   cell_offsets : np.ndarray
   cell_types : np.ndarray
@@ -116,8 +120,26 @@ class "_CellSpec" as caegraph.core.topology.celltype._CellSpec {
   faces : tuple[tuple[int, ...], ...]
   node_count : int
 }
+class "_NormalizedSource" as caegraph.io.base._NormalizedSource {
+  blocks : tuple[_SourceBlock, ...]
+  groups : tuple[_SourceGroup, ...]
+  metadata : dict[str, Any]
+  name : str
+  nodes : ndarray
+}
+class "_SourceBlock" as caegraph.io.base._SourceBlock {
+  cell_type
+  connectivity : tuple[tuple[int, ...], ...]
+}
+class "_SourceGroup" as caegraph.io.base._SourceGroup {
+  dim : int
+  members : tuple[int, ...]
+  name : str
+}
 caegraph.core.boundary.region.BoundaryRegion --|> caegraph.core.base.BaseObject
 caegraph.core.caegraph.CAEGraph --|> caegraph.core.base.BaseObject
 caegraph.core.field.Field --|> caegraph.core.base.BaseObject
 caegraph.core.topology.mesh.Mesh --|> caegraph.core.base.BaseObject
+caegraph.io.gmsh.GmshLoader --|> caegraph.io.base.AbstractMeshLoader
+caegraph.io.base._SourceBlock --> caegraph.core.topology.celltype.CellType : cell_type
 @enduml
