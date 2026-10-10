@@ -58,3 +58,12 @@
 ## 6. 与 N1 evidence 的关系
 
 本文件与 `P2-PERF-01a-evidence.md` 平行：N1 记录 builder 单点实验（未进 main），本文件记录 First E2E 后的全链归因与 02a 裁决；两者均为 evidence archive，**不是 ADR**，不得作为规范依据引用。
+
+## 7. 迁移约束记录（2026-10-10，自 ROADMAP Phase 2 小节收敛迁入）
+
+以下内容原存放于 `ROADMAP.md` Performance line（已按 strategy-layer 精简原则收缩），约束效力不变、落点改为本归档：
+
+- **三条件重估 trigger 原文**（GO 裁决的历史依据；「all three must hold」）：① first E2E succeeded with a trustworthy behavioral baseline；② a representative real-scale workload demonstrates a perceptible time or memory bottleneck in the current Python-container paths（synthetic benchmarks alone do not satisfy this）；③ downstream（Gate 6 / Dataset / Transforms）has not yet come to depend on the concrete container representation。否则维持 HOLD；re-evaluation may happen after each gate but must never block the critical path。
+- **02a 完整范围枚举**（internal NumPy-first representation，in principle without requiring a BREAKING public API）：`_edges` ndarray、`_facet_cells` CSR、builder vectorization、relation normalization / validation vectorization、Mesh hot-path vectorization。§5 的 02a-1/2/3 批次为其执行切分。
+- **02b 独立性**：public ndarray contract（`CAEGraph.edges`、`facet_adjacent_cells` 及其他 public numerical collections）为 independent decision；**not starting 02b is a legal final outcome**；ADR-025 未创建，重构窗口重开时从届时 latest main + E2E / workload 证据起草。
+- **存储表示依赖禁令（HOLD 期间纪律，02a 落地前持续有效）**：新代码必须只依赖语义与 public APIs——永不依赖 `_edges` / `_facet_cells` 等存储表示。
