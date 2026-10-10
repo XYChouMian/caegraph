@@ -11,10 +11,10 @@ Gmsh .msh → GmshLoader → Mesh → MeshRepresentationBuilder → CAEGraph
 → validate() → to_pyg_data → minimal consumer
 ```
 
-- 计时：`time.perf_counter` wall time，单次运行；计时点全部位于 **public boundary**（`GmshLoader()` / builder 调用 / `validate()` / `to_pyg_data()`），不依赖 protected hooks。
+- 计时：`time.perf_counter` wall time，单次运行；计时点全部位于 **public boundary**（`GmshLoader()` / builder 调用 / `validate()` / `to_pyg_data()`），不依赖 protected hooks。计时粒度为公共调用粒度——boundary 内部的 source read / normalization / canonical construction / validation 属实现细节、非 public contract；profiler 的只读内部观察已归档于 `architecture/perf/P2-PERF-02-reassessment.md`（含 reproduction artifact）。
 - 内存：`tracemalloc` peak，**独立 pass** 测量（避免 tracing 开销扭曲计时）；peak 为全链（load → to_pyg_data）累计。
 - 统计：每档 **3 次重复，全部原始值列出**，median 为主统计，best 仅供 N1 best-of-5 参考。
-- 环境：WSL2，conda `caegraph-dev`（Python 3.10.21，meshio 5.3.5，torch 2.14.0+cu130），First E2E 分支树（main `50af723` + 本批测试），纯 Python builder（N1 实验未进 main）。
+- 环境：WSL2，conda `caegraph-dev`（Python 3.10.21，meshio 5.3.5，torch 2.14.0+cu130），First E2E 分支树，纯 Python builder（N1 实验未进 main）。
 - 复现：生成与计时脚本见本文件 §4（/tmp 临时脚本，未入仓库）；fixture 为运行时生成的 synthetic gmsh 2.2 ASCII。
 
 ## 2. Workload 参数与原始值
@@ -69,11 +69,11 @@ peak memory（独立 pass）：**61.6 MB**。
 
 ## 4. 复现方式
 
-观测脚本（/tmp 临时脚本，未入仓库）核心步骤：① `build_grid_file(path, nx, ny, nz)` 以 Kuhn 6-tet 分解生成结构网格并写 gmsh 2.2 ASCII；② 计时 pass ×3（`GmshLoader()(path)` → builder（含 metadata boundary groups 注册与 node FieldData 挂载）→ `validate()` → `to_pyg_data`）；③ 内存 pass ×1（`tracemalloc`）。输出格式同 §2。
+观测脚本（/tmp 临时脚本，未入仓库）核心步骤：① `build_grid_file(path, nx, ny, nz)` 以 Kuhn 6-tet 分解生成结构网格并写 gmsh 2.2 ASCII；② 计时 pass ×3（`GmshLoader()(path)` → builder（含 metadata boundary groups 注册与 node FieldData 挂载）→ `validate()` → `to_pyg_data`）；③ 内存 pass ×1（`tracemalloc`）。输出格式同 §2。GmshLoader 内部的 profiling reproduction artifact 已归档为 `architecture/perf/reassess_loader_profile.py`（仅经 `GmshLoader()(path)` public entry 运行）。
 
 ## 5. 观察记录（只测不优化）
 
-- `GmshLoader total`（meshio 解析 + 文件 IO）为最大热点：约占总 E2E 的 60–65%（12k：0.251/0.393；48k：0.915/1.515）。
+- **Source → canonical Mesh public boundary**（`GmshLoader()` 单次公共调用，内含 source read、normalization、canonical construction 与 validation）是当前最大耗时段：约占总 E2E 的 60–65%（12k：0.251/0.393；48k：0.915/1.515）。boundary 内部的归因（meshio 外部解析 vs 自有 normalization / canonical construction）以 `architecture/perf/P2-PERF-02-reassessment.md` 的 evidence 归档为准。
 - builder 次之（约 33–36%）；`validate()` 与 `to_pyg_data` 在本规模合计 < 3%。
 - scaling（12k → 48k，4×）近似线性：total 0.393 → 1.515（≈3.9×）。
 - P2-PERF-02 trigger ①（首次 E2E）已满足；本节数字仅为 trigger ② 的 PM 判断输入——**Builder 不自行宣布 trigger ② 满足，亦不启动 02a / 02b**。
