@@ -71,5 +71,4 @@ Gate 6 扩张或下游开始依赖具体容器表示时，重新评估迁移窗�
 
 ## 修订历史（Revision history）
 
-- 2026-10-10 v1：proposed——起草 candidate，待独立审查与 PM 裁决；未采纳前不落规范。
-- 2026-10-10 v2：accepted——Independent Review 通过，PM 批准采纳。
+- 2026-10-10 v1：accepted——冻结 NumPy-first 为内部数值表示策略（NumPy substrate + Python semantic shell 边界，不改 public contracts，非全量物化），经 Independent Review 通过与 PM 批准采纳。
