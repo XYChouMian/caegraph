@@ -4,7 +4,7 @@
 - 标题：冻结「NumPy-first 是内部数值表示策略、而非 public API 策略」的表示边界——高容量 numerical / index payload 在实现内部优先保持 NumPy-native，领域语义对象维持 Python semantic shell
 - 日期：2026-10-10
 - 状态：**proposed（candidate，仅供 review；未 accepted 前不构成生效架构决策，不得 landing）**
-- 关联：ADR-012 ~ ADR-024；ADR-019 D3（relation 内部 container form 不冻结）；证据归档 `architecture/perf/`（非规范）。编号说明：`P2-PERF-02-reassessment.md` 曾以「ADR-025」散文式指代 02b 的假想未来 ADR；本 ADR 按模板取号规则（现有最大编号 + 1）用于 internal data path，与 02b 无关。
+- 关联：ADR-012 ~ ADR-024；ADR-019 D3（relation 内部 container form 不冻结）；证据归档 `architecture/perf/`（非规范）。
 
 ## 心智模型（Mental model）
 
@@ -32,7 +32,7 @@ flowchart TB
 
 ## 范围（Scope）
 
-**NumPy numerical substrate**——适用的高容量 numerical / index payload：coordinates、connectivity、entity IDs、offsets、physical tags、group-member IDs、adjacency（含 `_facet_cells` 数值 payload）、canonical pairs（含 `CAEGraph` relation payload）、large masks / index arrays、numerical field values（`FieldData.values` 的具体表示形式依 ADR-020 保持不冻结；本政策不改变其既有语义，也不追溯数组化用户数据。）payload 归属 substrate 不等于对应 persistent storage migration 获得授权（见 D-02）。
+**NumPy numerical substrate**——适用的高容量 numerical / index payload：coordinates、connectivity、entity IDs、offsets、physical tags、group-member IDs、adjacency（含 `_facet_cells` 数值 payload）、canonical pairs（含 `CAEGraph` relation payload）、large masks / index arrays、numerical field values（`FieldData.values` 的具体表示形式依 ADR-020 保持不冻结；本政策不改变其既有语义，也不追溯数组化用户数据）。payload 归属 substrate 不等于对应 persistent storage migration 获得授权（见 D-02）。
 
 **Python semantic shell**——继续由 Python domain objects 表达的低基数领域词汇：`Field`、`BoundaryRegion` / `BoundarySpec` / `BoundaryType`、`CellType` 语义定义、`Registry`、Conditions、metadata names / keys、source-format 语义描述符、`NodeCategory`、`Snapshot` 标识字段。
 
