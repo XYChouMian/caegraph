@@ -32,7 +32,7 @@ flowchart TB
 
 ## 范围（Scope）
 
-**NumPy numerical substrate**——适用的高容量 numerical / index payload：coordinates、connectivity、entity IDs、offsets、physical tags、group-member IDs、adjacency（含 `_facet_cells` 数值 payload）、canonical pairs（含 `CAEGraph` relation payload）、large masks / index arrays、numerical field values（`FieldData.values` 契约仍为 ADR-020 的 backend-agnostic `Any`）。payload 归属 substrate 不等于对应 persistent storage migration 获得授权（见 D-02）。
+**NumPy numerical substrate**——适用的高容量 numerical / index payload：coordinates、connectivity、entity IDs、offsets、physical tags、group-member IDs、adjacency（含 `_facet_cells` 数值 payload）、canonical pairs（含 `CAEGraph` relation payload）、large masks / index arrays、numerical field values（`FieldData.values` 的具体表示形式依 ADR-020 保持不冻结；本政策不改变其既有语义，也不追溯数组化用户数据。）payload 归属 substrate 不等于对应 persistent storage migration 获得授权（见 D-02）。
 
 **Python semantic shell**——继续由 Python domain objects 表达的低基数领域词汇：`Field`、`BoundaryRegion` / `BoundarySpec` / `BoundaryType`、`CellType` 语义定义、`Registry`、Conditions、metadata names / keys、source-format 语义描述符、`NodeCategory`、`Snapshot` 标识字段。
 
