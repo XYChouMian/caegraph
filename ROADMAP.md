@@ -59,13 +59,9 @@ Details: [`architecture/phases/phase1-core.md`](architecture/phases/phase1-core.
 
 Details: [`architecture/phases/phase2-cae-data.md`](architecture/phases/phase2-cae-data.md)
 
-### Performance line: P2-PERF-02 · `HOLD — deferred until first-E2E checkpoint`
+### Performance line: P2-PERF-02 · `GO 02a — internal, non-BREAKING, memory-bounded`
 
-The NumPy-first data-pipeline restructuring (P2-PERF-02) is on **HOLD**. It is **not a Gate 5 blocker**. The current critical path is: Gate 5 CLOSED → first end-to-end run (Gmsh → Loader → Mesh → MeshRepresentationBuilder → CAEGraph → validate → to_pyg_data) → representative real-scale workload benchmark (end-to-end time and memory recorded) → PM re-evaluation of NumPy-first restructuring → either P2-PERF-02a or continue to Gate 6.
-
-- Recorded future candidates (not started): **P2-PERF-02a** — internal NumPy-first representation (`_edges` ndarray, `_facet_cells` CSR, builder vectorization, relation normalization/validation vectorization, Mesh hot-path vectorization), in principle without requiring a BREAKING public API; **P2-PERF-02b** — public ndarray contract (`CAEGraph.edges`, `facet_adjacent_cells`, other public numerical collections), an independent decision; **not starting 02b is a legal final outcome**. ADR-025 is not created; if the restructuring window reopens, draft it from the then-latest main plus E2E and workload evidence.
-- Re-evaluation trigger (all three must hold): ① first E2E succeeded with a trustworthy behavioral baseline; ② a representative real-scale workload demonstrates a perceptible time or memory bottleneck in the current Python-container paths (synthetic benchmarks alone do not satisfy this); ③ downstream (Gate 6 / Dataset / Transforms) has not yet come to depend on the concrete container representation. Otherwise stay on HOLD; re-evaluation may happen after each gate but must never block the critical path.
-- Experiment evidence: the closed N1 experiment (`_expand_edges` vectorization, synthetic 4.3–10.1× local speedup) is archived in [`architecture/perf/P2-PERF-01a-evidence.md`](architecture/perf/P2-PERF-01a-evidence.md); its implementation never landed on `main` and is not an implementation baseline. During HOLD, new code must depend on semantics and public APIs only — never on storage representations such as `_edges` / `_facet_cells`.
+The NumPy-first data-pipeline restructuring (**P2-PERF-02a** — internal representation only) was approved by PM re-evaluation after the First E2E checkpoint; **02b** (public ndarray contract) is an independent decision and stays on HOLD. Batch order and acceptance: 02a-1 loader `_build_topology` (P0) → 02a-2 builder `_expand_edges` → 02a-3 conditional; memory-bounded throughout (peak ≤ 2× baseline at three workload tiers veto, chunked preferred). Full scope, evidence chain and constraints: [`architecture/perf/P2-PERF-02-reassessment.md`](architecture/perf/P2-PERF-02-reassessment.md) (evidence archive, not an ADR); N1 experiment archive: [`architecture/perf/P2-PERF-01a-evidence.md`](architecture/perf/P2-PERF-01a-evidence.md).
 
 ## Phase 3 — Machine Learning Interface · `Planned`
 

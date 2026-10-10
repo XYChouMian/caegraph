@@ -6,6 +6,8 @@
 
 - `P2-PERF-01a-evidence.md` — N1（`_expand_edges` NumPy 向量化实验）完整证据：SHA 链、门禁、benchmark before/after、oracle 方法、结论与局限。
 - `bench_caegraph_edges.py` — benchmark 脚本（方法资产，归档副本；运行时以 `/tmp` 副本执行，不入仓库运行）。
+- `P2-PERF-02-reassessment.md` — P2-PERF-02 三条件重估证据与 PM 裁决（GO 02a）：First E2E / N1 / cProfile 三组证据、GmshLoader tottime 分层归因、02a-1/2/3 批次与 memory-bounded 约束、迁自 ROADMAP 的约束记录。
+- `reassess_loader_profile.py` — GmshLoader cProfile 归因 reproduction artifact（仅经 `GmshLoader()(path)` public entry 运行；非生产代码）。
 
 ## benchmark 使用方法
 
@@ -26,4 +28,4 @@ python /tmp/bench_caegraph_edges.py /tmp/rev-<name> [repeats]
 
 ## 局限声明
 
-N1 全部结果来自 synthetic 结构网格 benchmark，仅证明局部热路径的可行加速；**不足以单独授权宏观 NumPy 重构**。P2-PERF-02 重启条件与路线见 `ROADMAP.md` Phase 2 小节。
+N1 全部结果来自 synthetic 结构网格 benchmark，仅证明局部热路径的可行加速；**不足以单独授权宏观 NumPy 重构**。P2-PERF-02 重估结论、批次路线与约束见 `P2-PERF-02-reassessment.md`。
