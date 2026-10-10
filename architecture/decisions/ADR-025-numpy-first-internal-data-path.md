@@ -3,7 +3,7 @@
 - 编号：ADR-025
 - 标题：冻结「NumPy-first 是内部数值表示策略、而非 public API 策略」的表示边界——高容量 numerical / index payload 在实现内部优先保持 NumPy-native，领域语义对象维持 Python semantic shell
 - 日期：2026-10-10
-- 状态：**proposed（candidate，仅供 review；未 accepted 前不构成生效架构决策，不得 landing）**
+- 状态：**accepted**
 - 关联：ADR-012 ~ ADR-024；ADR-019 D3（relation 内部 container form 不冻结）；证据归档 `architecture/perf/`（非规范）。
 
 ## 心智模型（Mental model）
@@ -72,3 +72,4 @@ Gate 6 扩张或下游开始依赖具体容器表示时，重新评估迁移窗�
 ## 修订历史（Revision history）
 
 - 2026-10-10 v1：proposed——起草 candidate，待独立审查与 PM 裁决；未采纳前不落规范。
+- 2026-10-10 v2：accepted——Independent Review 通过，PM 批准采纳。
